@@ -40,4 +40,7 @@ public class ThemeStore {
         return Color.WHITE;
     }
 
+    public int getAccentColor() {
+        return context.getResources().getColor(R.color.colorAccent);
+    }
 }

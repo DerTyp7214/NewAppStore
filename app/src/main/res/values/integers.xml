@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2018.
+  ~ Created by Josua Lengwenath
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <integer name="fadeinAnimTime" tools:ignore="MissingDefaultResource">200</integer>
+    <integer name="fadeoutAnimTime" tools:ignore="MissingDefaultResource">200</integer>
+</resources>

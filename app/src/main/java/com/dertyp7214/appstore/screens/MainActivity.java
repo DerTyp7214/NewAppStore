@@ -42,6 +42,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class MainActivity extends Utils
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -50,6 +51,8 @@ public class MainActivity extends Utils
     private FloatingActionButton fab;
     private SearchAdapter searchAdapter;
     private Thread thread;
+    private int id = 0;
+    private Random random;
 
     private List<SearchItem> appItems = new ArrayList<>();
 
@@ -59,6 +62,10 @@ public class MainActivity extends Utils
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        overridePendingTransition(R.anim.fast_out_extra_slow_in, R.anim.fast_out_extra_slow_in);
+
+        random = new Random();
 
         checkPermissions();
         checkForOldAppStore();
@@ -98,9 +105,11 @@ public class MainActivity extends Utils
     }
 
     private void search(String query){
+        id = random.nextInt();
         thread = new Thread(() -> {
             try{
 
+                int localId = id;
                 appItems.clear();
 
                 if(new JSONObject(LocalJSON.getJSON(MainActivity.this)).getBoolean("error"))
@@ -118,7 +127,8 @@ public class MainActivity extends Utils
                         appItemList.add(new SearchItem(obj.getString("title"), obj.getString("ID"), Utils.drawableFromUrl(MainActivity.this, obj.getString("image"))));
                 }
 
-                appItems.addAll(appItemList);
+                if(id==localId)
+                    appItems.addAll(appItemList);
 
                 MainActivity.this.runOnUiThread(() -> searchAdapter.notifyDataSetChanged());
 
@@ -221,7 +231,7 @@ public class MainActivity extends Utils
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
-            startActivity(new Intent(this, SettingsScreen.class));
+            startActivity(this, SettingsScreen.class);
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {

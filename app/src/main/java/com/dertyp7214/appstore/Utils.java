@@ -27,15 +27,17 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.dertyp7214.appstore.components.CustomAppBarLayout;
 import com.dertyp7214.appstore.items.SearchItem;
+import com.dertyp7214.appstore.settings.Settings;
 
 import org.json.JSONObject;
 
@@ -51,13 +53,42 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static android.preference.PreferenceManager.getDefaultSharedPreferences;
-
 public class Utils extends AppCompatActivity {
 
     private int PERMISSIONS = 10;
     private String oldAppPackageName = "com.hacker.appstore";
     private static HashMap<String, Drawable> icons = new HashMap<>();
+
+    public void checkForUpdate(Settings settings, TextView subTitle, ProgressBar progressBar) {
+        new Thread(() -> {
+            try {
+                Utils.this.runOnUiThread(() -> {
+                    progressBar.setVisibility(View.VISIBLE);
+                    progressBar.setIndeterminate(true);
+                });
+            } finally {
+                Utils.this.runOnUiThread(() -> {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    progressBar.setIndeterminate(false);
+                });
+            }
+        }).start();
+    }
+
+    public void startActivity(Activity context, Class aClass){
+        startActivity(new Intent(context, aClass));
+        //overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+    }
+
+    public String cutString(String string, int cutAt){
+        if(string.length()<cutAt)
+            return string;
+        StringBuilder ret = new StringBuilder();
+        for(int i=0;i<cutAt;i++)
+            ret.append(string.charAt(i));
+        ret.append("...");
+        return ret.toString();
+    }
 
     public final static String COLORED_NAVIGATIONBAR = "colored_navigationbar";
 
@@ -131,11 +162,23 @@ public class Utils extends AppCompatActivity {
         prefs.apply();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     public static void setNavigationBarColor(Activity activity, View view, @ColorInt int color, int duration){
-        if(getSettings(activity).getBoolean(COLORED_NAVIGATIONBAR, false)) {
+        if(getSettings(activity).getBoolean(COLORED_NAVIGATIONBAR, false) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Window window = activity.getWindow();
             ValueAnimator animator = ValueAnimator.ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), color);
+            animator.setDuration(duration);
+            animator.addUpdateListener(animation -> {
+                int c = (int) animation.getAnimatedValue();
+                if (isColorBright(c) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                else
+                    view.setSystemUiVisibility(View.VISIBLE);
+                window.setNavigationBarColor(c);
+            });
+            animator.start();
+        } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            Window window = activity.getWindow();
+            ValueAnimator animator = ValueAnimator.ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), Color.BLACK);
             animator.setDuration(duration);
             animator.addUpdateListener(animation -> {
                 int c = (int) animation.getAnimatedValue();
@@ -275,7 +318,6 @@ public class Utils extends AppCompatActivity {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE
         ));
-
         return permissons;
     }
 

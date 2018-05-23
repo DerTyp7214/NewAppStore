@@ -74,11 +74,13 @@ public class FragmentAppGroups extends TabFragment {
 
         View view = inflater.inflate(R.layout.fragment_app_groups, container, false);
 
-        adapter = new AppGroupAdapter(getContext(), appList);
+        context = getActivity();
+
+        adapter = new AppGroupAdapter(context, appList);
         getAppList(null);
 
         recyclerViewAppGroup = view.findViewById(R.id.recyclerViewAppGroup);
-        recyclerViewAppGroup.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerViewAppGroup.setLayoutManager(new LinearLayoutManager(context));
         recyclerViewAppGroup.setAdapter(adapter);
 
         refreshLayout = view.findViewById(R.id.refresh);
