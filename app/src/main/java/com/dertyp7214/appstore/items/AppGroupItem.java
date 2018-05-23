@@ -10,9 +10,9 @@ import java.util.List;
 public class AppGroupItem {
 
     private final String title;
-    private final List<AppItem> appItems;
+    private final List<SearchItem> appItems;
 
-    public AppGroupItem(String title, List<AppItem> appItems){
+    public AppGroupItem(String title, List<SearchItem> appItems){
         this.title=title;
         this.appItems=appItems;
     }
@@ -21,7 +21,7 @@ public class AppGroupItem {
         return this.title;
     }
 
-    public List<AppItem> getAppList() {
+    public List<SearchItem> getAppList() {
         return appItems;
     }
 }

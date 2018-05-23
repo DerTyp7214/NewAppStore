@@ -3,18 +3,20 @@
  * Created by Josua Lengwenath
  */
 
-package com.dertyp7214.appstore;
+package com.dertyp7214.appstore.screens;
 
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -24,10 +26,18 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.dertyp7214.appstore.Config;
+import com.dertyp7214.appstore.CustomSnackbar;
+import com.dertyp7214.appstore.LocalJSON;
+import com.dertyp7214.appstore.R;
+import com.dertyp7214.appstore.ThemeStore;
+import com.dertyp7214.appstore.Utils;
+import com.dertyp7214.appstore.adapter.SearchAdapter;
 import com.dertyp7214.appstore.fragments.FragmentAppGroups;
 import com.dertyp7214.appstore.fragments.TabFragment;
+import com.dertyp7214.appstore.items.SearchItem;
 
-import org.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -38,6 +48,10 @@ public class MainActivity extends Utils
 
     private ViewPagerAdapter adapter;
     private FloatingActionButton fab;
+    private SearchAdapter searchAdapter;
+    private Thread thread;
+
+    private List<SearchItem> appItems = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,8 +63,12 @@ public class MainActivity extends Utils
         checkPermissions();
         checkForOldAppStore();
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            setNavigationBarColor(this, toolbar, ThemeStore.getInstance(this).getPrimaryColor(), 300);
+        }
+
         fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> new CustomSnackbar(MainActivity.this).make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+        fab.setOnClickListener(view -> new CustomSnackbar(MainActivity.this).make(view, "Replace with your own action", CustomSnackbar.LENGTH_LONG)
                 .setAction("Action", null).show());
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -70,6 +88,46 @@ public class MainActivity extends Utils
 
         TabLayout tabLayout = findViewById(R.id.tabBar);
         tabLayout.setupWithViewPager(viewPager);
+
+        searchAdapter = new SearchAdapter(this, appItems);
+
+        RecyclerView searchRecView = findViewById(R.id.search_view);
+        searchRecView.setLayoutManager(new LinearLayoutManager(this));
+        searchRecView.setAdapter(searchAdapter);
+
+    }
+
+    private void search(String query){
+        thread = new Thread(() -> {
+            try{
+
+                appItems.clear();
+
+                if(new JSONObject(LocalJSON.getJSON(MainActivity.this)).getBoolean("error"))
+                    LocalJSON.setJSON(MainActivity.this, Utils.getWebContent(Config.API_URL + "/apps/list.php"));
+
+                JSONObject jsonObject = new JSONObject(LocalJSON.getJSON(MainActivity.this));
+
+                JSONArray array = jsonObject.getJSONArray("apps");
+
+                List<SearchItem> appItemList = new ArrayList<>();
+
+                for(int i=0;i<array.length()-1;i++) {
+                    JSONObject obj = array.getJSONObject(i);
+                    if (obj.getString("title").toLowerCase().contains(query.toLowerCase()) && !query.equals(""))
+                        appItemList.add(new SearchItem(obj.getString("title"), obj.getString("ID"), Utils.drawableFromUrl(MainActivity.this, obj.getString("image"))));
+                }
+
+                appItems.addAll(appItemList);
+
+                MainActivity.this.runOnUiThread(() -> searchAdapter.notifyDataSetChanged());
+
+            }catch (Exception ignored){
+            }
+        });
+        if(thread.isAlive())
+            thread.interrupt();
+        thread.start();
     }
 
     private void addFragment(TabFragment fragment){
@@ -105,11 +163,13 @@ public class MainActivity extends Utils
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                search(query);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                search(newText);
                 return false;
             }
         });
@@ -161,14 +221,14 @@ public class MainActivity extends Utils
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
-
+            startActivity(new Intent(this, SettingsScreen.class));
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
 
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

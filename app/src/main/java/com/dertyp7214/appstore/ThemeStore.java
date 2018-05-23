@@ -8,6 +8,8 @@ package com.dertyp7214.appstore;
 import android.content.Context;
 import android.graphics.Color;
 
+import static com.dertyp7214.appstore.Utils.manipulateColor;
+
 public class ThemeStore {
 
     private static ThemeStore instance;
@@ -28,6 +30,10 @@ public class ThemeStore {
 
     public int getPrimaryColor(){
         return context.getResources().getColor(R.color.colorPrimary);
+    }
+
+    public int getPrimaryDarkColor(){
+        return manipulateColor(getPrimaryColor(), 0.6F);
     }
 
     public int getPrimaryTextColor(){

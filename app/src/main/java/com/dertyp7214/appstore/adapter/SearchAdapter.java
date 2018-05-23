@@ -7,9 +7,7 @@ package com.dertyp7214.appstore.adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,30 +17,31 @@ import android.widget.TextView;
 
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
+import com.dertyp7214.appstore.items.AppItem;
 import com.dertyp7214.appstore.items.SearchItem;
 import com.dertyp7214.appstore.screens.AppScreen;
 
 import java.util.HashMap;
 import java.util.List;
 
-public class AppAdapter extends RecyclerView.Adapter<AppAdapter.ViewHolder> {
+public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
     private Context context;
     private List<SearchItem> appItemList;
 
-    public AppAdapter(Context context, List<SearchItem> appItemList){
+    public SearchAdapter(Context context, List<SearchItem> appItemList){
         this.appItemList=appItemList;
         this.context=context;
     }
 
     @NonNull
     @Override
-    public AppAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.app_item_vertical, parent, false));
+    public SearchAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new SearchAdapter.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.search_item, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull AppAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull SearchAdapter.ViewHolder holder, int position) {
         SearchItem item = appItemList.get(position);
 
         holder.appTitle.setText(item.getAppTitle());
