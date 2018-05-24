@@ -5,26 +5,24 @@
 
 package com.dertyp7214.appstore.screens;
 
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.view.View;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.dertyp7214.appstore.Config;
 import com.dertyp7214.appstore.CustomSnackbar;
@@ -33,6 +31,7 @@ import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.SearchAdapter;
+import com.dertyp7214.appstore.components.CustomToolbar;
 import com.dertyp7214.appstore.fragments.FragmentAppGroups;
 import com.dertyp7214.appstore.fragments.TabFragment;
 import com.dertyp7214.appstore.items.SearchItem;
@@ -53,6 +52,7 @@ public class MainActivity extends Utils
     private Thread thread;
     private int id = 0;
     private Random random;
+    private CustomToolbar toolbar;
 
     private List<SearchItem> appItems = new ArrayList<>();
 
@@ -60,13 +60,14 @@ public class MainActivity extends Utils
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         overridePendingTransition(R.anim.fast_out_extra_slow_in, R.anim.fast_out_extra_slow_in);
 
         random = new Random();
 
+        checkAppDir();
         checkPermissions();
         checkForOldAppStore();
 

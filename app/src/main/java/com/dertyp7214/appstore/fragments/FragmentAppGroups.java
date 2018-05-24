@@ -7,20 +7,15 @@ package com.dertyp7214.appstore.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 
 import com.dertyp7214.appstore.Config;
 import com.dertyp7214.appstore.LocalJSON;
@@ -28,14 +23,12 @@ import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.AppGroupAdapter;
 import com.dertyp7214.appstore.items.AppGroupItem;
-import com.dertyp7214.appstore.items.AppItem;
 import com.dertyp7214.appstore.items.SearchItem;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -46,6 +39,7 @@ import java.util.TimerTask;
 
 
 
+@SuppressLint("ValidFragment")
 public class FragmentAppGroups extends TabFragment {
 
     private SwipeRefreshLayout refreshLayout;
@@ -54,11 +48,6 @@ public class FragmentAppGroups extends TabFragment {
     private Activity context;
     private List<AppGroupItem> appList = new ArrayList<>();
 
-    public FragmentAppGroups() {
-
-    }
-
-    @SuppressLint("ValidFragment")
     public FragmentAppGroups(Activity context) {
         this.context=context;
     }

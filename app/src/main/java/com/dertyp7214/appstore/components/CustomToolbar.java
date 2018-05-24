@@ -42,10 +42,11 @@ public class CustomToolbar extends Toolbar {
         super(context, attrs, defStyleAttr);
     }
 
-    public void setToolbarBackgroundColor(@ColorInt int color, Activity activity){
-        setBackgroundColor(color);
-        if(Utils.isColorBright(color))
+    public void setToolbarIconColor(@ColorInt int toolbarColor, Activity activity){
+        if(Utils.isColorBright(toolbarColor))
             colorizeToolbar(Color.BLACK, activity);
+        else
+            colorizeToolbar(Color.WHITE, activity);
     }
 
     private void colorizeToolbar(int toolbarIconsColor, Activity activity) {

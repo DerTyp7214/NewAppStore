@@ -16,6 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="75dp"
         android:padding="3dp"
+        android:transitionName="icon"
         app:srcCompat="@mipmap/ic_launcher" />
 
     <TextView

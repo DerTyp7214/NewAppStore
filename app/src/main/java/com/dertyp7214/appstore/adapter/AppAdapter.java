@@ -5,12 +5,12 @@
 
 package com.dertyp7214.appstore.adapter;
 
-import android.content.Context;
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Intent;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,10 +27,10 @@ import java.util.List;
 
 public class AppAdapter extends RecyclerView.Adapter<AppAdapter.ViewHolder> {
 
-    private Context context;
+    private Activity context;
     private List<SearchItem> appItemList;
 
-    public AppAdapter(Context context, List<SearchItem> appItemList){
+    public AppAdapter(Activity context, List<SearchItem> appItemList){
         this.appItemList=appItemList;
         this.context=context;
     }
@@ -55,7 +55,11 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.ViewHolder> {
 
         Utils.appsList = searchItemHashMap;
 
-        holder.view.setOnClickListener(v -> context.startActivity(new Intent(context, AppScreen.class).putExtra("id", item.getId())));
+        holder.view.setOnClickListener(v -> {
+            Pair<View, String> icon = Pair.create(holder.appIcon, "icon");
+            ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(context, icon);
+            context.startActivity(new Intent(context, AppScreen.class).putExtra("id", item.getId()), options.toBundle());
+        });
 
     }
 

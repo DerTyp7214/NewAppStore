@@ -24,11 +24,14 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Parcelable;
 import android.support.annotation.ColorInt;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
@@ -41,17 +44,23 @@ import com.dertyp7214.appstore.settings.Settings;
 
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class Utils extends AppCompatActivity {
 
@@ -75,8 +84,25 @@ public class Utils extends AppCompatActivity {
         }).start();
     }
 
+    public void sleep(int duration){
+        try {
+            Thread.sleep(duration);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Bitmap getBitmapFromResource(@DrawableRes int resource){
+        return BitmapFactory.decodeResource(getResources(), resource);
+    }
+
     public void startActivity(Activity context, Class aClass){
         startActivity(new Intent(context, aClass));
+        //overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+    }
+
+    public void startActivity(Activity context, Class aClass, Bundle options){
+        startActivity(new Intent(context, aClass), options);
         //overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 
@@ -271,6 +297,67 @@ public class Utils extends AppCompatActivity {
         return null;
     }
 
+    public interface Listener{
+        void run(int progress);
+    }
+
+    public static File getWebContent(String url, File path, int id, Listener listener) {
+        try {
+            URL fileurl = new URL(url);
+            URLConnection urlConnection = fileurl.openConnection();
+            urlConnection.connect();
+
+            InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream(), 8192);
+
+            if(!path.exists())
+                path.mkdirs();
+
+            File downloadedFile = new File(path, "download_app_"+id+".apk");
+
+            OutputStream outputStream = new FileOutputStream(downloadedFile);
+
+            byte[] buffer = new byte[8192];
+
+            int fileSize = urlConnection.getContentLength();
+            int read;
+            long total = 0;
+
+            while ((read = inputStream.read(buffer)) != -1) {
+                total += read;
+                if(fileSize > 0)
+                    listener.run((int) (total * 100 / fileSize));
+                outputStream.write(buffer, 0, read);
+            }
+
+            outputStream.flush();
+            outputStream.close();
+            inputStream.close();
+            return downloadedFile;
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
+    public boolean checkAppDir(){
+        File appDir = new File(Environment.getExternalStorageDirectory(), ".appStore");
+        deleteDirectory(appDir);
+        return appDir.mkdirs();
+    }
+
+    private boolean deleteDirectory(File path) {
+        if( path.exists() ) {
+            File[] files = path.listFiles();
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        return(path.delete());
+    }
+
     public void checkForOldAppStore(){
         if(appInstalled(this, oldAppPackageName)){
             DialogInterface.OnClickListener onClickListener = (dialog, which) -> {
@@ -361,5 +448,54 @@ public class Utils extends AppCompatActivity {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static class ByteBuffer{
+        private final byte[] bytes;
+        private final int buffer;
+        public ByteBuffer(byte[] bytes, int buffer){
+            this.bytes=bytes;
+            this.buffer=buffer;
+        }
+        public byte[] getBytes() {
+            return bytes;
+        }
+        public int getBuffer() {
+            return buffer;
+        }
+    }
+
+    public static void install_apk(Context context, File file) {
+        try {
+            if (file.exists()) {
+                String[] fileNameArray = file.getName().split(Pattern.quote("."));
+                if (fileNameArray[fileNameArray.length - 1].equals("apk")) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        Uri downloaded_apk = getFileUri(context, file);
+                        Intent intent = new Intent(Intent.ACTION_VIEW).setDataAndType(downloaded_apk,
+                                "application/vnd.android.package-archive");
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        context.startActivity(intent);
+                    } else {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setDataAndType(Uri.fromFile(file),
+                                "application/vnd.android.package-archive");
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(intent);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static Uri getFileUri(Context context, File file) {
+        return FileProvider.getUriForFile(context,
+                context.getApplicationContext().getPackageName() + ".GenericFileProvider", file);
+    }
+
+    public static void n(Object o){
+
     }
 }

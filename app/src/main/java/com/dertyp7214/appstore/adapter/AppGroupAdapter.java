@@ -5,7 +5,7 @@
 
 package com.dertyp7214.appstore.adapter;
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,10 +21,10 @@ import java.util.List;
 
 public class AppGroupAdapter extends RecyclerView.Adapter<AppGroupAdapter.ViewHolder> {
 
-    private Context context;
+    private Activity context;
     private List<AppGroupItem> appGroupItemList;
 
-    public AppGroupAdapter(Context context, List<AppGroupItem> appGroupItemList){
+    public AppGroupAdapter(Activity context, List<AppGroupItem> appGroupItemList){
         this.appGroupItemList=appGroupItemList;
         this.context=context;
     }

@@ -11,12 +11,22 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".screens.AppScreen"
-    tools:showIn="@layout/activity_app_screen">
+    tools:showIn="@layout/activity_app_screen"
+    tools:ignore="MissingDefaultResource">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/text_margin"
-        android:text="@string/large_text" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="7dp">
+
+        <ImageView
+            android:id="@+id/app_icon"
+            android:layout_width="77dp"
+            android:layout_height="77dp"
+            android:padding="3dp"
+            android:src="@mipmap/ic_launcher"
+            android:transitionName="icon" />
+
+    </RelativeLayout>
 
 </android.support.v4.widget.NestedScrollView>

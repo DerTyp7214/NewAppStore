@@ -5,10 +5,12 @@
 
 package com.dertyp7214.appstore.adapter;
 
-import android.content.Context;
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +19,6 @@ import android.widget.TextView;
 
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
-import com.dertyp7214.appstore.items.AppItem;
 import com.dertyp7214.appstore.items.SearchItem;
 import com.dertyp7214.appstore.screens.AppScreen;
 
@@ -26,10 +27,10 @@ import java.util.List;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
-    private Context context;
+    private Activity context;
     private List<SearchItem> appItemList;
 
-    public SearchAdapter(Context context, List<SearchItem> appItemList){
+    public SearchAdapter(Activity context, List<SearchItem> appItemList){
         this.appItemList=appItemList;
         this.context=context;
     }
@@ -54,7 +55,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
         Utils.appsList = searchItemHashMap;
 
-        holder.view.setOnClickListener(v -> context.startActivity(new Intent(context, AppScreen.class).putExtra("id", item.getId())));
+        holder.view.setOnClickListener(v -> {
+            Pair<View, String> icon = Pair.create(holder.appIcon, "icon");
+            ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(context, icon);
+            context.startActivity(new Intent(context, AppScreen.class).putExtra("id", item.getId()), options.toBundle());
+        });
 
     }
 

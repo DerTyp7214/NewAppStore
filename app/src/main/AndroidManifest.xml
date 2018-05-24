@@ -38,6 +38,15 @@
         <activity
             android:name=".screens.SettingsScreen"
             android:theme="@style/AppTheme.NoActionBar" />
+        <provider
+            android:name=".GenericFileProvider"
+            android:authorities="${applicationId}.GenericFileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
     </application>
 
 </manifest>
