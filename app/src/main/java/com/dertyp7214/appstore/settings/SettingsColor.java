@@ -97,23 +97,17 @@ public class SettingsColor extends Settings {
 
     @Override
     public void saveSetting(){
-        SharedPreferences preferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences("colors", Context.MODE_PRIVATE);
         @SuppressLint("CommitPrefEdits")
         SharedPreferences.Editor editor = preferences.edit();
-        if(isString)
-            editor.putString(name, colorString);
-        else
-            editor.putInt(name, colorInt);
+        editor.putInt(name, getColorInt());
         editor.apply();
 
     }
 
     @Override
     public void loadSetting(){
-        SharedPreferences preferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
-        if(isString)
-            this.colorString=preferences.getString(name, colorString);
-        else
-            this.colorInt=preferences.getInt(name, colorInt);
+        SharedPreferences preferences = context.getSharedPreferences("colors", Context.MODE_PRIVATE);
+        this.colorInt=isString?Color.parseColor(preferences.getString(name, colorString)):preferences.getInt(name, colorInt);
     }
 }

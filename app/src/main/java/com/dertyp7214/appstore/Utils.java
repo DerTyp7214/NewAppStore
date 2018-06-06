@@ -14,12 +14,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -32,13 +35,20 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
+import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.dertyp7214.appstore.components.CustomAppBarLayout;
+import com.dertyp7214.appstore.components.CustomToolbar;
+import com.dertyp7214.appstore.dev.Logs;
 import com.dertyp7214.appstore.items.SearchItem;
 import com.dertyp7214.appstore.settings.Settings;
 
@@ -46,27 +56,95 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Utils extends AppCompatActivity {
 
     private int PERMISSIONS = 10;
-    private String oldAppPackageName = "com.hacker.appstore";
+    protected String oldAppPackageName = "com.hacker.appstore";
     private static HashMap<String, Drawable> icons = new HashMap<>();
+    private Logs logs;
+
+    public CustomToolbar toolbar;
+
+    public String addAlpha(String originalColor, double alpha) {
+        long alphaFixed = Math.round(alpha * 255);
+        String alphaHex = Long.toHexString(alphaFixed);
+        if (alphaHex.length() == 1) {
+            alphaHex = "0" + alphaHex;
+        }
+        originalColor = originalColor.replace("#", "#" + alphaHex);
+
+
+        return originalColor;
+    }
+
+    public void tintWidget(View view, int color) {
+        Drawable wrappedDrawable = DrawableCompat.wrap(view.getBackground());
+        DrawableCompat.setTint(wrappedDrawable.mutate(), color);
+        view.setBackground(wrappedDrawable);
+    }
+
+    public void setCursorColor(EditText view, @ColorInt int color) {
+        try {
+            // Get the cursor resource id
+            Field field = TextView.class.getDeclaredField("mCursorDrawableRes");
+            field.setAccessible(true);
+            int drawableResId = field.getInt(view);
+
+            // Get the editor
+            field = TextView.class.getDeclaredField("mEditor");
+            field.setAccessible(true);
+            Object editor = field.get(view);
+
+            // Get the drawable and set a color filter
+            Drawable drawable = ContextCompat.getDrawable(view.getContext(), drawableResId);
+            drawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            Drawable[] drawables = {drawable, drawable};
+
+            // Set the drawables
+            field = editor.getClass().getDeclaredField("mCursorDrawable");
+            field.setAccessible(true);
+            field.set(editor, drawables);
+        } catch (Exception ignored) {
+        }
+    }
+
+    protected void applyTheme(){
+        ThemeStore themeStore = ThemeStore.getInstance(this);
+        setStatusBarColor(themeStore.getPrimaryDarkColor());
+        setNavigationBarColor(this, getWindow().getDecorView(), themeStore.getPrimaryColor(), 300);
+        if(toolbar!=null){
+            toolbar.setBackgroundColor(themeStore.getPrimaryColor());
+            toolbar.setToolbarIconColor(themeStore.getPrimaryColor());
+        } else {
+            Objects.requireNonNull(getSupportActionBar()).setBackgroundDrawable(new ColorDrawable(themeStore.getPrimaryColor()));
+            getSupportActionBar().setTitle(Html.fromHtml("<font color='"+String.format("#%06X", 0xFFFFFF & themeStore.getPrimaryTextColor())+"'>"+getSupportActionBar().getTitle()+"</font>"));
+        }
+    }
 
     public void checkForUpdate(Settings settings, TextView subTitle, ProgressBar progressBar) {
         new Thread(() -> {
@@ -106,6 +184,32 @@ public class Utils extends AppCompatActivity {
         //overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
+    public int getNavigationBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
+    public void setMargins (View v, int l, int t, int r, int b) {
+        if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            p.setMargins(l, t, r, b);
+            v.requestLayout();
+        }
+    }
+
     public String cutString(String string, int cutAt){
         if(string.length()<cutAt)
             return string;
@@ -118,13 +222,28 @@ public class Utils extends AppCompatActivity {
 
     public final static String COLORED_NAVIGATIONBAR = "colored_navigationbar";
 
-    public static HashMap<String, SearchItem> appsList;
+    public static HashMap<String, SearchItem> appsList = new HashMap<>();
+    public static SearchItem currentApp;
 
     public Bundle checkExtra(Bundle extra){
         if (extra == null) finish();
         assert extra != null;
         if (extra.size() > 1) finish();
         return extra;
+    }
+
+    public static List<ApplicationInfo> getInstalledApps(@NonNull Context context){
+        final PackageManager pm = context.getPackageManager();
+        return pm.getInstalledApplications(PackageManager.GET_META_DATA);
+    }
+
+    public static ApplicationInfo getApplicationInfo(Context context, String packageName){
+        ApplicationInfo info = null;
+        try{
+            info = context.getPackageManager().getApplicationInfo(packageName, 0);
+        } catch (Exception ignored){
+        }
+        return info;
     }
 
     public Parcelable checkExtraKey(Bundle extra, String key){
@@ -138,8 +257,31 @@ public class Utils extends AppCompatActivity {
         return findViewById(R.id.app_bar);
     }
 
-    public static SharedPreferences getSettings(Context context){
+    public static SharedPreferences getSettings(@NonNull Context context){
         return context.getSharedPreferences("settings", MODE_PRIVATE);
+    }
+
+    public <V extends View> Collection<V> findChildrenByClass(Class<V> clazz, ViewGroup... viewGroups) {
+        Collection<V> collection = new ArrayList<>();
+        for(ViewGroup viewGroup : viewGroups)
+            collection.addAll(gatherChildrenByClass(viewGroup, clazz, new ArrayList<V>()));
+        return collection;
+    }
+
+    private <V extends View> Collection<V> gatherChildrenByClass(@NonNull ViewGroup viewGroup, Class<V> clazz, @NonNull Collection<V> childrenFound) {
+
+        for (int i = 0; i < viewGroup.getChildCount(); i++)
+        {
+            final View child = viewGroup.getChildAt(i);
+            if (clazz.isAssignableFrom(child.getClass())) {
+                childrenFound.add((V)child);
+            }
+            if (child instanceof ViewGroup) {
+                gatherChildrenByClass((ViewGroup) child, clazz, childrenFound);
+            }
+        }
+
+        return childrenFound;
     }
 
     public void importSettings(Map<String, Object> settings){
@@ -167,7 +309,7 @@ public class Utils extends AppCompatActivity {
         return new JSONObject(settings).toString();
     }
 
-    public static void setSettings(Context context, SharedPreferences settings){
+    public static void setSettings(@NonNull Context context, @NonNull SharedPreferences settings){
         Map<String, ?> objectMap = settings.getAll();
         SharedPreferences.Editor prefs = getSettings(context).edit();
         for(String key : objectMap.keySet()){
@@ -186,6 +328,32 @@ public class Utils extends AppCompatActivity {
                 prefs.putStringSet(key, (Set<String>) obj);
         }
         prefs.apply();
+    }
+
+    public boolean serverOnline(){
+        try {
+            URL url = new URL(Config.API_URL);
+            SocketAddress sockaddr = new InetSocketAddress(InetAddress.getByName(url.getHost()), 80);
+            Socket sock = new Socket();
+            int timeoutMs = 2000;
+            sock.connect(sockaddr, timeoutMs);
+            return true;
+        } catch(IOException ignored) {
+        }
+        return false;
+    }
+
+    public boolean haveConnection(){
+        try {
+            URL url = new URL("http://www.google.de");
+            SocketAddress sockaddr = new InetSocketAddress(InetAddress.getByName(url.getHost()), 80);
+            Socket sock = new Socket();
+            int timeoutMs = 2000;
+            sock.connect(sockaddr, timeoutMs);
+            return true;
+        } catch(IOException ignored) {
+        }
+        return false;
     }
 
     public static void setNavigationBarColor(Activity activity, View view, @ColorInt int color, int duration){
@@ -213,6 +381,23 @@ public class Utils extends AppCompatActivity {
                 else
                     view.setSystemUiVisibility(View.VISIBLE);
                 window.setNavigationBarColor(c);
+            });
+            animator.start();
+        }
+    }
+
+    public static void setStatusBarColor(Activity activity, View view, @ColorInt int color, int duration){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            Window window = activity.getWindow();
+            ValueAnimator animator = ValueAnimator.ofObject(new ArgbEvaluator(), window.getStatusBarColor(), color);
+            animator.setDuration(duration);
+            animator.addUpdateListener(animation -> {
+                int c = (int) animation.getAnimatedValue();
+                if (isColorBright(c))
+                    view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                else
+                    view.setSystemUiVisibility(View.VISIBLE);
+                window.setStatusBarColor(c);
             });
             animator.start();
         }
@@ -359,23 +544,76 @@ public class Utils extends AppCompatActivity {
     }
 
     public void checkForOldAppStore(){
-        if(appInstalled(this, oldAppPackageName)){
-            DialogInterface.OnClickListener onClickListener = (dialog, which) -> {
-                switch (which){
-                    case DialogInterface.BUTTON_POSITIVE:
-                        Intent intent = new Intent(Intent.ACTION_DELETE);
-                        intent.setData(Uri.parse("package:"+oldAppPackageName));
-                        startActivity(intent);
-                        break;
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        break;
-                }
-            };
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage(getString(R.string.oldAppStoreFound));
-            builder.setPositiveButton(android.R.string.yes, onClickListener);
-            builder.setNegativeButton(android.R.string.no, onClickListener);
-            builder.show();
+        if(!getSettings(this).getBoolean("old_appstore", false)) {
+            if (appInstalled(this, oldAppPackageName)) {
+                DialogInterface.OnClickListener onClickListener = (dialog, which) -> {
+                    switch (which) {
+                        case DialogInterface.BUTTON_POSITIVE:
+                            Intent intent = new Intent(Intent.ACTION_DELETE);
+                            intent.setData(Uri.parse("package:" + oldAppPackageName));
+                            startActivity(intent);
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                    }
+                };
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage(getString(R.string.oldAppStoreFound));
+                builder.setPositiveButton(android.R.string.yes, onClickListener);
+                builder.setNegativeButton(android.R.string.no, onClickListener);
+                builder.show();
+            }
+        }
+    }
+
+    public boolean isRooted() {
+
+        String buildTags = android.os.Build.TAGS;
+        if (buildTags != null && buildTags.contains("test-keys")) {
+            return true;
+        }
+
+        try {
+            File file = new File("/system/app/Superuser.apk");
+            if (file.exists()) {
+                return true;
+            }
+        } catch (Exception e1) {
+        }
+
+        return runCommand("/system/xbin/which su")
+                || runCommand("/system/bin/which su") || runCommand("which su");
+    }
+
+    public boolean runCommand(String command) {
+        logs=new Logs(this);
+        boolean executedSuccesfully;
+        try {
+            Runtime.getRuntime().exec(command);
+            executedSuccesfully = true;
+        } catch (Exception e) {
+            logs.info("ERROR", e.getMessage());
+            executedSuccesfully = false;
+        }
+        return executedSuccesfully;
+    }
+
+    public void executeCommand(String cmds) {
+        logs=new Logs(this);
+        logs.info("COMMAND", cmds);
+        try {
+            Process process = Runtime.getRuntime().exec("su");
+            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+
+            os.writeBytes(cmds + "\n");
+
+            os.writeBytes("exit\n");
+            os.flush();
+            os.close();
+
+            process.waitFor();
+        }catch (Exception ignored){
+
         }
     }
 
@@ -497,5 +735,18 @@ public class Utils extends AppCompatActivity {
 
     public static void n(Object o){
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if(toolbar!=null)
+            toolbar.setToolbarIconColor(ThemeStore.getInstance(this).getPrimaryColor());
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }

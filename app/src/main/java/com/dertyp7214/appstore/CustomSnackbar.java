@@ -56,6 +56,11 @@ public class CustomSnackbar {
         return this;
     }
 
+    public CustomSnackbar setCallBack(Snackbar.Callback callBack){
+        snackbar.addCallback(callBack);
+        return this;
+    }
+
     public void show(){
         snackbar.show();
     }

@@ -22,7 +22,6 @@ import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.items.SearchItem;
 import com.dertyp7214.appstore.screens.AppScreen;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class AppAdapter extends RecyclerView.Adapter<AppAdapter.ViewHolder> {
@@ -48,12 +47,8 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.ViewHolder> {
         holder.appTitle.setText(item.getAppTitle());
         holder.appIcon.setImageDrawable(item.getAppIcon());
 
-        HashMap<String, SearchItem> searchItemHashMap = new HashMap<>();
-
         for(SearchItem searchItem : appItemList)
-            searchItemHashMap.put(searchItem.getId(), searchItem);
-
-        Utils.appsList = searchItemHashMap;
+            Utils.appsList.put(searchItem.getId(), searchItem);
 
         holder.view.setOnClickListener(v -> {
             Pair<View, String> icon = Pair.create(holder.appIcon, "icon");

@@ -5,15 +5,21 @@
 
 package com.dertyp7214.appstore.screens;
 
+import android.animation.LayoutTransition;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.transition.TransitionManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -23,6 +29,9 @@ import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.dertyp7214.appstore.Config;
 import com.dertyp7214.appstore.CustomSnackbar;
@@ -31,7 +40,7 @@ import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.SearchAdapter;
-import com.dertyp7214.appstore.components.CustomToolbar;
+import com.dertyp7214.appstore.fragments.FragmentAbout;
 import com.dertyp7214.appstore.fragments.FragmentAppGroups;
 import com.dertyp7214.appstore.fragments.TabFragment;
 import com.dertyp7214.appstore.items.SearchItem;
@@ -52,7 +61,8 @@ public class MainActivity extends Utils
     private Thread thread;
     private int id = 0;
     private Random random;
-    private CustomToolbar toolbar;
+    private ThemeStore themeStore;
+    private TabLayout tabLayout;
 
     private List<SearchItem> appItems = new ArrayList<>();
 
@@ -66,18 +76,39 @@ public class MainActivity extends Utils
         overridePendingTransition(R.anim.fast_out_extra_slow_in, R.anim.fast_out_extra_slow_in);
 
         random = new Random();
+        themeStore = ThemeStore.getInstance(this);
 
         checkAppDir();
         checkPermissions();
         checkForOldAppStore();
+
+        toolbar.setBackgroundColor(ThemeStore.getInstance(this).getPrimaryColor());
+        toolbar.setPadding(0, getStatusBarHeight(), 0, 0);
+
+        findViewById(R.id.nav_view).setPadding(0, 0, 0, getNavigationBarHeight());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             setNavigationBarColor(this, toolbar, ThemeStore.getInstance(this).getPrimaryColor(), 300);
         }
 
         fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> new CustomSnackbar(MainActivity.this).make(view, "Replace with your own action", CustomSnackbar.LENGTH_LONG)
-                .setAction("Action", null).show());
+        int fabMargin = (int) getResources().getDimension(R.dimen.fab_margin);
+        fab.setColorFilter(Utils.isColorBright(themeStore.getAccentColor()) ? Color.BLACK : Color.WHITE);
+        fab.setBackgroundTintList(ColorStateList.valueOf(themeStore.getAccentColor()));
+        fab.setOnClickListener(view -> new CustomSnackbar(MainActivity.this, getWindow().getNavigationBarColor()).make(view, "Replace with your own action", CustomSnackbar.LENGTH_LONG)
+                .setAction("Action", null).setCallBack(new Snackbar.Callback() {
+                    @Override
+                    public void onDismissed(Snackbar snackbar, int event) {
+                        fab.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onShown(Snackbar snackbar) {
+                        fab.setVisibility(View.INVISIBLE);
+                    }
+                }).show());
+
+        setMargins(fab, fabMargin, fabMargin, fabMargin, fabMargin+getNavigationBarHeight());
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -90,17 +121,22 @@ public class MainActivity extends Utils
 
         ViewPager viewPager = findViewById(R.id.pager);
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        addFragment(new FragmentAppGroups(this));
+        addFragment(new FragmentAppGroups());
+        adapter.addFragment(new FragmentAbout(), getString(R.string.mal_title_about));
 
         viewPager.setAdapter(adapter);
 
-        TabLayout tabLayout = findViewById(R.id.tabBar);
+        tabLayout = findViewById(R.id.tabBar);
         tabLayout.setupWithViewPager(viewPager);
+        tabLayout.setBackgroundColor(themeStore.getPrimaryColor());
+        tabLayout.setSelectedTabIndicatorColor(themeStore.getInvertedPrimaryColor());
+        tabLayout.setTabTextColors(themeStore.getPrimaryTextColor(), themeStore.getPrimaryTextColor());
 
         searchAdapter = new SearchAdapter(this, appItems);
 
         RecyclerView searchRecView = findViewById(R.id.search_view);
         searchRecView.setLayoutManager(new LinearLayoutManager(this));
+        searchRecView.setPadding(0, 0, 0, getNavigationBarHeight());
         searchRecView.setAdapter(searchAdapter);
 
     }
@@ -142,7 +178,7 @@ public class MainActivity extends Utils
     }
 
     private void addFragment(TabFragment fragment){
-        adapter.addFragment(fragment, fragment.getName());
+        adapter.addFragment(fragment, fragment.getName(this));
     }
 
     @Override
@@ -155,6 +191,7 @@ public class MainActivity extends Utils
             View content = findViewById(R.id.content);
             searchView.setVisibility(View.INVISIBLE);
             content.setVisibility(View.VISIBLE);
+            tabLayout.setVisibility(View.VISIBLE);
         } else {
             super.onBackPressed();
         }
@@ -162,14 +199,29 @@ public class MainActivity extends Utils
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+
         getMenuInflater().inflate(R.menu.search_menu, menu);
 
+        int iconTint = Utils.isColorBright(themeStore.getPrimaryColor()) ? Color.BLACK : Color.WHITE;
+
         MenuItem searchMenu = menu.findItem(R.id.action_search);
+        searchMenu.getIcon().setTint(iconTint);
 
         SearchView searchView = (SearchView) searchMenu.getActionView();
+        ((ImageView) searchView.findViewById(R.id.search_close_btn)).setImageTintList(ColorStateList.valueOf(iconTint));
         searchView.setQueryHint(getString(R.string.search));
         searchView.setIconifiedByDefault(true);
+
+        for (TextView textView : findChildrenByClass(TextView.class, searchView)) {
+            textView.setTextColor(iconTint);
+            textView.setHintTextColor(iconTint);
+        }
+
+        for(ImageView imageButton : findChildrenByClass(ImageView.class, searchView))
+            imageButton.setColorFilter(iconTint);
+
+        LinearLayout searchBar = searchView.findViewById(R.id.search_bar);
+        searchBar.setLayoutTransition(new LayoutTransition());
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -192,6 +244,7 @@ public class MainActivity extends Utils
                 View searchLayout = findViewById(R.id.searchLayout);
                 View content = findViewById(R.id.content);
                 content.setVisibility(View.VISIBLE);
+                tabLayout.setVisibility(View.VISIBLE);
                 searchLayout.setVisibility(View.INVISIBLE);
                 setTimeOut(100, () -> fab.setVisibility(View.VISIBLE));
             }
@@ -201,20 +254,28 @@ public class MainActivity extends Utils
                 View searchLayout = findViewById(R.id.searchLayout);
                 View content = findViewById(R.id.content);
                 content.setVisibility(View.INVISIBLE);
+                tabLayout.setVisibility(View.GONE);
                 searchLayout.setVisibility(View.VISIBLE);
                 fab.setVisibility(View.INVISIBLE);
             }
         });
 
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+
         int id = item.getItemId();
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+
+        switch(id) {
+            case R.id.action_search:
+                TransitionManager.beginDelayedTransition(findViewById(R.id.toolbar));
+                MenuItemCompat.expandActionView(item);
+                return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -230,7 +291,7 @@ public class MainActivity extends Utils
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
-
+            startActivity(this, ModulesScreen.class);
         } else if (id == R.id.nav_manage) {
             startActivity(this, SettingsScreen.class);
         } else if (id == R.id.nav_share) {

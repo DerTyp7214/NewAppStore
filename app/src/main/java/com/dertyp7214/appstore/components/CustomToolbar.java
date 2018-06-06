@@ -5,28 +5,23 @@
 
 package com.dertyp7214.appstore.components;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
-import android.support.v7.view.menu.ActionMenuItemView;
-import android.support.v7.widget.ActionMenuView;
-import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class CustomToolbar extends Toolbar {
 
@@ -42,64 +37,39 @@ public class CustomToolbar extends Toolbar {
         super(context, attrs, defStyleAttr);
     }
 
-    public void setToolbarIconColor(@ColorInt int toolbarColor, Activity activity){
-        if(Utils.isColorBright(toolbarColor))
-            colorizeToolbar(Color.BLACK, activity);
-        else
-            colorizeToolbar(Color.WHITE, activity);
-    }
-
-    private void colorizeToolbar(int toolbarIconsColor, Activity activity) {
-        Toolbar toolbarView = this;
-        final PorterDuffColorFilter colorFilter = new PorterDuffColorFilter(toolbarIconsColor, PorterDuff.Mode.MULTIPLY);
-        for(int i = 0; i < toolbarView.getChildCount(); i++) {
-            final View v = toolbarView.getChildAt(i);
-            if(v instanceof ImageButton) {
-                ((ImageButton)v).getDrawable().setColorFilter(colorFilter);
-            }
-            if(v instanceof ActionMenuView) {
-                for(int j = 0; j < ((ActionMenuView)v).getChildCount(); j++) {
-                    final View innerView = ((ActionMenuView)v).getChildAt(j);
-                    if(innerView instanceof ActionMenuItemView) {
-                        int drawablesCount = ((ActionMenuItemView)innerView).getCompoundDrawables().length;
-                        for(int k = 0; k < drawablesCount; k++) {
-                            if(((ActionMenuItemView)innerView).getCompoundDrawables()[k] != null) {
-                                final int finalK = k;
-                                innerView.post(() -> ((ActionMenuItemView) innerView).getCompoundDrawables()[finalK].setColorFilter(colorFilter));
-                            }
-                        }
-                    }
-                }
-            }
-
-            toolbarView.setTitleTextColor(toolbarIconsColor);
-            toolbarView.setSubtitleTextColor(toolbarIconsColor);
-
-            setOverflowButtonColor(activity, colorFilter);
+    public void setToolbarIconColor(@ColorInt int toolbarColor){
+        int tintColor = Utils.isColorBright(toolbarColor) ? Color.BLACK : Color.WHITE;
+        for(ImageView imageButton : findChildrenByClass(ImageView.class, this)) {
+            Drawable drawable = imageButton.getDrawable();
+            drawable.setColorFilter(tintColor, PorterDuff.Mode.SRC_ATOP);
+            imageButton.setImageDrawable(drawable);
+        }
+        for (TextView textView : findChildrenByClass(TextView.class, this)) {
+            textView.setTextColor(tintColor);
+            textView.setHintTextColor(tintColor);
         }
     }
 
-    private void setOverflowButtonColor(final Activity activity, final PorterDuffColorFilter colorFilter) {
-        @SuppressLint("PrivateResource") final String overflowDescription = activity.getString(R.string.abc_action_menu_overflow_description);
-        final ViewGroup decorView = (ViewGroup) activity.getWindow().getDecorView();
-        final ViewTreeObserver viewTreeObserver = decorView.getViewTreeObserver();
-        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                final ArrayList<View> outViews = new ArrayList<>();
-                decorView.findViewsWithText(outViews, overflowDescription,
-                        View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
-                if (outViews.isEmpty()) {
-                    return;
-                }
-                AppCompatImageView overflow=(AppCompatImageView) outViews.get(0);
-                overflow.setColorFilter(colorFilter);
-                removeOnGlobalLayoutListener(decorView,this);
-            }
-        });
+    private <V extends View> Collection<V> findChildrenByClass(Class<V> clazz, ViewGroup... viewGroups) {
+        Collection<V> collection = new ArrayList<>();
+        for(ViewGroup viewGroup : viewGroups)
+            collection.addAll(gatherChildrenByClass(viewGroup, clazz, new ArrayList<V>()));
+        return collection;
     }
 
-    private void removeOnGlobalLayoutListener(View v, ViewTreeObserver.OnGlobalLayoutListener listener) {
-        v.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
+    private <V extends View> Collection<V> gatherChildrenByClass(ViewGroup viewGroup, Class<V> clazz, Collection<V> childrenFound) {
+
+        for (int i = 0; i < viewGroup.getChildCount(); i++)
+        {
+            final View child = viewGroup.getChildAt(i);
+            if (clazz.isAssignableFrom(child.getClass())) {
+                childrenFound.add((V)child);
+            }
+            if (child instanceof ViewGroup) {
+                gatherChildrenByClass((ViewGroup) child, clazz, childrenFound);
+            }
+        }
+
+        return childrenFound;
     }
 }

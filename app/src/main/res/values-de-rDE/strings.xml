@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2018.
+  ~ Created by Josua Lengwenath
+  -->
+
+<resources>
+    <string name="payment_lang">EUR</string>
+    <string name="currency">€</string>
+</resources>

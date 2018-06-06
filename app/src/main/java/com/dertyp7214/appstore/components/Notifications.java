@@ -52,7 +52,7 @@ public class Notifications {
                 .setLargeIcon(icon)
                 .setContentTitle(title)
                 .setContentText(content)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(progress ? NotificationCompat.PRIORITY_MIN : NotificationCompat.PRIORITY_LOW)
                 .setSubText(subTitle);
         if(progress) {
             builder.setSubText("0%");
@@ -61,7 +61,7 @@ public class Notifications {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String groupId = context.getString(R.string.app_name)+"_id";
             CharSequence groupName = context.getString(R.string.app_name);
-            NotificationChannel channel = new NotificationChannel(groupId, groupName, NotificationManager.IMPORTANCE_LOW);
+            NotificationChannel channel = new NotificationChannel(groupId, groupName, progress ? NotificationManager.IMPORTANCE_NONE : NotificationManager.IMPORTANCE_LOW);
             notificationManager.createNotificationChannel(channel);
             builder.setChannelId(groupId);
         }

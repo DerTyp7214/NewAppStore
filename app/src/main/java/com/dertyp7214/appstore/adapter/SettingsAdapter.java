@@ -6,8 +6,11 @@
 package com.dertyp7214.appstore.adapter;
 
 import android.app.Activity;
+import android.content.res.ColorStateList;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -25,6 +28,7 @@ import com.dertyp7214.appstore.settings.SettingsCheckBox;
 import com.dertyp7214.appstore.settings.SettingsColor;
 import com.dertyp7214.appstore.settings.SettingsPlaceholder;
 import com.dertyp7214.appstore.settings.SettingsSwitch;
+import com.hacker.lib.colorlib.Color;
 
 import java.util.List;
 
@@ -55,6 +59,23 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             super(view);
             title = view.findViewById(R.id.text);
             box = view.findViewById(R.id.box);
+
+            ThemeStore store = ThemeStore.getInstance(context);
+
+            ColorStateList colorStateList = new ColorStateList(
+                    new int[][] {
+                            new int[] { -android.R.attr.state_checked },
+                            new int[] {  android.R.attr.state_checked },
+                            new int[] {}
+                    },
+                    new int[] {
+                            Color.GRAY,
+                            store.getAccentColor(),
+                            Color.LTGRAY
+                    }
+            );
+
+            title.setButtonTintList(colorStateList);
         }
     }
 
@@ -66,6 +87,8 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             super(view);
             title = view.findViewById(R.id.text);
             box = view.findViewById(R.id.box);
+
+            setSwitchColor(title);
         }
     }
 
@@ -95,6 +118,59 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public SettingsAdapter(List<Settings> itemList, Activity context) {
         this.itemList = itemList;
         this.context = context;
+    }
+
+    private void setSwitchColor(Switch s){
+        ThemeStore store = ThemeStore.getInstance(context);
+
+        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP){
+            s.getThumbDrawable().setColorFilter(store.getAccentColor(), PorterDuff.Mode.MULTIPLY);
+            s.getTrackDrawable().setColorFilter(store.getAccentColor(), PorterDuff.Mode.MULTIPLY);
+        }
+        if(Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1){
+            ColorStateList buttonStates = new ColorStateList(
+                    new int[][]{
+                            new int[]{-android.R.attr.state_enabled},
+                            new int[]{android.R.attr.state_checked},
+                            new int[]{}
+                    },
+                    new int[]{
+                            Color.LTGRAY,
+                            store.getAccentColor(),
+                            Color.GRAY
+                    }
+            );
+            s.setButtonTintList(buttonStates);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            ColorStateList thumbStates = new ColorStateList(
+                    new int[][]{
+                            new int[]{-android.R.attr.state_enabled},
+                            new int[]{android.R.attr.state_checked},
+                            new int[]{}
+                    },
+                    new int[]{
+                            Color.LTGRAY,
+                            store.getAccentColor(),
+                            Color.GRAY
+                    }
+            );
+            s.setThumbTintList(thumbStates);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                ColorStateList trackStates = new ColorStateList(
+                        new int[][]{
+                                new int[]{-android.R.attr.state_enabled},
+                                new int[]{}
+                        },
+                        new int[]{
+                                Color.GRAY,
+                                Color.LTGRAY
+                        }
+                );
+                s.setTrackTintList(trackStates);
+                s.setTrackTintMode(PorterDuff.Mode.OVERLAY);
+            }
+        }
     }
 
     @NonNull

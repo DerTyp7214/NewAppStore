@@ -5,17 +5,28 @@
 
 package com.dertyp7214.appstore.screens;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.support.annotation.ColorInt;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.dertyp7214.appstore.Config;
@@ -27,31 +38,47 @@ import com.dertyp7214.appstore.components.AppBarStateChangeListener;
 import com.dertyp7214.appstore.components.CustomAppBarLayout;
 import com.dertyp7214.appstore.components.CustomToolbar;
 import com.dertyp7214.appstore.components.Notifications;
+import com.dertyp7214.appstore.fragments.FragmentAppInfo;
+import com.dertyp7214.appstore.fragments.FragmentChangeLogs;
+import com.dertyp7214.appstore.interfaces.MyInterface;
 import com.dertyp7214.appstore.items.SearchItem;
 
 import java.io.File;
 import java.util.Objects;
 import java.util.Random;
 
-public class AppScreen extends Utils {
+public class AppScreen extends Utils implements View.OnClickListener, MyInterface {
 
     @ColorInt
     private int dominantColor;
     private FloatingActionButton fab;
     private SearchItem searchItem;
     private Random random = new Random();
+    private ThemeStore themeStore;
+    private Button uninstall, open;
+    private boolean installed;
+    private String version;
+    private CollapsingToolbarLayout collapsingToolbarLayout;
+
+    public void onPostExecute() {
+        Bundle extra = getIntent().getExtras();
+        if(searchItem==null)
+            searchItem = Utils.appsList.get(checkExtra(extra).getString("id"));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_screen);
         CustomToolbar toolbar = findViewById(R.id.toolbar);
-        CollapsingToolbarLayout collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
+        collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
         setSupportActionBar(toolbar);
 
-        Bundle extra = getIntent().getExtras();
+        new MyTask(this).execute();
+        themeStore = ThemeStore.getInstance(AppScreen.this);
 
-        searchItem = Utils.appsList.get(checkExtra(extra).getString("id"));
+        uninstall = findViewById(R.id.btn_uninstall);
+        open = findViewById(R.id.btn_open);
 
         dominantColor = Palette.from(Utils.drawableToBitmap(searchItem.getAppIcon()))
                 .generate()
@@ -65,25 +92,35 @@ public class AppScreen extends Utils {
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         ((ImageView) findViewById(R.id.app_icon)).setImageDrawable(searchItem.getAppIcon());
-        collapsingToolbarLayout.setCollapsedTitleTextColor(ThemeStore.getInstance(this).getPrimaryTextColor());
+        collapsingToolbarLayout.setCollapsedTitleTextColor(themeStore.getPrimaryTextColor());
         collapsingToolbarLayout.setExpandedTitleColor(Utils.isColorBright(dominantColor) ? Color.BLACK : Color.WHITE);
+        collapsingToolbarLayout.setContentScrimColor(themeStore.getPrimaryColor());
+        collapsingToolbarLayout.setStatusBarScrimColor(themeStore.getPrimaryDarkColor());
+
+        setButtonColor(themeStore.getAccentColor(), open, uninstall);
 
         appBarLayout.addOnOffsetChangedListener(new AppBarStateChangeListener() {
             @Override
             public void onStateChanged(AppBarLayout appBarLayout, State state) {
-                switch (state){
+                switch (state) {
                     case EXPANDED:
-                        toolbar.setToolbarIconColor(dominantColor, AppScreen.this);
+                        setColors(
+                                toolbar,
+                                appBarLayout,
+                                dominantColor);
                         navigationBarColor(AppScreen.this, appBarLayout, dominantColor, 300);
-                        if(isColorBright(dominantColor) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                        if (isColorBright(dominantColor) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
                         else
                             getWindow().getDecorView().setSystemUiVisibility(View.VISIBLE);
                         break;
                     case COLLAPSED:
-                        toolbar.setToolbarIconColor(ThemeStore.getInstance(AppScreen.this).getPrimaryColor(), AppScreen.this);
-                        navigationBarColor(AppScreen.this, appBarLayout, ThemeStore.getInstance(AppScreen.this).getPrimaryColor(), 300);
-                        if(isColorBright(ThemeStore.getInstance(AppScreen.this).getPrimaryColor()) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                        setColors(
+                                toolbar,
+                                appBarLayout,
+                                themeStore.getPrimaryColor());
+                        navigationBarColor(AppScreen.this, appBarLayout, themeStore.getPrimaryColor(), 300);
+                        if (isColorBright(themeStore.getPrimaryDarkColor()) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
                         else
                             getWindow().getDecorView().setSystemUiVisibility(View.VISIBLE);
@@ -92,32 +129,132 @@ public class AppScreen extends Utils {
             }
         });
 
+        if (appInstalled(this, searchItem.getId())){
+            installed = true;
+            open.setText(getString(R.string.text_open));
+            uninstall.setText(getString(R.string.text_uninstall));
+            uninstall.setVisibility(View.VISIBLE);
+            uninstall.setOnClickListener(this);
+            open.setOnClickListener(this);
+            checkUpdates();
+        } else {
+            installed = false;
+            open.setText(getString(R.string.text_install));
+            uninstall.setVisibility(View.INVISIBLE);
+            open.setOnClickListener(this);
+        }
+
         fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> {
-            downloadApp(new DownloadListener() {
-                @Override
-                public void started() {
-                    new CustomSnackbar(AppScreen.this, getWindow().getNavigationBarColor()).make(view, "Download started", CustomSnackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                }
+        fab.setColorFilter(Utils.isColorBright(themeStore.getAccentColor()) ? Color.BLACK : Color.WHITE);
+        fab.setBackgroundTintList(ColorStateList.valueOf(themeStore.getAccentColor()));
+        fab.setVisibility(View.GONE);
+        fab.setOnClickListener(this::downloadApp);
 
-                @Override
-                public void finished(File file) {
+    }
+
+    private void checkUpdates(){
+        new Thread(() -> {
+            String serverVersion = getServerVersion();
+            String localVersion = getLocalVersion();
+            Log.d("VERSIONS", "Server: "+serverVersion+"\nLocal: "+localVersion);
+            if(!serverVersion.equals(localVersion) && !serverVersion.equals("0")) {
+                runOnUiThread(() -> {
+                    uninstall.setText(getString(R.string.text_update));
+                    uninstall.setOnClickListener(this::downloadApp);
+                });
+            }
+        }).start();
+    }
+
+    private String getServerVersion(){
+        if(version==null)
+            version = getWebContent(Config.API_URL+"/apps/list.php?version="+searchItem.getId());
+        return version;
+    }
+
+    private String getLocalVersion(){
+        try {
+            PackageInfo pinfo = getPackageManager().getPackageInfo(searchItem.getId(), 0);
+            return pinfo.versionName;
+        }catch (Exception e){
+            return getServerVersion();
+        }
+    }
+
+    private void downloadApp(View view){
+        downloadApp(new DownloadListener() {
+            @Override
+            public void started() {
+                new CustomSnackbar(AppScreen.this, getWindow().getNavigationBarColor()).make(view, "Download started", CustomSnackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+
+            @Override
+            public void finished(File file) {
+                if (getSettings(AppScreen.this).getBoolean("root_install", false)) {
+                    executeCommand("rm -rf /data/local/tmp/app.apk");
+                    executeCommand("mv " + file.getAbsolutePath() + " /data/local/tmp/app.apk");
+                    executeCommand("pm install -r /data/local/tmp/app.apk\n");
+                } else
                     Utils.install_apk(AppScreen.this, file);
-                }
+            }
 
-                @Override
-                public void error(String errorMessage) {
+            @Override
+            public void error(String errorMessage) {
 
-                }
-            });
+            }
         });
+    }
+
+    private void setButtonColor(@ColorInt int color, Button button, Button button2){
+        GradientDrawable bg = (GradientDrawable) getResources().getDrawable(R.drawable.button_border);
+        bg.setStroke(3, color);
+        button2.setBackgroundDrawable(bg);
+        button2.setTextColor(color);
+        button.setTextColor(Utils.isColorBright(color)?Color.BLACK:Color.WHITE);
+        button.getBackground().setTint(color);
+    }
+
+    private void setColors(CustomToolbar customToolbar, AppBarLayout customAppBarLayout, @ColorInt int color){
+        customAppBarLayout.setBackgroundColor(color);
+        customToolbar.setToolbarIconColor(color);
     }
 
     private void navigationBarColor(Activity activity, AppBarLayout appBarLayout, @ColorInt int color, int duration){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             setNavigationBarColor(activity, appBarLayout, color, duration);
         }
+    }
+
+    private void statusBarColor(Activity activity, AppBarLayout appBarLayout, @ColorInt int color, int duration){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            setStatusBarColor(activity, appBarLayout, color, duration);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.btn_open:
+                if(installed)
+                    openApp();
+                else
+                    downloadApp(v);
+                break;
+            case R.id.btn_uninstall:
+                removeApp();
+        }
+    }
+
+    private void openApp(){
+        Intent intent = getPackageManager().getLaunchIntentForPackage(searchItem.getId());
+        startActivity(intent);
+    }
+
+    private void removeApp(){
+        Intent intent = new Intent(Intent.ACTION_DELETE);
+        intent.setData(Uri.parse("package:"+searchItem.getId()));
+        startActivity(intent);
     }
 
     private interface DownloadListener{
@@ -128,7 +265,9 @@ public class AppScreen extends Utils {
 
     private void downloadApp(DownloadListener downloadListener){
         new Thread(() -> {
+            Looper.prepare();
             int notiId = random.nextInt(65536);
+            int finishedNotiId = random.nextInt(65536);
             Notifications notifications = new Notifications(
                     AppScreen.this,
                     notiId,
@@ -143,13 +282,41 @@ public class AppScreen extends Utils {
             File file = new File(Environment.getExternalStorageDirectory(), ".appStore");
             File apk = download.startDownload(file, notiId, (pro) -> runOnUiThread(() -> notifications.setProgress(pro)));
             if(apk.exists()){
-                runOnUiThread(notifications::setFinished);
+                runOnUiThread(() -> {
+                    notifications.removeNotification();
+                    finishedNotification(
+                            finishedNotiId,
+                            getString(R.string.app_name)+" - "+searchItem.getAppTitle(),
+                            false).showNotification();
+                });
                 downloadListener.finished(apk);
             } else {
-                runOnUiThread(notifications::setCanceled);
+                runOnUiThread(() -> {
+                    notifications.removeNotification();
+                    finishedNotification(
+                            finishedNotiId,
+                            getString(R.string.app_name)+" - "+searchItem.getAppTitle(),
+                            true).showNotification();
+                });
                 downloadListener.error("ERROR");
             }
         }).start();
+    }
+
+    private Notifications finishedNotification(int id, String title, boolean error){
+        Notifications notifications = new Notifications(
+                AppScreen.this,
+                id,
+                title,
+                title,
+                "",
+                null,
+                false);
+        if(error)
+            notifications.setCanceled("ERROR");
+        else
+            notifications.setFinished();
+        return notifications;
     }
 
     @Override
@@ -175,5 +342,35 @@ public class AppScreen extends Utils {
         interface DownloadState{
             void state(int percentage);
         }
+    }
+
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        super.onAttachFragment(fragment);
+        onPostExecute();
+        if(fragment instanceof FragmentChangeLogs){
+            FragmentChangeLogs changeLogs = ((FragmentChangeLogs) fragment);
+            changeLogs.getChangeLogs(searchItem);
+        } else if (fragment instanceof FragmentAppInfo){
+            FragmentAppInfo appInfo = ((FragmentAppInfo) fragment);
+            appInfo.getAppInfo(searchItem);
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class MyTask extends AsyncTask<Void, Void, Void> {
+        MyInterface myinterface;
+
+        MyTask(MyInterface mi) {
+            myinterface = mi;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            myinterface.onPostExecute();
+            return null;
+        }
+
+
     }
 }

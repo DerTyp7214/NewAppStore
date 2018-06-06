@@ -5,14 +5,17 @@
 
 package com.dertyp7214.appstore;
 
+import org.json.JSONException;
+
 public class JSONParser {
 
-    private final String json;
+    private SimpleJSONObject jsonObject;
 
     public JSONParser(String json){
-        this.json=json;
+        try {
+            this.jsonObject=new SimpleJSONObject(json);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
-
-
-
 }

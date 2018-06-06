@@ -16,10 +16,11 @@ import android.widget.TextView;
 
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.items.AppGroupItem;
+import com.dertyp7214.appstore.items.NoConnection;
 
 import java.util.List;
 
-public class AppGroupAdapter extends RecyclerView.Adapter<AppGroupAdapter.ViewHolder> {
+public class AppGroupAdapter extends RecyclerView.Adapter<AppGroupAdapter.ViewHolderNoConnection> {
 
     private Activity context;
     private List<AppGroupItem> appGroupItemList;
@@ -31,22 +32,34 @@ public class AppGroupAdapter extends RecyclerView.Adapter<AppGroupAdapter.ViewHo
 
     @NonNull
     @Override
-    public AppGroupAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.app_group, parent, false));
+    public ViewHolderNoConnection onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        switch (viewType) {
+            case 0:
+                return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.app_group, parent, false));
+            default:
+                return new ViewHolderNoConnection(LayoutInflater.from(parent.getContext()).inflate(R.layout.no_connection, parent, false));
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull AppGroupAdapter.ViewHolder holder, int position) {
-        AppGroupItem item = appGroupItemList.get(position);
-
-        AppAdapter appAdapter = new AppAdapter(context, item.getAppList());
-        holder.recyclerView.setAdapter(appAdapter);
-
-        holder.title.setText(item.getTitle());
-
+    public void onBindViewHolder(@NonNull ViewHolderNoConnection holder, int position) {
+        switch (holder.getItemViewType()) {
+            case 0:
+                ViewHolder viewHolder = (ViewHolder) holder;
+                AppGroupItem appGroupItem = appGroupItemList.get(position);
+                AppAdapter appAdapter = new AppAdapter(context, appGroupItem.getAppList());
+                viewHolder.recyclerView.setAdapter(appAdapter);
+                viewHolder.title.setText(appGroupItem.getTitle());
+                break;
+            case 1:
+                ViewHolderNoConnection holderNoConnection = holder;
+                NoConnection item = (NoConnection) appGroupItemList.get(position);
+                holderNoConnection.title.setText(item.getTitle());
+                break;
+        }
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends ViewHolderNoConnection {
 
         RecyclerView recyclerView;
         TextView title;
@@ -62,6 +75,24 @@ public class AppGroupAdapter extends RecyclerView.Adapter<AppGroupAdapter.ViewHo
 
             title = itemView.findViewById(R.id.title);
         }
+    }
+
+    class ViewHolderNoConnection extends RecyclerView.ViewHolder {
+
+        TextView title;
+
+        ViewHolderNoConnection(View itemView) {
+            super(itemView);
+
+            title = itemView.findViewById(R.id.title);
+        }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        // Just as an example, return 0 or 2 depending on position
+        // Note that unlike in ListView adapters, types don't have to be contiguous
+        return appGroupItemList.get(position) instanceof NoConnection ? 1 : 0;
     }
 
     @Override

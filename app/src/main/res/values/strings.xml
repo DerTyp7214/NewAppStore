@@ -1,3 +1,8 @@
+<!--
+  ~ Copyright (c) 2018.
+  ~ Created by Josua Lengwenath
+  -->
+
 <resources>
     <string name="app_name">AppStore</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -35,6 +40,15 @@
     <string name="text_dark_theme">Dark Theme</string>
     <string name="text_donate">Donate</string>
     <string name="text_donate_sub">Donate me on PayPal</string>
+    <string name="text_root_install">Install Apps with root</string>
+    <string name="text_dev_mode">Dev mode</string>
+    <string name="text_style">Style</string>
+    <string name="text_color">Color</string>
+    <string name="text_open">Open</string>
+    <string name="text_install">Install</string>
+    <string name="text_uninstall">Uninstall</string>
+    <string name="text_update">Update</string>
+    <string name="text_size">Size</string>
     <string name="notification_canceled">Canceled</string>
     <string name="notification_cancel">Cancel</string>
     <string name="notification_downloading">Downloading</string>
@@ -51,6 +65,8 @@
     <string name="description">Description</string>
     <string name="versions">Versions</string>
     <string name="large_text">Text</string>
+    <string name="server_offline">Server is Offline</string>
+    <string name="no_connection">No internet connection</string>
     <string name="title_activity_settings">Settings</string>
 
     <!-- Strings related to Settings -->
@@ -124,4 +140,12 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+    <string name="askForUninstallOldAppstore">Dont ask me to remove the old AppStore</string>
+    <string name="text_pay">Pay</string>
+    <string name="text_amount">Amount</string>
+    <string name="payment_lang">USD</string>
+    <string name="text_pay_amount">Donate %s</string>
+    <string name="text_pay_content">Do you want do Donate?</string>
+    <string name="currency">$</string>
+    <string name="text_build_type">Build Type</string>
 </resources>

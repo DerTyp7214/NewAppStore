@@ -7,9 +7,9 @@ package com.dertyp7214.appstore.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,6 +23,7 @@ import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.AppGroupAdapter;
 import com.dertyp7214.appstore.items.AppGroupItem;
+import com.dertyp7214.appstore.items.NoConnection;
 import com.dertyp7214.appstore.items.SearchItem;
 
 import org.json.JSONArray;
@@ -48,10 +49,6 @@ public class FragmentAppGroups extends TabFragment {
     private Activity context;
     private List<AppGroupItem> appList = new ArrayList<>();
 
-    public FragmentAppGroups(Activity context) {
-        this.context=context;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,7 +63,6 @@ public class FragmentAppGroups extends TabFragment {
         context = getActivity();
 
         adapter = new AppGroupAdapter(context, appList);
-        getAppList(null);
 
         recyclerViewAppGroup = view.findViewById(R.id.recyclerViewAppGroup);
         recyclerViewAppGroup.setLayoutManager(new LinearLayoutManager(context));
@@ -79,50 +75,76 @@ public class FragmentAppGroups extends TabFragment {
         refreshLayout.setOnRefreshListener(() -> new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                LocalJSON.setJSON(context, Utils.getWebContent(Config.API_URL + "/apps/list.php"));
-                getAppList(refreshLayout);
+                getAppList(refreshLayout, true);
             }
         }, 1000));
+
+        refreshLayout.setRefreshing(true);
+        getAppList(refreshLayout, false);
 
         return view;
     }
 
-    private void getAppList(SwipeRefreshLayout layout) {
+    private void getAppList(SwipeRefreshLayout layout, boolean refresh) {
         new Thread(() -> {
-            try {
+            if (haveConnection()) {
+                if (serverOnline()) {
+                    try {
 
-                appList.clear();
+                        appList.clear();
 
-                if (new JSONObject(LocalJSON.getJSON(context)).getBoolean("error"))
-                    LocalJSON.setJSON(context, Utils.getWebContent(Config.API_URL + "/apps/list.php"));
+                        if (new JSONObject(LocalJSON.getJSON(context)).getBoolean("error"))
+                            LocalJSON.setJSON(context, Utils.getWebContent(Config.API_URL + "/apps/list.php"));
 
-                JSONObject object = new JSONObject(LocalJSON.getJSON(context));
+                        if(refresh)
+                            LocalJSON.setJSON(context, Utils.getWebContent(Config.API_URL + "/apps/list.php"));
 
-                JSONArray array = object.getJSONArray("apps");
+                        JSONObject object = new JSONObject(LocalJSON.getJSON(context));
 
-                List<SearchItem> appsList = new ArrayList<>();
+                        JSONArray array = object.getJSONArray("apps");
 
-                for(int i=0;i<array.length()-1;i++){
-                    JSONObject obj = array.getJSONObject(i);
-                    if(Utils.appInstalled(context, obj.getString("ID")))
-                        appsList.add(new SearchItem(obj.getString("title"), obj.getString("ID"), Utils.drawableFromUrl(context, obj.getString("image"))));
+                        List<SearchItem> appsList = new ArrayList<>();
+
+                        for (int i = 0; i < array.length() - 1; i++) {
+                            JSONObject obj = array.getJSONObject(i);
+                            if (Utils.appInstalled(context, obj.getString("ID")))
+                                appsList.add(new SearchItem(obj.getString("title"), obj.getString("ID"), Utils.drawableFromUrl(context, obj.getString("image"))));
+                        }
+
+                        appList.add(new AppGroupItem("Installed Apps", appsList));
+
+                    } catch (Exception ignored) {
+                    }
+                    context.runOnUiThread(() -> {
+                        adapter.notifyDataSetChanged();
+                        recyclerViewAppGroup.scrollBy(1, 1);
+                        recyclerViewAppGroup.scrollBy(-1, -1);
+                        if (layout != null)
+                            layout.setRefreshing(false);
+                    });
+                } else {
+                    appList.clear();
+                    appList.add(new NoConnection(getString(R.string.server_offline)));
+                    context.runOnUiThread(() -> {
+                        adapter.notifyDataSetChanged();
+                        if (layout != null)
+                            layout.setRefreshing(false);
+                    });
                 }
-
-                appList.add(new AppGroupItem("Installed Apps", appsList));
-
-            }catch (Exception ignored){
+            } else {
+                appList.clear();
+                appList.add(new NoConnection(getString(R.string.no_connection)));
+                context.runOnUiThread(() -> {
+                    adapter.notifyDataSetChanged();
+                    if (layout != null)
+                        layout.setRefreshing(false);
+                });
             }
-            context.runOnUiThread(() -> {
-                adapter.notifyDataSetChanged();
-                if(layout!=null)
-                    layout.setRefreshing(false);
-            });
-        }
-        ).start();
+        }).start();
     }
 
     @Override
-    public String getName(){
+    public String getName(Context context){
         return context.getString(R.string.home);
     }
 }
