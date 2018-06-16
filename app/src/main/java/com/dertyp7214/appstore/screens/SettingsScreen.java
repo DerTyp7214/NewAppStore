@@ -32,6 +32,7 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.dertyp7214.appstore.BuildConfig;
 import com.dertyp7214.appstore.Config;
 import com.dertyp7214.appstore.R;
+import com.dertyp7214.appstore.SecretConfig;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.SettingsAdapter;
@@ -73,8 +74,8 @@ public class SettingsScreen extends Utils implements MyInterface {
     private boolean setUp = false;
     private ThemeStore themeStore;
 
-    private static final String CONFIG_CLIENT_ID = "AZeONw87Y4ien2H92Te0VLJbyGPZiZWuocYLVeBLs1z7w1AVbeWS6jd2f6m3nILcdhZAJYbRjTbKbRNw";
-    private static final String CONFIG_CLIENT_ID_SANDBOX = "AXrlO7qCKos6IEXBrQS1Z0oPiJ0XH2DmMOgl-e1bmAVGfmq_CaFoJZwGjt1z94NJPjUFnVKuTR7rrdG9";
+    private static final String CONFIG_CLIENT_ID = SecretConfig.CONFIG_CLIENT_ID;
+    private static final String CONFIG_CLIENT_ID_SANDBOX = SecretConfig.CONFIG_CLIENT_ID_SANDBOX;
     private static final String CONFIG_ENVIRONMENT = BuildConfig.DEBUG ? PayPalConfiguration.ENVIRONMENT_SANDBOX : PayPalConfiguration.ENVIRONMENT_PRODUCTION;
 
     private static final int REQUEST_CODE_PAYMENT = 1;
