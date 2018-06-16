@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -28,6 +29,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.os.Parcelable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
@@ -152,7 +154,40 @@ public class Utils extends AppCompatActivity {
                 Utils.this.runOnUiThread(() -> {
                     progressBar.setVisibility(View.VISIBLE);
                     progressBar.setIndeterminate(true);
+                    progressBar.setProgressTintList(ColorStateList.valueOf(ThemeStore.getInstance(this).getAccentColor()));
+                    subTitle.setText(getString(R.string.text_loading));
                 });
+                Thread.sleep(300);
+                String version = getWebContent(Config.API_URL+"/apps/list.php?version="+getPackageName());
+                if(version==null)
+                    throw new InterruptedException();
+                if(!version.equals(BuildConfig.VERSION_NAME)){
+                    runOnUiThread(() -> subTitle.setText(getString(R.string.text_touch_to_update)));
+                    settings.addSettingsOnClick((name, setting, subTitle1, imageRight) -> new Thread(() -> {
+                        Looper.prepare();
+                        runOnUiThread(() -> {
+                            progressBar.setVisibility(View.VISIBLE);
+                            progressBar.setMax(100);
+                        });
+                        File file = getWebContent(Config.API_URL + Config.APK_PATH
+                                        .replace("{id}", getPackageName())
+                                        .replace("{uid}", Config.UID(this)),
+                                new File(Environment.getExternalStorageDirectory(), ".appStore"),
+                                42,
+                                progress -> runOnUiThread(() -> {
+                                    if (Build.VERSION_CODES.N <= Build.VERSION.SDK_INT)
+                                        progressBar.setProgress(progress, true);
+                                    else
+                                        progressBar.setProgress(progress);
+                                }));
+                        install_apk(this, file);
+                        runOnUiThread(() -> progressBar.setVisibility(View.INVISIBLE));
+                    }).start());
+                } else {
+                    runOnUiThread(() -> subTitle.setText(getString(R.string.text_latest_version)));
+                }
+            } catch (InterruptedException ignored) {
+                runOnUiThread(() -> subTitle.setText(getString(R.string.text_can_not_check)));
             } finally {
                 Utils.this.runOnUiThread(() -> {
                     progressBar.setVisibility(View.INVISIBLE);
@@ -162,7 +197,7 @@ public class Utils extends AppCompatActivity {
         }).start();
     }
 
-    public void sleep(int duration){
+    public void sleep(long duration){
         try {
             Thread.sleep(duration);
         } catch (InterruptedException e) {
@@ -176,12 +211,39 @@ public class Utils extends AppCompatActivity {
 
     public void startActivity(Activity context, Class aClass){
         startActivity(new Intent(context, aClass));
-        //overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 
     public void startActivity(Activity context, Class aClass, Bundle options){
         startActivity(new Intent(context, aClass), options);
-        //overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+    }
+
+    public class startActivityAsync{
+        private Activity activity;
+        private Class aClass;
+        private Bundle options;
+        private long time = 0;
+        public startActivityAsync(Activity activity, Class aClass){
+            this(activity, aClass, null);
+        }
+        public startActivityAsync(Activity activity, Class aClass, Bundle options){
+            this.activity=activity;
+            this.aClass=aClass;
+            this.options=options;
+        }
+        public startActivityAsync setTime(long time){
+            this.time=time;
+            return this;
+        }
+        public void start(Async async){
+            new Thread(() -> {
+                sleep(time);
+                async.run(activity, aClass, options);
+            }).start();
+        }
+    }
+
+    public interface Async{
+        void run(Activity activity, Class aClass, Bundle options);
     }
 
     public int getStatusBarHeight() {
@@ -356,6 +418,42 @@ public class Utils extends AppCompatActivity {
         return false;
     }
 
+    public int calculateColor(int color1, int color2, int max, int current) {
+
+        String strC1 = Integer.toHexString(color1);
+        String strC2 = Integer.toHexString(color2);
+
+        StringBuilder retColor = new StringBuilder("#");
+
+        for (int i = 2; i < strC1.length(); i++) {
+
+            String tmp1 = strC1.charAt(i) + "" + strC1.charAt(i + 1);
+            String tmp2 = strC2.charAt(i) + "" + strC2.charAt(i + 1);
+
+            int tmp1Color = (int) Long.parseLong(tmp1, 16);
+            int tmp2Color = (int) Long.parseLong(tmp2, 16);
+
+            int dif = tmp1Color - tmp2Color;
+
+            double difCalc = (double) dif / max;
+
+            int colorMerge = (int) (difCalc * current);
+
+            String add = Integer.toHexString(tmp2Color + colorMerge);
+
+            if (add.length() < 2)
+                add = "0" + add;
+
+            retColor.append(add);
+
+            i++;
+
+        }
+
+        return Color.parseColor(retColor.toString());
+
+    }
+
     public static void setNavigationBarColor(Activity activity, View view, @ColorInt int color, int duration){
         if(getSettings(activity).getBoolean(COLORED_NAVIGATIONBAR, false) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Window window = activity.getWindow();
@@ -477,7 +575,8 @@ public class Utils extends AppCompatActivity {
 
             in.close();
             return ret.toString();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -518,7 +617,8 @@ public class Utils extends AppCompatActivity {
             outputStream.close();
             inputStream.close();
             return downloadedFile;
-        } catch (Exception ignored) {
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -639,11 +739,11 @@ public class Utils extends AppCompatActivity {
     }
 
     private List<String> permissons() {
-        List<String> permissons = new ArrayList<>(Arrays.asList(
+        return new ArrayList<>(Arrays.asList(
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.GET_ACCOUNTS
         ));
-        return permissons;
     }
 
     @Override

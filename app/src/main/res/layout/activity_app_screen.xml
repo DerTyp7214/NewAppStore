@@ -38,7 +38,7 @@
         </android.support.design.widget.CollapsingToolbarLayout>
     </com.dertyp7214.appstore.components.CustomAppBarLayout>
 
-    <include layout="@layout/content_app_screen" />
+    <include layout="@layout/content_app_screen"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

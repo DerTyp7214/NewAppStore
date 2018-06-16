@@ -14,9 +14,9 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.items.SearchItem;
@@ -60,7 +60,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView appIcon;
+        LottieAnimationView appIcon;
         TextView appTitle;
         View view;
 

@@ -9,6 +9,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/content"
+    android:background="@android:color/white"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".screens.AppScreen"
     tools:showIn="@layout/activity_app_screen"
@@ -32,7 +34,8 @@
                 android:layout_centerVertical="true"
                 android:layout_toStartOf="@id/btn_open"
                 android:background="@drawable/button_border"
-                android:text="@string/text_uninstall" />
+                android:text="@string/text_uninstall"
+                tools:ignore="RelativeOverlap" />
 
             <ImageView
                 android:id="@+id/app_icon"

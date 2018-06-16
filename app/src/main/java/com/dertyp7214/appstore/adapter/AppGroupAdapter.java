@@ -9,12 +9,14 @@ import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SnapHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.dertyp7214.appstore.R;
+import com.dertyp7214.appstore.components.StartSnapHelper;
 import com.dertyp7214.appstore.items.AppGroupItem;
 import com.dertyp7214.appstore.items.NoConnection;
 
@@ -52,9 +54,8 @@ public class AppGroupAdapter extends RecyclerView.Adapter<AppGroupAdapter.ViewHo
                 viewHolder.title.setText(appGroupItem.getTitle());
                 break;
             case 1:
-                ViewHolderNoConnection holderNoConnection = holder;
                 NoConnection item = (NoConnection) appGroupItemList.get(position);
-                holderNoConnection.title.setText(item.getTitle());
+                holder.title.setText(item.getTitle());
                 break;
         }
     }
@@ -72,6 +73,9 @@ public class AppGroupAdapter extends RecyclerView.Adapter<AppGroupAdapter.ViewHo
 
             recyclerView = itemView.findViewById(R.id.app_list_vertical);
             recyclerView.setLayoutManager(layoutManager);
+
+            SnapHelper startSnapHelper = new StartSnapHelper();
+            startSnapHelper.attachToRecyclerView(recyclerView);
 
             title = itemView.findViewById(R.id.title);
         }

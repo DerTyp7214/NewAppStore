@@ -6,13 +6,14 @@
 package com.dertyp7214.appstore.fragments;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.graphics.ColorUtils;
 import android.text.Html;
 import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,11 +27,15 @@ import com.dertyp7214.appstore.items.SearchItem;
 
 import java.util.Objects;
 
+import static com.dertyp7214.appstore.Utils.manipulateColor;
+
 public class FragmentChangeLogs extends Fragment {
 
     private TextView changes;
     private ThemeStore themeStore;
     private Activity activity;
+    private String changeLog, version;
+    private View view;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -40,7 +45,7 @@ public class FragmentChangeLogs extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_change_logs, container, false);
+        view = inflater.inflate(R.layout.fragment_change_logs, container, false);
 
         activity=getActivity();
 
@@ -48,34 +53,43 @@ public class FragmentChangeLogs extends Fragment {
 
         changes = view.findViewById(R.id.txt_change);
 
-        changes.setTextColor(themeStore.getPrimaryDarkColor());
-        view.setBackgroundColor(ColorUtils.setAlphaComponent(themeStore.getPrimaryColor(), 0x37));
+        setColor(themeStore.getPrimaryColor());
 
         return view;
     }
 
-    public void getChangeLogs(SearchItem searchItem){
-        new Thread(() -> {
-            String changeLog = Utils.getWebContent(Config.API_URL+"/apps/list.php?changes="+searchItem.getId());
-            String version = Utils.getWebContent(Config.API_URL+"/apps/list.php?version="+searchItem.getId());
-            activity.runOnUiThread(() -> setText(changes, changeLog, version));
-        }).start();
+    public void setColor(@ColorInt int color) {
+        if (changes.getVisibility() == View.VISIBLE) {
+            changes.setTextColor(manipulateColor(color, 0.6F));
+            view.setBackgroundColor(ColorUtils.setAlphaComponent(color, 0x37));
+        }
     }
 
-    private void setText(TextView textView, String text, String version){
+    public void getChangeLogs(SearchItem searchItem, Callback callback) {
+        if (changeLog == null)
+            changeLog = Utils.getWebContent(Config.API_URL + "/apps/list.php?changes=" + searchItem.getId());
+        if (version == null)
+            version = Utils.getWebContent(Config.API_URL + "/apps/list.php?version=" + searchItem.getId());
+        callback.run(changes, setText(changeLog, version, false));
+    }
+
+    private Spanned setText(String text, String version, boolean big){
         if(text == null || text.length() == 0 || Objects.requireNonNull(text).startsWith("{")) {
-            textView.setVisibility(View.GONE);
-            return;
+            return null;
         }
-        text = text.replace("%ver%", version);
+        if(!big)
+            text = text.split("</new>")[0]+"</body></html>";
+        text = "<br/>"+text.replace("%ver%", version);
         Spanned result;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             result = Html.fromHtml(text,Html.FROM_HTML_MODE_LEGACY);
         } else {
             result = Html.fromHtml(text);
         }
-        textView.setText(result);
-        textView. setMovementMethod(LinkMovementMethod.getInstance());
-        textView.setVisibility(View.VISIBLE);
+        return result;
+    }
+
+    public interface Callback{
+        void run(TextView textView, Spanned text);
     }
 }

@@ -23,6 +23,8 @@
         android:visibility="invisible" />
 
     <RelativeLayout
+        android:elevation="0dp"
+        android:translationZ="0dp"
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -33,9 +35,9 @@
             android:layout_height="match_parent"
             android:layout_below="@+id/tabBar"
             android:elevation="0dp"
-            android:translationZ="0dp">
+            android:translationZ="0dp"
+            tools:ignore="UnknownIdInLayout">
 
         </android.support.v4.view.ViewPager>
     </RelativeLayout>
-
 </FrameLayout>

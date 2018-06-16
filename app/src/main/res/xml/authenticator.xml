@@ -1,0 +1,11 @@
+<!--
+  ~ Copyright (c) 2018.
+  ~ Created by Josua Lengwenath
+  -->
+
+<account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accountType="com.dertyp7214.appstore.ACCOUNT"
+    android:icon="@mipmap/ic_launcher"
+    android:smallIcon="@mipmap/ic_launcher"
+    android:label="@string/app_name_auth"
+    android:accountPreferences="@xml/prefs"/>

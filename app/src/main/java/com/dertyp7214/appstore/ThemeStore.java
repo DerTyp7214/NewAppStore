@@ -72,4 +72,11 @@ public class ThemeStore {
         int blue = 255 - Color.blue(primary);
         return Color.argb(alpha, red, green, blue);
     }
+
+    public int getPrimaryHue(int degree){
+        float[] hsv = new float[3];
+        Color.colorToHSV(getPrimaryColor(), hsv);
+        hsv[0] += degree;
+        return Color.HSVToColor(hsv);
+    }
 }

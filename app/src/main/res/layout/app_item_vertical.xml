@@ -11,10 +11,10 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <ImageView
+    <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/appIcon"
         android:layout_width="match_parent"
-        android:layout_height="75dp"
+        android:layout_height="85dp"
         android:padding="3dp"
         android:transitionName="icon"
         app:srcCompat="@mipmap/ic_launcher" />
@@ -24,6 +24,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLines="2"
-        android:text="dsfh jksdf kjsdhf ksdhf kjdsfhg kjdfshg "
+        android:text="Title"
         android:textAlignment="center" />
 </LinearLayout>

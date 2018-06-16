@@ -11,7 +11,7 @@
     android:layout_height="wrap_content"
     android:padding="7dp">
 
-    <ImageView
+    <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/appIcon"
         android:layout_width="73dp"
         android:layout_height="73dp"

@@ -5,7 +5,7 @@
 
 package com.dertyp7214.githubsource.adapter;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -27,10 +27,10 @@ import java.util.List;
 
 public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
-    private Context context;
+    private Activity context;
     private List<File> fileList;
 
-    public FileAdapter(Context context, List<File> fileList){
+    public FileAdapter(Activity context, List<File> fileList){
         this.fileList=fileList;
         this.context=context;
     }

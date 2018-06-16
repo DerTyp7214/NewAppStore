@@ -11,6 +11,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
@@ -35,6 +36,7 @@ import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.SettingsAdapter;
 import com.dertyp7214.appstore.components.InputDialog;
+import com.dertyp7214.appstore.interfaces.MyInterface;
 import com.dertyp7214.appstore.settings.Settings;
 import com.dertyp7214.appstore.settings.SettingsColor;
 import com.dertyp7214.appstore.settings.SettingsPlaceholder;
@@ -63,27 +65,24 @@ import java.util.regex.Pattern;
 import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
 import static android.support.design.widget.BottomSheetBehavior.STATE_HIDDEN;
 
-public class SettingsScreen extends Utils {
+public class SettingsScreen extends Utils implements MyInterface {
 
     private BottomSheetBehavior bottomSheetBehavior;
     private SettingsAdapter settingsAdapter;
     private RecyclerView settingList;
+    private boolean setUp = false;
     private ThemeStore themeStore;
 
-    private static final String CONFIG_CLIENT_ID = "CLIENT_ID";
-    private static final String CONFIG_CLIENT_ID_SANDBOX = "CIENT_ID_SANDBOX";
+    private static final String CONFIG_CLIENT_ID = "AZeONw87Y4ien2H92Te0VLJbyGPZiZWuocYLVeBLs1z7w1AVbeWS6jd2f6m3nILcdhZAJYbRjTbKbRNw";
+    private static final String CONFIG_CLIENT_ID_SANDBOX = "AXrlO7qCKos6IEXBrQS1Z0oPiJ0XH2DmMOgl-e1bmAVGfmq_CaFoJZwGjt1z94NJPjUFnVKuTR7rrdG9";
     private static final String CONFIG_ENVIRONMENT = BuildConfig.DEBUG ? PayPalConfiguration.ENVIRONMENT_SANDBOX : PayPalConfiguration.ENVIRONMENT_PRODUCTION;
 
     private static final int REQUEST_CODE_PAYMENT = 1;
 
-    private static PayPalConfiguration config = new PayPalConfiguration()
-            .environment(CONFIG_ENVIRONMENT)
-            .clientId(BuildConfig.DEBUG ? CONFIG_CLIENT_ID_SANDBOX : CONFIG_CLIENT_ID)
-            .merchantName("AppStore")
-            .merchantPrivacyPolicyUri(
-            Uri.parse("https://www.example.com/privacy"))
-            .merchantUserAgreementUri(
-            Uri.parse("https://www.example.com/legal"));
+    public void onPostExecute() {
+        if(!setUp)
+            setUpBottomSheet();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +90,8 @@ public class SettingsScreen extends Utils {
         setContentView(R.layout.activity_settings_screen);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        new MyTask(this).execute();
 
         themeStore = ThemeStore.getInstance(this);
 
@@ -100,8 +101,6 @@ public class SettingsScreen extends Utils {
         else {
             Config.root = true;
         }
-
-        setUpBottomSheet();
 
         LinearLayout bottomSheet = findViewById(R.id.bottom_sheet);
         View backGround = findViewById(R.id.bg);
@@ -194,6 +193,7 @@ public class SettingsScreen extends Utils {
     }
 
     private void setUpBottomSheet(){
+        setUp=true;
         EditText editText = findViewById(R.id.text_amount);
         Button button = findViewById(R.id.btn_pay);
 
@@ -201,6 +201,15 @@ public class SettingsScreen extends Utils {
 
         tintWidget(editText, themeStore.getAccentColor());
         setCursorColor(editText, themeStore.getAccentColor());
+
+        final PayPalConfiguration config = new PayPalConfiguration()
+                .environment(CONFIG_ENVIRONMENT)
+                .clientId(BuildConfig.DEBUG ? CONFIG_CLIENT_ID_SANDBOX : CONFIG_CLIENT_ID)
+                .merchantName("AppStore")
+                .merchantPrivacyPolicyUri(
+                        Uri.parse("https://www.example.com/privacy"))
+                .merchantUserAgreementUri(
+                        Uri.parse("https://www.example.com/legal"));
 
         Intent service = new Intent(this, PayPalService.class);
         service.putExtra(PayPalService.EXTRA_PAYPAL_CONFIGURATION, config);
@@ -348,5 +357,20 @@ public class SettingsScreen extends Utils {
     public void onDestroy() {
         stopService(new Intent(this, PayPalService.class));
         super.onDestroy();
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class MyTask extends AsyncTask<Void, Void, Void> {
+        MyInterface myinterface;
+
+        MyTask(MyInterface mi) {
+            myinterface = mi;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            myinterface.onPostExecute();
+            return null;
+        }
     }
 }

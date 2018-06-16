@@ -24,6 +24,7 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -34,7 +35,6 @@ import com.dertyp7214.appstore.CustomSnackbar;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
-import com.dertyp7214.appstore.components.AppBarStateChangeListener;
 import com.dertyp7214.appstore.components.CustomAppBarLayout;
 import com.dertyp7214.appstore.components.CustomToolbar;
 import com.dertyp7214.appstore.components.Notifications;
@@ -50,7 +50,7 @@ import java.util.Random;
 public class AppScreen extends Utils implements View.OnClickListener, MyInterface {
 
     @ColorInt
-    private int dominantColor;
+    private int dominantColor, oldColor;
     private FloatingActionButton fab;
     private SearchItem searchItem;
     private Random random = new Random();
@@ -59,6 +59,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     private boolean installed;
     private String version;
     private CollapsingToolbarLayout collapsingToolbarLayout;
+    private FragmentChangeLogs changeLogs;
 
     public void onPostExecute() {
         Bundle extra = getIntent().getExtras();
@@ -88,7 +89,6 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
 
         setTitle(searchItem.getAppTitle());
         appBarLayout.setAppBarBackgroundColor(dominantColor);
-        navigationBarColor(this, appBarLayout, dominantColor, 300);
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         ((ImageView) findViewById(R.id.app_icon)).setImageDrawable(searchItem.getAppIcon());
@@ -96,37 +96,21 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         collapsingToolbarLayout.setExpandedTitleColor(Utils.isColorBright(dominantColor) ? Color.BLACK : Color.WHITE);
         collapsingToolbarLayout.setContentScrimColor(themeStore.getPrimaryColor());
         collapsingToolbarLayout.setStatusBarScrimColor(themeStore.getPrimaryDarkColor());
-
         setButtonColor(themeStore.getAccentColor(), open, uninstall);
 
-        appBarLayout.addOnOffsetChangedListener(new AppBarStateChangeListener() {
-            @Override
-            public void onStateChanged(AppBarLayout appBarLayout, State state) {
-                switch (state) {
-                    case EXPANDED:
-                        setColors(
-                                toolbar,
-                                appBarLayout,
-                                dominantColor);
-                        navigationBarColor(AppScreen.this, appBarLayout, dominantColor, 300);
-                        if (isColorBright(dominantColor) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-                        else
-                            getWindow().getDecorView().setSystemUiVisibility(View.VISIBLE);
-                        break;
-                    case COLLAPSED:
-                        setColors(
-                                toolbar,
-                                appBarLayout,
-                                themeStore.getPrimaryColor());
-                        navigationBarColor(AppScreen.this, appBarLayout, themeStore.getPrimaryColor(), 300);
-                        if (isColorBright(themeStore.getPrimaryDarkColor()) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-                        else
-                            getWindow().getDecorView().setSystemUiVisibility(View.VISIBLE);
-                        break;
-                }
-            }
+        appBarLayout.addOnOffsetChangedListener((appBarLayout1, verticalOffset) -> {
+            int totalScroll = appBarLayout1.getTotalScrollRange();
+            int currentScroll = totalScroll + verticalOffset;
+
+            int colorDark = calculateColor(Utils.manipulateColor(dominantColor, 0.6F), themeStore.getPrimaryDarkColor(), totalScroll, currentScroll);
+            int color = calculateColor(dominantColor, themeStore.getPrimaryColor(), totalScroll, currentScroll);
+
+            getWindow().setNavigationBarColor(colorDark);
+            getWindow().setStatusBarColor(colorDark);
+
+            setColors(toolbar, appBarLayout1, color);
+            collapsingToolbarLayout.setStatusBarScrimColor(colorDark);
+            collapsingToolbarLayout.setContentScrimColor(color);
         });
 
         if (appInstalled(this, searchItem.getId())){
@@ -149,7 +133,6 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         fab.setBackgroundTintList(ColorStateList.valueOf(themeStore.getAccentColor()));
         fab.setVisibility(View.GONE);
         fab.setOnClickListener(this::downloadApp);
-
     }
 
     private void checkUpdates(){
@@ -218,6 +201,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     private void setColors(CustomToolbar customToolbar, AppBarLayout customAppBarLayout, @ColorInt int color){
         customAppBarLayout.setBackgroundColor(color);
         customToolbar.setToolbarIconColor(color);
+        changeLogs.setColor(color);
     }
 
     private void navigationBarColor(Activity activity, AppBarLayout appBarLayout, @ColorInt int color, int duration){
@@ -278,7 +262,9 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
                     true);
             runOnUiThread(notifications::showNotification);
             downloadListener.started();
-            Download download = new Download(Config.API_URL+(Config.APK_PATH.replace("{id}", searchItem.getId())));
+            Download download = new Download(Config.API_URL+(Config.APK_PATH
+                    .replace("{id}", searchItem.getId())
+                    .replace("{uid}", Config.UID(this))));
             File file = new File(Environment.getExternalStorageDirectory(), ".appStore");
             File apk = download.startDownload(file, notiId, (pro) -> runOnUiThread(() -> notifications.setProgress(pro)));
             if(apk.exists()){
@@ -348,9 +334,15 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     public void onAttachFragment(Fragment fragment) {
         super.onAttachFragment(fragment);
         onPostExecute();
-        if(fragment instanceof FragmentChangeLogs){
-            FragmentChangeLogs changeLogs = ((FragmentChangeLogs) fragment);
-            changeLogs.getChangeLogs(searchItem);
+        if(fragment instanceof FragmentChangeLogs) {
+            changeLogs = ((FragmentChangeLogs) fragment);
+            new Thread(() -> changeLogs.getChangeLogs(searchItem, (textView, text) -> runOnUiThread(() -> {
+                if(text != null) {
+                    textView.setText(text);
+                    textView.setMovementMethod(LinkMovementMethod.getInstance());
+                    textView.setVisibility(View.VISIBLE);
+                }
+            }))).start();
         } else if (fragment instanceof FragmentAppInfo){
             FragmentAppInfo appInfo = ((FragmentAppInfo) fragment);
             appInfo.getAppInfo(searchItem);
@@ -370,7 +362,5 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
             myinterface.onPostExecute();
             return null;
         }
-
-
     }
 }
