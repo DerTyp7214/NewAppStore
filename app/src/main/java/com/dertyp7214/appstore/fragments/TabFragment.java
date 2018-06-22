@@ -7,6 +7,8 @@ package com.dertyp7214.appstore.fragments;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.dertyp7214.appstore.Config;
 
@@ -49,4 +51,24 @@ public class TabFragment extends Fragment {
         return false;
     }
 
+    public int getNavigationBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
+    public void setMargins (View v, int l, int t, int r, int b) {
+        if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            if(l == -1) l = p.leftMargin;
+            if(t == -1) t = p.topMargin;
+            if(r == -1) r = p.rightMargin;
+            if(b == -1) b = p.bottomMargin;
+            p.setMargins(l, t, r, b);
+            v.requestLayout();
+        }
+    }
 }

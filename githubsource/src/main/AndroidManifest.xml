@@ -14,7 +14,8 @@
     <application>
         <activity
             android:name=".ui.MainScreen"
-            android:theme="@style/AppTheme"/>
+            android:theme="@style/AppTheme" />
+        <activity android:name=".ui.ViewFile"></activity>
     </application>
 
 </manifest>

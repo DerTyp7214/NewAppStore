@@ -23,6 +23,8 @@ allprojects {
             dirs 'libs'
         }
         maven { url 'https://jitpack.io' }
+        mavenCentral()
+        maven { url "http://repo.pageturner-reader.org" }
     }
 }
 

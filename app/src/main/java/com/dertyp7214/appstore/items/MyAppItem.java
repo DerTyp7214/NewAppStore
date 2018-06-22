@@ -9,12 +9,13 @@ import android.graphics.drawable.Drawable;
 
 public class MyAppItem {
 
-    private final String title, size;
+    private final String title, size, packageName;
     private final Drawable icon;
 
-    public MyAppItem(String title, String size, Drawable icon){
+    public MyAppItem(String title, String size, String packageName, Drawable icon){
         this.title=title;
         this.size=size;
+        this.packageName=packageName;
         this.icon=icon;
     }
 
@@ -26,8 +27,11 @@ public class MyAppItem {
         return this.size;
     }
 
+    public String getPackageName() {
+        return packageName;
+    }
+
     public Drawable getAppIcon(){
         return this.icon;
     }
-
 }

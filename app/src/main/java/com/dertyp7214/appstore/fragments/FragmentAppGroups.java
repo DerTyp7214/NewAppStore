@@ -111,6 +111,8 @@ public class FragmentAppGroups extends TabFragment {
                         JSONArray array = object.getJSONArray("apps");
 
                         if(refresh) {
+                            if (FragmentMyApps.hasInstance())
+                                FragmentMyApps.getInstance().getMyApps();
                             JSONArray installedApps = new JSONArray();
                             for (int i = 0; i < array.length() - 1; i++) {
                                 if(Utils.appInstalled(context, array.getJSONObject(i).getString("ID"))){

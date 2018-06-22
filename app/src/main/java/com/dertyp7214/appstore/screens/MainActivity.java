@@ -47,6 +47,7 @@ import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.SearchAdapter;
+import com.dertyp7214.appstore.dev.Logs;
 import com.dertyp7214.appstore.fragments.FragmentAbout;
 import com.dertyp7214.appstore.fragments.FragmentAppGroups;
 import com.dertyp7214.appstore.fragments.FragmentMyApps;
@@ -76,6 +77,8 @@ public class MainActivity extends Utils
     private ThemeStore themeStore;
     private TabLayout tabLayout;
     private NavigationView navView;
+    private Drawable profilePic;
+    private ViewPager viewPager;
 
     private List<SearchItem> appItems = new ArrayList<>();
 
@@ -88,6 +91,7 @@ public class MainActivity extends Utils
 
         random = new Random();
         themeStore = ThemeStore.getInstance(this);
+        logs = new Logs(this);
 
         checkAppDir();
         checkPermissions();
@@ -128,10 +132,9 @@ public class MainActivity extends Utils
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        navView.setNavigationItemSelectedListener(this);
 
-        ViewPager viewPager = findViewById(R.id.pager);
+        viewPager = findViewById(R.id.pager);
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
         addFragment(new FragmentAppGroups());
         addFragment(new FragmentMyApps());
@@ -163,12 +166,15 @@ public class MainActivity extends Utils
                 switch (position){
                     case 0:
                         navView.setCheckedItem(R.id.nav_home);
+                        fab.show();
                         break;
                     case 1:
                         navView.setCheckedItem(R.id.nav_myapps);
+                        fab.hide();
                         break;
                     case 2:
                         navView.setCheckedItem(R.id.nav_about);
+                        fab.hide();
                         break;
                 }
             }
@@ -184,37 +190,55 @@ public class MainActivity extends Utils
 
     private void setUpNavView() {
         new Thread(() -> {
-            try {
-                SQLiteHandler db = new SQLiteHandler(getApplicationContext());
-                HashMap<String, String> user = db.getUserDetails();
-                String userName = user.get("name");
-                String userEmail = user.get("email");
-                String url = Config.API_URL + "/apps/pic/" + URLEncoder.encode(userName, "UTF-8").replace("+", "_") + ".png";
-                Drawable image = Utils
-                        .drawableFromUrl(this, url);
-                int color = Palette.from(Utils.drawableToBitmap(image))
-                        .generate()
-                        .getDominantColor(ThemeStore.getInstance(this).getPrimaryColor());
-                View bg = findViewById(R.id.nav_bg);
-                ImageView img = findViewById(R.id.nav_img);
-                TextView name = findViewById(R.id.txt_name);
-                TextView email = findViewById(R.id.txt_email);
-                runOnUiThread(() -> {
-                    bg.setBackgroundColor(color);
-                    img.setImageDrawable(image);
+            SQLiteHandler db = new SQLiteHandler(getApplicationContext());
+            HashMap<String, String> user = db.getUserDetails();
+            String userName = user.get("name");
+            String userEmail = user.get("email");
+            View bg = findViewById(R.id.nav_bg);
+            ImageView img = findViewById(R.id.nav_img);
+            TextView name = findViewById(R.id.txt_name);
+            TextView email = findViewById(R.id.txt_email);
+            profilePic = getDrawable(R.mipmap.ic_launcher_round);
+            runOnUiThread(() -> {
+                try {
                     name.setText(userName);
                     email.setText(userEmail);
-                    if(Utils.isColorBright(color)){
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    logs.info("setUpNavView - runOnUiThread", e.toString() + "\n" + e.getMessage());
+                    sleep(100);
+                    setUpNavView();
+                }
+            });
+            try {
+                String url = Config.API_URL + "/apps/pic/" + URLEncoder.encode(userName, "UTF-8").replace("+", "_") + ".png";
+                profilePic = Utils
+                        .drawableFromUrl(this, url);
+            } catch (Exception e) {
+                e.printStackTrace();
+                logs.info("setUpNavView", e.toString() + "\n" + e.getMessage());
+            }
+            int color = Palette.from(Utils.drawableToBitmap(profilePic))
+                    .generate()
+                    .getDominantColor(ThemeStore.getInstance(this).getPrimaryColor());
+            runOnUiThread(() -> {
+                try {
+                    if (Utils.isColorBright(color)) {
                         name.setTextColor(Color.BLACK);
                         email.setTextColor(Color.BLACK);
                     } else {
                         name.setTextColor(Color.WHITE);
                         email.setTextColor(Color.WHITE);
                     }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+                    bg.setBackgroundColor(color);
+                    img.setImageDrawable(profilePic);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    logs.info("setUpNavView - runOnUiThread", e.toString() + "\n" + e.getMessage());
+                    sleep(100);
+                    setUpNavView();
+                }
+            });
         }).start();
     }
 
@@ -351,7 +375,9 @@ public class MainActivity extends Utils
                 changeOpacity(searchLayout, true);
                 tabLayout.setVisibility(View.VISIBLE);
                 content.setVisibility(View.VISIBLE);
-                setTimeOut(100, () -> fab.setVisibility(View.VISIBLE));
+                setTimeOut(100, () -> {
+                    if (viewPager.getCurrentItem() == 0) fab.show();
+                });
             }
 
             @Override
@@ -361,7 +387,7 @@ public class MainActivity extends Utils
                 changeOpacity(searchLayout, false);
                 tabLayout.setVisibility(View.GONE);
                 content.setVisibility(View.INVISIBLE);
-                fab.setVisibility(View.INVISIBLE);
+                fab.hide();
             }
         });
 

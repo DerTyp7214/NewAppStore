@@ -27,14 +27,15 @@ public class Repository {
     private final static String USER = "{user}";
     private final static String REPO = "{repo}";
 
-    private final String user, repo, api_key;
+    private final String user, repo;
+    public static String api_key;
     private String path = "";
     private JSONObject rootObject;
 
-    public Repository(String user, String repo, String api_key){
+    public Repository(String user, String repo, String apikey){
         this.user=user;
         this.repo=repo;
-        this.api_key=api_key;
+        api_key=apikey;
         try {
             rootObject = new JSONObject(getJSONObject(getBaseUrl()));
         } catch (JSONException e) {
@@ -65,6 +66,10 @@ public class Repository {
         } catch (Exception ignored) {
             return "";
         }
+    }
+
+    public boolean hasCalls(){
+        return rootObject != null && !rootObject.has("message");
     }
 
     private String getString(String key){
@@ -121,6 +126,7 @@ public class Repository {
     public List<File> getContentList(){
         try{
             List<File> files = new ArrayList<>();
+            List<File> dirs = new ArrayList<>();
 
             JSONArray content = new JSONArray(getJSONObject(getString("contents_url").replace("{+path}", path)));
 
@@ -131,12 +137,14 @@ public class Repository {
                         files.add(new File(file.getString("name"), file));
                         break;
                     case "dir":
-                        files.add(new Folder(file.getString("name"), file));
+                        dirs.add(new Folder(file.getString("name"), file));
                         break;
                 }
             }
 
-            return files;
+            dirs.addAll(files);
+
+            return dirs;
         }catch (Exception ignored){
             return new ArrayList<>();
         }

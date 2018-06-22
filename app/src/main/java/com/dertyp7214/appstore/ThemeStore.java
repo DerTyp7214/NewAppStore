@@ -57,7 +57,7 @@ public class ThemeStore {
         float[] hsv = new float[3];
         Color.colorToHSV(getPrimaryColor(), hsv);
         Log.d("BEFORE", Arrays.toString(hsv));
-        hsv[0] -= 100;
+        hsv[0] -= hsv[0] - 100 < 0 ? 100 - 255 : 100;
         hsv[1] -= 0.03F;
         hsv[2] -= 0.13F;
         Log.d("AFTER", Arrays.toString(hsv));
@@ -73,10 +73,10 @@ public class ThemeStore {
         return Color.argb(alpha, red, green, blue);
     }
 
-    public int getPrimaryHue(int degree){
+    public int getPrimaryHue(int degree) {
         float[] hsv = new float[3];
         Color.colorToHSV(getPrimaryColor(), hsv);
-        hsv[0] += degree;
+        hsv[0] += hsv[0] + degree > 255 ? degree - 255 : degree;
         return Color.HSVToColor(hsv);
     }
 }

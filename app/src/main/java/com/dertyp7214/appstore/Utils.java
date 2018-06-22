@@ -88,7 +88,7 @@ public class Utils extends AppCompatActivity {
     private int PERMISSIONS = 10;
     protected String oldAppPackageName = "com.hacker.appstore";
     private static HashMap<String, Drawable> icons = new HashMap<>();
-    private Logs logs;
+    public Logs logs;
 
     public CustomToolbar toolbar;
 
@@ -270,6 +270,10 @@ public class Utils extends AppCompatActivity {
             p.setMargins(l, t, r, b);
             v.requestLayout();
         }
+    }
+
+    public static void removeMyApp(String packageName, Context context){
+        getWebContent(Config.API_URL+"/apps/myapps.php?uid="+Config.UID(context)+"&remove="+packageName);
     }
 
     public String cutString(String string, int cutAt){

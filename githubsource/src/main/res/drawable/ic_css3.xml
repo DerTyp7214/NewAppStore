@@ -1,0 +1,14 @@
+<!--
+  ~ Copyright (c) 2018.
+  ~ Created by Josua Lengwenath
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="128"
+    android:viewportHeight="128">
+  <path
+      android:pathData="M8.76,1l10.055,112.883 45.118,12.58 45.244,-12.626 10.063,-112.837h-110.48zM98.351,26.862l-3.347,37.605 0.01,0.203 -0.014,0.467v-0.004l-2.378,26.294 -0.262,2.336 -28.36,7.844v0.001l-0.022,0.019 -28.311,-7.888 -1.917,-21.739h13.883l0.985,11.054 15.386,4.17 -0.004,0.008v-0.002l15.443,-4.229 1.632,-18.001h-32.283l-0.277,-3.043 -0.631,-7.129 -0.331,-3.828h34.749l1.264,-14h-52.926l-0.277,-3.041 -0.63,-7.131 -0.332,-3.828h69.281l-0.331,3.862z"
+      android:fillColor="#1572B6"/>
+</vector>

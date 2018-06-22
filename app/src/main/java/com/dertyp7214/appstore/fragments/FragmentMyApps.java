@@ -5,12 +5,14 @@
 
 package com.dertyp7214.appstore.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -37,6 +39,9 @@ public class FragmentMyApps extends TabFragment {
     private RecyclerView recyclerView;
     private MyAppsAdapter adapter;
 
+    @SuppressLint("StaticFieldLeak")
+    private static FragmentMyApps instance;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,9 +53,11 @@ public class FragmentMyApps extends TabFragment {
 
         View view = inflater.inflate(R.layout.fragment_myapps, container, false);
 
+        instance = this;
+
         activity = getActivity();
 
-        adapter = new MyAppsAdapter(activity, myAppList);
+        adapter = new MyAppsAdapter(this, myAppList);
 
         recyclerView = view.findViewById(R.id.rv_my_apps);
 
@@ -60,12 +67,27 @@ public class FragmentMyApps extends TabFragment {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 
+        CardView cardView = view.findViewById(R.id.card);
+        setMargins(cardView, -1, -1, -1, getNavigationBarHeight() + 10);
+
         getMyApps();
 
         return view;
     }
 
+    public static boolean hasInstance(){
+        return instance != null;
+    }
+
+    public static FragmentMyApps getInstance(){
+        return instance;
+    }
+
     public void getMyApps(){
+        getMyApps(-1);
+    }
+
+    public void getMyApps(int id){
         new Thread(() -> {
             try {
                 myAppList.clear();
@@ -77,9 +99,15 @@ public class FragmentMyApps extends TabFragment {
                     if (!app.getString("id").equals("null"))
                         myAppList.add(new MyAppItem(app.getString("title"),
                                 app.getString("size"),
+                                app.getString("id"),
                                 Utils.drawableFromUrl(activity, app.getString("img"))));
                 }
-                activity.runOnUiThread(() -> adapter.notifyDataSetChanged());
+                activity.runOnUiThread(() -> {
+                    if(id>=0)
+                        adapter.notifyItemRemoved(id);
+                    else
+                        adapter.notifyDataSetChanged();
+                });
             }catch (Exception e){
                 e.printStackTrace();
             }

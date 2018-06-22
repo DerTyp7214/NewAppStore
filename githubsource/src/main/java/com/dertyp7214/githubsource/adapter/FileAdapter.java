@@ -14,11 +14,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.dertyp7214.githubsource.GitHubSource;
 import com.dertyp7214.githubsource.R;
 import com.dertyp7214.githubsource.github.File;
+import com.dertyp7214.githubsource.ui.ViewFile;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,6 +31,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
 
     private Activity context;
     private List<File> fileList;
+    public static ProgressBar progressBar;
 
     public FileAdapter(Activity context, List<File> fileList){
         this.fileList=fileList;
@@ -46,15 +49,60 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         File item = fileList.get(position);
 
         if(item.isFile()) {
-            holder.icon.setImageDrawable(context.getDrawable(R.drawable.ic_file_black_24dp));
+            getFileIcon(item.getName(), holder.icon);
             holder.view.setOnClickListener(v -> {
-                openUrl(getString(item.getJson(),"download_url"));
+                holder.progressBar.setIndeterminate(true);
+                holder.progressBar.setVisibility(View.VISIBLE);
+                progressBar = holder.progressBar;
+                Intent intent = new Intent(context, ViewFile.class);
+                intent.putExtra("filename", item.getName());
+                intent.putExtra("url", getString(item.getJson(),"download_url"));
+                context.startActivity(intent);
             });
         } else {
             holder.icon.setImageDrawable(context.getDrawable(R.drawable.ic_folder_black_24dp));
+            holder.icon.setColorFilter(GitHubSource.colorStyle.getAccentColor());
             holder.view.setOnClickListener(v -> GitHubSource.repository.addToPath(item.getName(), context));
         }
         holder.title.setText(item.getName());
+    }
+
+    private void getFileIcon(String filename, ImageView imageView) {
+        String ending = filename.split("\\.")[filename.split("\\.").length - 1];
+        switch (ending) {
+            case "cmd":
+                imageView.setImageDrawable(context.getDrawable(R.drawable.ic_command));
+                imageView.setColorFilter(GitHubSource.colorStyle.getAccentColor());
+                break;
+            case "bat":
+                imageView.setImageDrawable(context.getDrawable(R.drawable.ic_command));
+                imageView.setColorFilter(GitHubSource.colorStyle.getAccentColor());
+                break;
+            case "sh":
+                imageView.setImageDrawable(context.getDrawable(R.drawable.ic_command));
+                imageView.setColorFilter(GitHubSource.colorStyle.getAccentColor());
+                break;
+            case "md":
+                imageView.setImageDrawable(context.getDrawable(R.drawable.ic_markdown));
+                imageView.setColorFilter(GitHubSource.colorStyle.getAccentColor());
+                break;
+            case "gradle":
+                imageView.setImageDrawable(context.getDrawable(R.drawable.ic_gradle_file));
+                break;
+            case "gradlew":
+                imageView.setImageDrawable(context.getDrawable(R.drawable.ic_gradle_file));
+                break;
+            case "properties":
+                if(filename.startsWith("gradle"))
+                    imageView.setImageDrawable(context.getDrawable(R.drawable.ic_gradle_file));
+                else
+                    imageView.setImageDrawable(context.getDrawable(R.drawable.ic_properties));
+                break;
+            default:
+                imageView.setImageDrawable(context.getDrawable(R.drawable.ic_xml));
+                imageView.setColorFilter(GitHubSource.colorStyle.getAccentColor());
+                break;
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -62,6 +110,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         ImageView icon;
         TextView title, subTitle;
         View view;
+        ProgressBar progressBar;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -70,6 +119,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
             title = itemView.findViewById(R.id.txt_title);
             subTitle = itemView.findViewById(R.id.txt_subtitle);
             view = itemView.findViewById(R.id.view);
+            progressBar = itemView.findViewById(R.id.progressBar);
 
         }
     }
