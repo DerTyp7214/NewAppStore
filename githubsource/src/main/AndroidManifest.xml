@@ -14,8 +14,10 @@
     <application>
         <activity
             android:name=".ui.MainScreen"
-            android:theme="@style/AppTheme" />
-        <activity android:name=".ui.ViewFile"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".ui.ViewFile" />
+        <activity android:name=".ui.Info"
+            android:theme="@style/AppTheme.Transparent"/>
     </application>
 
 </manifest>

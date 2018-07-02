@@ -10,6 +10,7 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,7 +32,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+
+import static com.dertyp7214.appstore.Config.API_URL;
+import static com.dertyp7214.appstore.Config.UID;
+import static com.dertyp7214.appstore.Utils.getSettings;
+import static com.dertyp7214.appstore.Utils.getWebContent;
 
 public class LoginActivity extends Activity {
     private static final String TAG = RegisterActivity.class.getSimpleName();
@@ -85,10 +93,13 @@ public class LoginActivity extends Activity {
             // User is already logged in. Take him to main activity
             AccountManager am = AccountManager.get(this);
             for(Account account : am.getAccounts()){
-                if((account.name).equals(db.getUserDetails().get("email"))){
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    finish();
+                if((account.name).equals(db.getUserDetails().get("email"))) {
+                    new Thread(() -> {
+                        syncPreferences();
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }).start();
                 }
             }
         }
@@ -118,6 +129,62 @@ public class LoginActivity extends Activity {
             finish();
         });
 
+    }
+
+    private void syncPreferences() {
+        new Thread(() -> {
+            SharedPreferences preferences = getSettings(this);
+            SharedPreferences.Editor editor = preferences.edit();
+            SharedPreferences colors = getSharedPreferences("colors_"+UID(this), MODE_PRIVATE);
+            SharedPreferences.Editor editorColor = colors.edit();
+
+            try {
+                JSONObject jsonObject = new JSONObject(getWebContent(API_URL + "/apps/prefs.php?user=" + UID(this)));
+
+                for (Iterator<String> it = jsonObject.getJSONObject("prefs").keys(); it.hasNext(); ) {
+                    String key = it.next();
+                    Object obj = jsonObject.getJSONObject("prefs").get(key);
+                    if (obj instanceof String)
+                        editor.putString(key, (String) obj);
+                    else if (obj instanceof Integer)
+                        editor.putInt(key, (int) obj);
+                    else if (obj instanceof Long)
+                        editor.putLong(key, (long) obj);
+                    else if (obj instanceof Float)
+                        editor.putFloat(key, (float) obj);
+                    else if (obj instanceof Boolean)
+                        editor.putBoolean(key, (boolean) obj);
+                    else if (obj instanceof Set)
+                        editor.putStringSet(key, (Set<String>) obj);
+
+                }
+
+                for (Iterator<String> it = jsonObject.getJSONObject("colors").keys(); it.hasNext(); ) {
+                    String key = it.next();
+                    Object obj = jsonObject.getJSONObject("colors").get(key);
+                    if (obj instanceof String)
+                        editorColor.putString(key, (String) obj);
+                    else if (obj instanceof Integer)
+                        editorColor.putInt(key, (int) obj);
+                    else if (obj instanceof Long)
+                        editorColor.putLong(key, (long) obj);
+                    else if (obj instanceof Float)
+                        editorColor.putFloat(key, (float) obj);
+                    else if (obj instanceof Boolean)
+                        editorColor.putBoolean(key, (boolean) obj);
+                    else if (obj instanceof Set)
+                        editorColor.putStringSet(key, (Set<String>) obj);
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            editor.apply();
+            editorColor.apply();
+            Log.d("PREFS", preferences.getAll().toString());
+            Log.d("COLORS", colors.getAll().toString());
+        }).start();
     }
 
     /**
@@ -169,10 +236,12 @@ public class LoginActivity extends Activity {
                             }
 
                             // Launch main activity
-                            Intent intent = new Intent(LoginActivity.this,
-                                    MainActivity.class);
-                            startActivity(intent);
-                            finish();
+                            new Thread(() -> {
+                                syncPreferences();
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }).start();
                         } else {
                             // Error in login. Get the error message
                             String errorMsg = jObj.getString("error_msg");

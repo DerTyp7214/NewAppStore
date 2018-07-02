@@ -5,11 +5,13 @@
 
 package com.dertyp7214.githubsource.ui;
 
+import android.annotation.SuppressLint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.View;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.dertyp7214.githubsource.GitHubSource;
@@ -37,6 +39,7 @@ public class ViewFile extends AppCompatActivity {
     private WebView content;
     private Thread load;
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +51,8 @@ public class ViewFile extends AppCompatActivity {
             colorStyle=GitHubSource.colorStyle;
 
         content = findViewById(R.id.content);
+        WebSettings settings = content.getSettings();
+        settings.setJavaScriptEnabled(true);
 
         getWindow().setStatusBarColor(colorStyle.getPrimaryColorDark());
         getWindow().setNavigationBarColor(colorStyle.getPrimaryColor());

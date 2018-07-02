@@ -43,6 +43,14 @@ public class Repository {
         }
     }
 
+    public String getCurrentUrl(){
+        return getString("html_url") + "/tree/" + getString("default_branch") + "/" + path;
+    }
+
+    public String getRepoUrl(){
+        return getString("clone_url");
+    }
+
     private String getJSONObject(String url){
         try {
             URL web = new URL(url);
@@ -50,7 +58,7 @@ public class Repository {
             connection.setRequestProperty("Authorization", "token "+api_key);
             BufferedReader in;
 
-            if(api_key==null)
+            if(api_key==null || api_key.equals(""))
                 in = new BufferedReader(new InputStreamReader(web.openStream()));
             else
                 in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -63,13 +71,22 @@ public class Repository {
 
             in.close();
             return ret.toString();
-        } catch (Exception ignored) {
-            return "";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{\"message\": \"Something went wrong.\"}";
         }
     }
 
     public boolean hasCalls(){
         return rootObject != null && !rootObject.has("message");
+    }
+
+    public JSONObject getRootObject(){
+        return rootObject;
+    }
+
+    public String getMessage(){
+        return getString("message");
     }
 
     private String getString(String key){
@@ -134,7 +151,7 @@ public class Repository {
                 JSONObject file = content.getJSONObject(i);
                 switch (file.getString("type")){
                     case "file":
-                        files.add(new File(file.getString("name"), file));
+                        files.add(new File(file.getString("name"), file.getLong("size"), file));
                         break;
                     case "dir":
                         dirs.add(new Folder(file.getString("name"), file));

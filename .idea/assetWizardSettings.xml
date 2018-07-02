@@ -99,7 +99,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/I:/Android/Android%20Studio%20Canary/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_close_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/I:/Android/Android%20Studio%20Canary/plugins/android/lib/android.jar!/images/material_design_icons/social/ic_person_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -109,7 +109,8 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="ic_close" />
+                            <entry key="color" value="ffffff" />
+                            <entry key="outputName" value="ic_person" />
                             <entry key="overrideSize" value="true" />
                             <entry key="sourceFile" value="I:\Userfolder\Downloads\svgs\if_markdown_298823.svg" />
                           </map>

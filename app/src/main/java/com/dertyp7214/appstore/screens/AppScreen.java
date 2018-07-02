@@ -26,6 +26,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.graphics.Palette;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -47,6 +49,9 @@ import java.io.File;
 import java.util.Objects;
 import java.util.Random;
 
+import static com.dertyp7214.appstore.Config.API_URL;
+import static com.dertyp7214.appstore.Config.APP_URL;
+
 public class AppScreen extends Utils implements View.OnClickListener, MyInterface {
 
     @ColorInt
@@ -60,6 +65,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     private String version;
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private FragmentChangeLogs changeLogs;
+    private MenuItem shareMenu;
 
     public void onPostExecute() {
         Bundle extra = getIntent().getExtras();
@@ -132,7 +138,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         fab.setColorFilter(Utils.isColorBright(themeStore.getAccentColor()) ? Color.BLACK : Color.WHITE);
         fab.setBackgroundTintList(ColorStateList.valueOf(themeStore.getAccentColor()));
         fab.setVisibility(View.GONE);
-        fab.setOnClickListener(this::downloadApp);
+        fab.setOnClickListener(this::share);
     }
 
     private void checkUpdates(){
@@ -151,7 +157,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
 
     private String getServerVersion(){
         if(version==null)
-            version = getWebContent(Config.API_URL+"/apps/list.php?version="+searchItem.getId());
+            version = getWebContent(API_URL+"/apps/list.php?version="+searchItem.getId());
         return version;
     }
 
@@ -162,6 +168,15 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         }catch (Exception e){
             return getServerVersion();
         }
+    }
+
+    private void share(View view) {
+        String url = APP_URL(searchItem.getId());
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, url);
+        sendIntent.setType("text/plain");
+        startActivity(sendIntent);
     }
 
     private void downloadApp(View view){
@@ -202,6 +217,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         customAppBarLayout.setBackgroundColor(color);
         customToolbar.setToolbarIconColor(color);
         changeLogs.setColor(color);
+        if(shareMenu!=null)shareMenu.getIcon().setTint(Utils.isColorBright(color) ? Color.BLACK : Color.WHITE);
     }
 
     private void navigationBarColor(Activity activity, AppBarLayout appBarLayout, @ColorInt int color, int duration){
@@ -262,7 +278,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
                     true);
             runOnUiThread(notifications::showNotification);
             downloadListener.started();
-            Download download = new Download(Config.API_URL+(Config.APK_PATH
+            Download download = new Download(API_URL+(Config.APK_PATH
                     .replace("{id}", searchItem.getId())
                     .replace("{uid}", Config.UID(this))));
             File file = new File(Environment.getExternalStorageDirectory(), ".appStore");
@@ -362,5 +378,31 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
             myinterface.onPostExecute();
             return null;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.app_menu, menu);
+
+        int iconTint = Utils.isColorBright(themeStore.getPrimaryColor()) ? Color.BLACK : Color.WHITE;
+
+        shareMenu = menu.findItem(R.id.action_share);
+        shareMenu.getIcon().setTint(iconTint);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.action_share:
+                share(null);
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

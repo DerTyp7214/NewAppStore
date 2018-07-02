@@ -49,6 +49,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
         File item = fileList.get(position);
 
         if(item.isFile()) {
+            holder.subTitle.setText(getSize(item.getSize()));
             getFileIcon(item.getName(), holder.icon);
             holder.view.setOnClickListener(v -> {
                 holder.progressBar.setIndeterminate(true);
@@ -60,11 +61,20 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.ViewHolder> {
                 context.startActivity(intent);
             });
         } else {
+            holder.subTitle.setText("");
             holder.icon.setImageDrawable(context.getDrawable(R.drawable.ic_folder_black_24dp));
             holder.icon.setColorFilter(GitHubSource.colorStyle.getAccentColor());
             holder.view.setOnClickListener(v -> GitHubSource.repository.addToPath(item.getName(), context));
         }
         holder.title.setText(item.getName());
+    }
+
+    private String getSize(long size){
+        if(size>1000000000000L) return String.valueOf((double) (size/1000000000000L))+"TB";
+        if(size>1000000000) return String.valueOf((double) (size/1000000000))+"GB";
+        if(size>1000000) return String.valueOf((double) (size/1000000))+"MB";
+        if(size>1000) return String.valueOf((double) (size/1000))+"KB";
+        return String.valueOf(size)+"Bytes";
     }
 
     private void getFileIcon(String filename, ImageView imageView) {

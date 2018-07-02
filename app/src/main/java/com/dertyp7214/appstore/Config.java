@@ -17,11 +17,17 @@ public class Config {
 
     public final static String API_URL = "http://api.dertyp7214.de";
     public final static String APK_PATH = "/apps/download.php?id={id}&uid={uid}";
+    public final static String STORE_URL = "http://store.dertyp7214.de/apps/app.php?id={id}";
+    public static boolean SERVER_ONLINE = true;
 
     public static String UID(Context context){
         SQLiteHandler db = new SQLiteHandler(context);
         HashMap<String, String> user = db.getUserDetails();
 
         return user.get("uid");
+    }
+
+    public static String APP_URL(String id){
+        return STORE_URL.replace("{id}", id);
     }
 }

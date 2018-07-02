@@ -37,6 +37,7 @@
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowBackground">@android:color/white</item>
         <item name="android:windowEnterTransition">@transition/app_screen_enter</item>
+        <item name="android:windowExitTransition">@transition/app_screen_exit</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

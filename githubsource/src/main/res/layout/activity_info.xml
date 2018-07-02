@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2018.
+  ~ Created by Josua Lengwenath
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/grey_300"
+    android:fitsSystemWindows="true"
+    android:padding="32dp"
+    tools:context=".ui.Info"
+    tools:ignore="MissingDefaultResource">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/card_core">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/txt_core"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/limit_core"
+                android:layout_marginLeft="5dp"
+                android:layout_toEndOf="@+id/limit_core"
+                android:text="0"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/core_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:text="Core"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/limit_core"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/core_text"
+                android:layout_alignStart="@+id/core_text"
+                android:layout_marginTop="5dp"
+                android:text="Limit:"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/reset_core"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txt_core"
+                android:layout_alignStart="@+id/core_text"
+                android:layout_marginTop="5dp"
+                android:text="Resettime:" />
+
+            <TextView
+                android:id="@+id/txt_core_reset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/reset_core"
+                android:layout_marginLeft="5dp"
+                android:layout_marginBottom="10dp"
+                android:layout_toEndOf="@+id/reset_core"
+                android:text="0" />
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/card_core"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="20dp"
+        android:id="@+id/card_search">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/txt_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/limit_search"
+                android:layout_marginLeft="5dp"
+                android:layout_toEndOf="@+id/limit_search"
+                android:text="0"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/search_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:text="Search"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/limit_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/search_text"
+                android:layout_alignStart="@+id/search_text"
+                android:layout_marginTop="5dp"
+                android:text="Limit:"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/reset_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txt_search"
+                android:layout_alignStart="@+id/search_text"
+                android:layout_marginTop="5dp"
+                android:text="Resettime:" />
+
+            <TextView
+                android:id="@+id/txt_search_reset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/reset_search"
+                android:layout_marginLeft="5dp"
+                android:layout_marginBottom="10dp"
+                android:layout_toEndOf="@+id/reset_search"
+                android:text="0" />
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_graphql"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/card_search"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="20dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/txt_graphql"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/limit_graphql"
+                android:layout_marginLeft="5dp"
+                android:layout_toEndOf="@+id/limit_graphql"
+                android:text="0"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/graphql_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:text="Graphql"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/limit_graphql"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/graphql_text"
+                android:layout_alignStart="@+id/graphql_text"
+                android:layout_marginTop="5dp"
+                android:text="Limit:"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/reset_graphql"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/txt_graphql"
+                android:layout_alignStart="@+id/graphql_text"
+                android:layout_marginTop="5dp"
+                android:text="Resettime:" />
+
+            <TextView
+                android:id="@+id/txt_graphql_reset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/reset_graphql"
+                android:layout_marginLeft="5dp"
+                android:layout_marginBottom="10dp"
+                android:layout_toEndOf="@+id/reset_graphql"
+                android:text="0" />
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+</RelativeLayout>

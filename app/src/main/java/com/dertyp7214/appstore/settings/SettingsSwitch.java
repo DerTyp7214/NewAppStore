@@ -9,6 +9,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import static com.dertyp7214.appstore.Utils.getSettings;
+
 public class SettingsSwitch extends Settings {
 
     private boolean checked;
@@ -46,7 +48,7 @@ public class SettingsSwitch extends Settings {
 
     @Override
     public void saveSetting(){
-        SharedPreferences preferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
+        SharedPreferences preferences = getSettings(context);
         @SuppressLint("CommitPrefEdits")
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean(name, checked);
@@ -55,7 +57,7 @@ public class SettingsSwitch extends Settings {
 
     @Override
     public void loadSetting(){
-        SharedPreferences preferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
+        SharedPreferences preferences = getSettings(context);
         this.checked=preferences.getBoolean(name, checked);
     }
 }

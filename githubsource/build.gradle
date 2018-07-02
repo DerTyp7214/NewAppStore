@@ -46,4 +46,6 @@ dependencies {
     implementation 'net.sourceforge.htmlcleaner:htmlcleaner:2.4'
     implementation 'com.osbcp.cssparser:cssparser:1.5'
     implementation 'net.nightwhistler.htmlspanner:htmlspanner:0.5-SNAPSHOT'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:cardview-v7:27.1.1'
 }

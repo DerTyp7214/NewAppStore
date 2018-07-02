@@ -27,7 +27,12 @@ public class ThemeStore {
     private ThemeStore(Context context){
         instance=this;
         this.context = context;
-        this.sharedPreferences=context.getSharedPreferences("colors", Context.MODE_PRIVATE);
+        this.sharedPreferences=context.getSharedPreferences("colors_"+Config.UID(context), Context.MODE_PRIVATE);
+    }
+
+    public static ThemeStore resetInstance(Context context){
+        instance = new ThemeStore(context);
+        return instance;
     }
 
     public static ThemeStore getInstance(Context context){
@@ -57,7 +62,7 @@ public class ThemeStore {
         float[] hsv = new float[3];
         Color.colorToHSV(getPrimaryColor(), hsv);
         Log.d("BEFORE", Arrays.toString(hsv));
-        hsv[0] -= hsv[0] - 100 < 0 ? 100 - 255 : 100;
+        hsv[0] -= hsv[0] - 100 < 0 ? 100 - 360 : 100;
         hsv[1] -= 0.03F;
         hsv[2] -= 0.13F;
         Log.d("AFTER", Arrays.toString(hsv));
@@ -76,7 +81,7 @@ public class ThemeStore {
     public int getPrimaryHue(int degree) {
         float[] hsv = new float[3];
         Color.colorToHSV(getPrimaryColor(), hsv);
-        hsv[0] += hsv[0] + degree > 255 ? degree - 255 : degree;
+        hsv[0] += hsv[0] + degree > 360 ? degree - 360 : degree;
         return Color.HSVToColor(hsv);
     }
 }

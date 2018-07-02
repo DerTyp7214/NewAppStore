@@ -9,10 +9,12 @@ import org.json.JSONObject;
 
 public class File {
 
+    private long size;
     private String name;
     private JSONObject json;
 
-    public File(String name, JSONObject json){
+    public File(String name, long size, JSONObject json){
+        this.size=size;
         this.name=name;
         this.json=json;
     }
@@ -23,6 +25,11 @@ public class File {
 
     public String getName() {
         return name;
+    }
+
+
+    public long getSize() {
+        return size;
     }
 
     public boolean isFile(){

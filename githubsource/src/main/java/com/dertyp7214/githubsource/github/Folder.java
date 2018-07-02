@@ -9,7 +9,7 @@ import org.json.JSONObject;
 
 public class Folder extends File {
     public Folder(String name, JSONObject json) {
-        super(name, json);
+        super(name, 0, json);
     }
 
     @Override

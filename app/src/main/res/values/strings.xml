@@ -169,4 +169,6 @@
     <string name="text_logout">Logout</string>
     <string name="text_settings">Settings</string>
     <string name="text_modules">Modules</string>
+    <string name="text_change_profile_pic">Change Profilepicture</string>
+    <string name="text_user_preferences">Usersettings</string>
 </resources>

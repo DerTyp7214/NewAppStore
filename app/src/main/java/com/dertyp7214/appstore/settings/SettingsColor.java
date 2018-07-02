@@ -13,6 +13,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 
+import com.dertyp7214.appstore.Config;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.colorPicker.ColorPicker;
 
@@ -97,7 +98,7 @@ public class SettingsColor extends Settings {
 
     @Override
     public void saveSetting(){
-        SharedPreferences preferences = context.getSharedPreferences("colors", Context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences("colors_"+Config.UID(context), Context.MODE_PRIVATE);
         @SuppressLint("CommitPrefEdits")
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt(name, getColorInt());
@@ -107,7 +108,7 @@ public class SettingsColor extends Settings {
 
     @Override
     public void loadSetting(){
-        SharedPreferences preferences = context.getSharedPreferences("colors", Context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences("colors_"+Config.UID(context), Context.MODE_PRIVATE);
         this.colorInt=isString?Color.parseColor(preferences.getString(name, colorString)):preferences.getInt(name, colorInt);
     }
 }

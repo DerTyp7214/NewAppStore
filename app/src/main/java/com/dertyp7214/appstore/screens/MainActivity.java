@@ -5,43 +5,42 @@
 
 package com.dertyp7214.appstore.screens;
 
-import android.animation.LayoutTransition;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
-import android.support.transition.TransitionManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
+import android.text.Editable;
 import android.text.SpannableString;
+import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.dertyp7214.appstore.Config;
-import com.dertyp7214.appstore.CustomSnackbar;
 import com.dertyp7214.appstore.LocalJSON;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
@@ -54,10 +53,13 @@ import com.dertyp7214.appstore.fragments.FragmentMyApps;
 import com.dertyp7214.appstore.fragments.TabFragment;
 import com.dertyp7214.appstore.helpers.SQLiteHandler;
 import com.dertyp7214.appstore.items.SearchItem;
+import com.mancj.materialsearchbar.MaterialSearchBar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,11 +67,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+import static com.dertyp7214.appstore.Config.API_URL;
+
 public class MainActivity extends Utils
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, MaterialSearchBar.OnSearchActionListener {
 
     private ViewPagerAdapter adapter;
-    private FloatingActionButton fab;
     private SearchAdapter searchAdapter;
     private Thread thread;
     private int id = 0;
@@ -79,6 +82,9 @@ public class MainActivity extends Utils
     private NavigationView navView;
     private Drawable profilePic;
     private ViewPager viewPager;
+    private MaterialSearchBar searchBar;
+    private DrawerLayout drawer;
+    private View app_bar;
 
     private List<SearchItem> appItems = new ArrayList<>();
 
@@ -86,19 +92,41 @@ public class MainActivity extends Utils
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         random = new Random();
-        themeStore = ThemeStore.getInstance(this);
+        themeStore = ThemeStore.resetInstance(this);
         logs = new Logs(this);
 
         checkAppDir();
-        checkPermissions();
         checkForOldAppStore();
 
-        toolbar.setBackgroundColor(ThemeStore.getInstance(this).getPrimaryColor());
-        toolbar.setPadding(0, getStatusBarHeight(), 0, 0);
+        drawer = findViewById(R.id.drawer_layout);
+        searchBar = findViewById(R.id.searchBar);
+        searchBar.setOnSearchActionListener(this);
+        searchBar.setCardViewElevation(10);
+        searchBar.addTextChangeListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+
+        });
+
+        app_bar = findViewById(R.id.app_bar);
+        app_bar.setBackgroundColor(ThemeStore.getInstance(this).getPrimaryColor());
+        app_bar.setPadding(0, getStatusBarHeight(), 0, 0);
+
+        int margin = dpToPx(8);
+        setMargins(searchBar, margin, margin, margin, margin);
 
         navView = findViewById(R.id.nav_view);
         navView.setPadding(0, 0, 0, getNavigationBarHeight());
@@ -106,25 +134,6 @@ public class MainActivity extends Utils
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             setNavigationBarColor(this, toolbar, ThemeStore.getInstance(this).getPrimaryColor(), 300);
         }
-
-        fab = findViewById(R.id.fab);
-        int fabMargin = (int) getResources().getDimension(R.dimen.fab_margin);
-        fab.setColorFilter(Utils.isColorBright(themeStore.getAccentColor()) ? Color.BLACK : Color.WHITE);
-        fab.setBackgroundTintList(ColorStateList.valueOf(themeStore.getAccentColor()));
-        fab.setOnClickListener(view -> new CustomSnackbar(MainActivity.this, getWindow().getNavigationBarColor()).make(view, "Replace with your own action", CustomSnackbar.LENGTH_LONG)
-                .setAction("Action", null).setCallBack(new Snackbar.Callback() {
-                    @Override
-                    public void onDismissed(Snackbar snackbar, int event) {
-                        fab.setVisibility(View.VISIBLE);
-                    }
-
-                    @Override
-                    public void onShown(Snackbar snackbar) {
-                        fab.setVisibility(View.INVISIBLE);
-                    }
-                }).show());
-
-        setMargins(fab, fabMargin, fabMargin, fabMargin, fabMargin+getNavigationBarHeight());
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -144,7 +153,6 @@ public class MainActivity extends Utils
 
         tabLayout = findViewById(R.id.tabBar);
         tabLayout.setupWithViewPager(viewPager);
-        tabLayout.setBackgroundColor(themeStore.getPrimaryColor());
         tabLayout.setSelectedTabIndicatorColor(themeStore.getPrimaryTextColor());
         tabLayout.setTabTextColors(themeStore.getPrimaryTextColor(), themeStore.getPrimaryTextColor());
 
@@ -158,7 +166,7 @@ public class MainActivity extends Utils
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
+                app_bar.setBackgroundColor(themeStore.getPrimaryHue((int) (((float) position + positionOffset) * 100)));
             }
 
             @Override
@@ -166,15 +174,12 @@ public class MainActivity extends Utils
                 switch (position){
                     case 0:
                         navView.setCheckedItem(R.id.nav_home);
-                        fab.show();
                         break;
                     case 1:
                         navView.setCheckedItem(R.id.nav_myapps);
-                        fab.hide();
                         break;
                     case 2:
                         navView.setCheckedItem(R.id.nav_about);
-                        fab.hide();
                         break;
                 }
             }
@@ -186,6 +191,28 @@ public class MainActivity extends Utils
         });
 
         setUpNavView();
+    }
+
+    private int dpToPx(int dp){
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
+    }
+
+    @Override
+    protected void onResume() {
+        themeStore = ThemeStore.resetInstance(this);
+        super.onResume();
+    }
+
+    @Override
+    protected void onRestart() {
+        themeStore = ThemeStore.resetInstance(this);
+        super.onRestart();
+    }
+
+    @Override
+    protected void onStart() {
+        themeStore = ThemeStore.resetInstance(this);
+        super.onStart();
     }
 
     private void setUpNavView() {
@@ -211,9 +238,17 @@ public class MainActivity extends Utils
                 }
             });
             try {
-                String url = Config.API_URL + "/apps/pic/" + URLEncoder.encode(userName, "UTF-8").replace("+", "_") + ".png";
-                profilePic = Utils
-                        .drawableFromUrl(this, url);
+                File file = new File(getFilesDir(), userName + ".png");
+                if (file.exists()) {
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                    profilePic = new BitmapDrawable(getResources(), BitmapFactory.decodeFile(file.getAbsolutePath(), options));
+                } else {
+                    String url = API_URL + "/apps/pic/" + URLEncoder.encode(userName, "UTF-8").replace("+", "_") + ".png";
+                    profilePic = Utils.drawableFromUrl(this, url);
+                    FileOutputStream fileOutputStream = new FileOutputStream(file);
+                    drawableToBitmap(profilePic).compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 logs.info("setUpNavView", e.toString() + "\n" + e.getMessage());
@@ -268,7 +303,7 @@ public class MainActivity extends Utils
                 appItems.clear();
 
                 if(new JSONObject(LocalJSON.getJSON(MainActivity.this)).getBoolean("error"))
-                    LocalJSON.setJSON(MainActivity.this, Utils.getWebContent(Config.API_URL + "/apps/list.php"));
+                    LocalJSON.setJSON(MainActivity.this, Utils.getWebContent(API_URL + "/apps/list.php"));
 
                 JSONObject jsonObject = new JSONObject(LocalJSON.getJSON(MainActivity.this));
 
@@ -327,70 +362,6 @@ public class MainActivity extends Utils
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        getMenuInflater().inflate(R.menu.search_menu, menu);
-
-        int iconTint = Utils.isColorBright(themeStore.getPrimaryColor()) ? Color.BLACK : Color.WHITE;
-
-        MenuItem searchMenu = menu.findItem(R.id.action_search);
-        searchMenu.getIcon().setTint(iconTint);
-
-        navView.setCheckedItem(R.id.nav_home);
-
-        SearchView searchView = (SearchView) searchMenu.getActionView();
-        ((ImageView) searchView.findViewById(R.id.search_close_btn)).setImageTintList(ColorStateList.valueOf(iconTint));
-        searchView.setQueryHint(getString(R.string.search));
-        searchView.setIconifiedByDefault(true);
-
-        for (TextView textView : findChildrenByClass(TextView.class, searchView)) {
-            textView.setTextColor(iconTint);
-            textView.setHintTextColor(iconTint);
-        }
-
-        for(ImageView imageButton : findChildrenByClass(ImageView.class, searchView))
-            imageButton.setColorFilter(iconTint);
-
-        LinearLayout searchBar = searchView.findViewById(R.id.search_bar);
-        searchBar.setLayoutTransition(new LayoutTransition());
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                search(query);
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                search(newText);
-                return false;
-            }
-        });
-
-        searchView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-
-            @Override
-            public void onViewDetachedFromWindow(View arg0) {
-                View searchLayout = findViewById(R.id.searchLayout);
-                View content = findViewById(R.id.content);
-                changeOpacity(searchLayout, true);
-                tabLayout.setVisibility(View.VISIBLE);
-                content.setVisibility(View.VISIBLE);
-                setTimeOut(100, () -> {
-                    if (viewPager.getCurrentItem() == 0) fab.show();
-                });
-            }
-
-            @Override
-            public void onViewAttachedToWindow(View arg0) {
-                View searchLayout = findViewById(R.id.searchLayout);
-                View content = findViewById(R.id.content);
-                changeOpacity(searchLayout, false);
-                tabLayout.setVisibility(View.GONE);
-                content.setVisibility(View.INVISIBLE);
-                fab.hide();
-            }
-        });
-
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -398,15 +369,6 @@ public class MainActivity extends Utils
     public boolean onOptionsItemSelected(MenuItem item) {
 
         int id = item.getItemId();
-
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-
-        switch(id) {
-            case R.id.action_search:
-                TransitionManager.beginDelayedTransition(findViewById(R.id.toolbar));
-                MenuItemCompat.expandActionView(item);
-                return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -445,6 +407,43 @@ public class MainActivity extends Utils
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onSearchStateChanged(boolean enabled) {
+        if(enabled&&!Config.SERVER_ONLINE) searchBar.disableSearch();
+        if(!enabled) {
+            View searchLayout = findViewById(R.id.searchLayout);
+            View content = findViewById(R.id.content);
+            changeOpacity(searchLayout, true);
+            tabLayout.setVisibility(View.VISIBLE);
+            content.setVisibility(View.VISIBLE);
+            searchBar.clearSuggestions();
+        }
+    }
+
+    @Override
+    public void onSearchConfirmed(CharSequence text) {
+        search(text.toString());
+        View searchLayout = findViewById(R.id.searchLayout);
+        View content = findViewById(R.id.content);
+        changeOpacity(searchLayout, false);
+        tabLayout.setVisibility(View.GONE);
+        content.setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public void onButtonClicked(int buttonCode) {
+        switch (buttonCode){
+            case MaterialSearchBar.BUTTON_NAVIGATION:
+                drawer.openDrawer(Gravity.START);
+                break;
+            case MaterialSearchBar.BUTTON_SPEECH:
+                break;
+            case MaterialSearchBar.BUTTON_BACK:
+                searchBar.disableSearch();
+                break;
+        }
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {

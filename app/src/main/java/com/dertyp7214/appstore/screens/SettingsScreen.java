@@ -9,6 +9,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -24,6 +25,7 @@ import android.text.Html;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -37,6 +39,7 @@ import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.SettingsAdapter;
 import com.dertyp7214.appstore.components.InputDialog;
+import com.dertyp7214.appstore.helpers.SQLiteHandler;
 import com.dertyp7214.appstore.interfaces.MyInterface;
 import com.dertyp7214.appstore.settings.Settings;
 import com.dertyp7214.appstore.settings.SettingsColor;
@@ -45,6 +48,8 @@ import com.dertyp7214.appstore.settings.SettingsSwitch;
 import com.dertyp7214.githubsource.GitHubSource;
 import com.dertyp7214.githubsource.github.Repository;
 import com.dertyp7214.githubsource.helpers.ColorStyle;
+import com.nbsp.materialfilepicker.MaterialFilePicker;
+import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 import com.paypal.android.sdk.payments.PayPalConfiguration;
 import com.paypal.android.sdk.payments.PayPalPayment;
 import com.paypal.android.sdk.payments.PayPalService;
@@ -54,17 +59,29 @@ import com.paypal.android.sdk.payments.PaymentConfirmation;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
 import static android.support.design.widget.BottomSheetBehavior.STATE_HIDDEN;
+import static com.dertyp7214.appstore.Config.API_URL;
+import static com.dertyp7214.appstore.Config.UID;
 
 public class SettingsScreen extends Utils implements MyInterface {
 
@@ -186,7 +203,53 @@ public class SettingsScreen extends Utils implements MyInterface {
             } else if (resultCode == PaymentActivity.RESULT_EXTRAS_INVALID) {
                 Log.d("PAYPAL", "An invalid Payment or PayPalConfiguration was submitted. Please see the docs.");
             }
+        } else if (requestCode == 10 && resultCode == RESULT_OK) {
+            ProgressDialog prog = new ProgressDialog(SettingsScreen.this);
+            prog.setMessage("Uploading");
+            prog.setCancelable(false);
+            prog.show();
+
+            SQLiteHandler db = new SQLiteHandler(getApplicationContext());
+            HashMap<String, String> user = db.getUserDetails();
+            final String userName = user.get("name");
+
+            Thread t = new Thread(() -> {
+                final File f = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
+                String content_type = getMimeType(f.getPath());
+                final String file_path = f.getAbsolutePath();
+                OkHttpClient client = new OkHttpClient();
+                final RequestBody file_body = RequestBody.create(MediaType.parse(content_type), f);
+                RequestBody request_body = new MultipartBody.Builder()
+                        .setType(MultipartBody.FORM)
+                        .addFormDataPart("type", content_type)
+                        .addFormDataPart("uploaded_file", file_path.substring(file_path.lastIndexOf("/") + 1), file_body)
+                        .addFormDataPart("name", userName.replace(" ", "_"))
+                        .build();
+                Request request = new Request.Builder()
+                        .url(API_URL+"/apps/upload.php")
+                        .post(request_body)
+                        .build();
+                try {
+                    Response response = client.newCall(request).execute();
+                    assert response.body() != null;
+                    Log.d("RESPONSE:", response.body().string());
+                    if (!response.isSuccessful()) {
+                        throw new IOException("Error : " + response);
+                    }
+                    File imgFile = new File(getFilesDir(), userName + ".png");
+                    if (imgFile.exists()) if(imgFile.delete()) prog.dismiss();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                prog.dismiss();
+            });
+            t.start();
         }
+    }
+
+    private String getMimeType(String path) {
+        String extension = MimeTypeMap.getFileExtensionFromUrl(path);
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
     }
 
     private String getH4(String string){
@@ -298,7 +361,7 @@ public class SettingsScreen extends Utils implements MyInterface {
                     dialog.setListener(new InputDialog.Listener() {
                         @Override
                         public void onSubmit(String text) {
-                            getSharedPreferences("settings", MODE_PRIVATE).edit().putString("API_KEY", text).apply();
+                            Utils.getSettings(SettingsScreen.this).edit().putString("API_KEY", text).apply();
                             subTitle.setText(cutString(getSettings(SettingsScreen.this).getString("API_KEY", getString(R.string.text_not_set)), 30));
                         }
 
@@ -338,9 +401,17 @@ public class SettingsScreen extends Utils implements MyInterface {
                     settingsColor.saveSetting();
                     setColors();
                 }),
-                new SettingsSwitch("colored_navigationbar", getString(R.string.text_colored_navbar), this, getSettings(this).getBoolean("colored_nav_bar", false)).setCheckedChangeListener(value -> {
+                new SettingsSwitch("colored_nav_bar", getString(R.string.text_colored_navbar), this, getSettings(this).getBoolean("colored_nav_bar", false)).setCheckedChangeListener(value -> {
                     getSettings(SettingsScreen.this).edit().putBoolean("colored_nav_bar", value).apply();
                     setNavigationBarColor(this, getWindow().getDecorView(), ThemeStore.getInstance(this).getPrimaryColor(), 300);
+                }),
+                new SettingsPlaceholder("user_preferences", getString(R.string.text_user_preferences), this),
+                new Settings("change_profile_pic", getString(R.string.text_change_profile_pic), this).addSettingsOnClick((name, instance, subTitle, imageRight) -> {
+                    new MaterialFilePicker()
+                            .withActivity(SettingsScreen.this)
+                            .withRequestCode(10)
+                            .withFilter(Pattern.compile(".*\\.(png|jpg|jpeg)$"))
+                            .start();
                 })
         )));
         return settingsList;
@@ -350,8 +421,37 @@ public class SettingsScreen extends Utils implements MyInterface {
     public void onBackPressed() {
         if(bottomSheetBehavior.getState()==STATE_EXPANDED)
             bottomSheetBehavior.setState(STATE_HIDDEN);
-        else
+        else {
+            syncPreferencesToServer();
             super.onBackPressed();
+        }
+    }
+
+    private void syncPreferencesToServer() {
+        new Thread(() -> {
+            SharedPreferences preferences = getSettings(this);
+            SharedPreferences colors = getSharedPreferences("colors_"+UID(this), MODE_PRIVATE);
+            JSONObject jsonObject = new JSONObject();
+            JSONObject prefs = new JSONObject();
+            JSONObject color = new JSONObject();
+
+            try {
+
+                for (String key : preferences.getAll().keySet()) {
+                    prefs.put(key, preferences.getAll().get(key));
+                }
+                for (String key : colors.getAll().keySet()) {
+                    color.put(key, colors.getAll().get(key));
+                }
+
+                jsonObject.put("prefs", prefs);
+                jsonObject.put("colors", color);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            getWebContent(API_URL + "/apps/prefs.php?user=" + UID(this) + "&prefs=" + jsonObject.toString());
+        }).start();
     }
 
     @Override

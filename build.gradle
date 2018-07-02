@@ -7,7 +7,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.0-alpha18'
+        classpath 'com.android.tools.build:gradle:3.2.0-beta02'
         
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -23,6 +23,7 @@ allprojects {
             dirs 'libs'
         }
         maven { url 'https://jitpack.io' }
+        maven { url "http://dl.bintray.com/lukaville/maven" }
         mavenCentral()
         maven { url "http://repo.pageturner-reader.org" }
     }

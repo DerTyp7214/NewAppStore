@@ -21,6 +21,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -40,6 +41,8 @@ import android.support.v4.content.FileProvider;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,8 +61,10 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,11 +82,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import static com.dertyp7214.appstore.Config.API_URL;
+import static com.dertyp7214.appstore.Config.UID;
 
 public class Utils extends AppCompatActivity {
 
@@ -286,7 +295,7 @@ public class Utils extends AppCompatActivity {
         return ret.toString();
     }
 
-    public final static String COLORED_NAVIGATIONBAR = "colored_navigationbar";
+    public final static String COLORED_NAVIGATIONBAR = "colored_nav_bar";
 
     public static HashMap<String, SearchItem> appsList = new HashMap<>();
     public static SearchItem currentApp;
@@ -312,6 +321,18 @@ public class Utils extends AppCompatActivity {
         return info;
     }
 
+    public static String encodeToBase64(Drawable drawable) {
+        Bitmap image = drawableToBitmap(drawable);
+        ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOS);
+        return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
+    }
+
+    public static Drawable decodeBase64(Context context, String input) {
+        byte[] decodedBytes = Base64.decode(input,0);
+        return new BitmapDrawable(context.getResources(), BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length));
+    }
+
     public Parcelable checkExtraKey(Bundle extra, String key){
         if (extra == null) finish();
         assert extra != null;
@@ -319,12 +340,33 @@ public class Utils extends AppCompatActivity {
         return extra.getParcelable(key);
     }
 
+    protected String readFromFileInputStream(FileInputStream fileInputStream) {
+        StringBuilder retBuf = new StringBuilder();
+
+        try {
+            if (fileInputStream != null) {
+                InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+                String lineData = bufferedReader.readLine();
+                while (lineData != null) {
+                    retBuf.append(lineData);
+                    lineData = bufferedReader.readLine();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return retBuf.toString();
+    }
+
     public CustomAppBarLayout getAppBar(){
         return findViewById(R.id.app_bar);
     }
 
     public static SharedPreferences getSettings(@NonNull Context context){
-        return context.getSharedPreferences("settings", MODE_PRIVATE);
+        return context.getSharedPreferences("settings_"+Config.UID(context), MODE_PRIVATE);
     }
 
     public <V extends View> Collection<V> findChildrenByClass(Class<V> clazz, ViewGroup... viewGroups) {
@@ -459,7 +501,7 @@ public class Utils extends AppCompatActivity {
     }
 
     public static void setNavigationBarColor(Activity activity, View view, @ColorInt int color, int duration){
-        if(getSettings(activity).getBoolean(COLORED_NAVIGATIONBAR, false) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if(getSettings(activity).getBoolean(COLORED_NAVIGATIONBAR, false) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && view != null) {
             Window window = activity.getWindow();
             ValueAnimator animator = ValueAnimator.ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), color);
             animator.setDuration(duration);
@@ -472,7 +514,7 @@ public class Utils extends AppCompatActivity {
                 window.setNavigationBarColor(c);
             });
             animator.start();
-        } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+        } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && view != null){
             Window window = activity.getWindow();
             ValueAnimator animator = ValueAnimator.ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), Color.BLACK);
             animator.setDuration(duration);
@@ -788,8 +830,81 @@ public class Utils extends AppCompatActivity {
             return drawable;
         }catch (Exception e){
             e.printStackTrace();
-            return null;
+            Bitmap bitmap = drawableToBitmap(context.getDrawable(R.drawable.ic_person));
+            int color = ThemeStore.getInstance(context).getAccentColor();
+            return new BitmapDrawable(context.getResources(), overlay(createBitmap(bitmap, color), bitmap));
         }
+    }
+
+    protected void syncPreferences() {
+        new Thread(() -> {
+            SharedPreferences preferences = getSettings(this);
+            SharedPreferences.Editor editor = preferences.edit();
+            SharedPreferences colors = getSharedPreferences("colors_"+UID(this), MODE_PRIVATE);
+            SharedPreferences.Editor editorColor = colors.edit();
+
+            try {
+                JSONObject jsonObject = new JSONObject(getWebContent(API_URL + "/apps/prefs.php?user=" + UID(this)));
+
+                for (Iterator<String> it = jsonObject.getJSONObject("prefs").keys(); it.hasNext(); ) {
+                    String key = it.next();
+                    Object obj = jsonObject.getJSONObject("prefs").get(key);
+                    if (obj instanceof String)
+                        editor.putString(key, (String) obj);
+                    else if (obj instanceof Integer)
+                        editor.putInt(key, (int) obj);
+                    else if (obj instanceof Long)
+                        editor.putLong(key, (long) obj);
+                    else if (obj instanceof Float)
+                        editor.putFloat(key, (float) obj);
+                    else if (obj instanceof Boolean)
+                        editor.putBoolean(key, (boolean) obj);
+                    else if (obj instanceof Set)
+                        editor.putStringSet(key, (Set<String>) obj);
+
+                }
+
+                for (Iterator<String> it = jsonObject.getJSONObject("colors").keys(); it.hasNext(); ) {
+                    String key = it.next();
+                    Object obj = jsonObject.getJSONObject("colors").get(key);
+                    if (obj instanceof String)
+                        editorColor.putString(key, (String) obj);
+                    else if (obj instanceof Integer)
+                        editorColor.putInt(key, (int) obj);
+                    else if (obj instanceof Long)
+                        editorColor.putLong(key, (long) obj);
+                    else if (obj instanceof Float)
+                        editorColor.putFloat(key, (float) obj);
+                    else if (obj instanceof Boolean)
+                        editorColor.putBoolean(key, (boolean) obj);
+                    else if (obj instanceof Set)
+                        editorColor.putStringSet(key, (Set<String>) obj);
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            editor.apply();
+            editorColor.apply();
+            Log.d("PREFS", preferences.getAll().toString());
+            Log.d("COLORS", colors.getAll().toString());
+        }).start();
+    }
+
+    private static Bitmap  createBitmap(Bitmap copy, @ColorInt int color){
+        Bitmap bmp=Bitmap.createBitmap(copy.getWidth(),copy.getHeight(),Bitmap.Config.ARGB_8888);
+        Canvas canvas=new Canvas(bmp);
+        canvas.drawColor(color);
+        return bmp;
+    }
+
+    private static Bitmap overlay(Bitmap bmp1, Bitmap bmp2) {
+        Bitmap bmOverlay = Bitmap.createBitmap(bmp1.getWidth(), bmp1.getHeight(), bmp1.getConfig());
+        Canvas canvas = new Canvas(bmOverlay);
+        canvas.drawBitmap(bmp1, new Matrix(), null);
+        canvas.drawBitmap(bmp2, new Matrix(), null);
+        return bmOverlay;
     }
 
     public static class ByteBuffer{
