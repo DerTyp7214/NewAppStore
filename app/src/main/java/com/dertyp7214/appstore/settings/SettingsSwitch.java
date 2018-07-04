@@ -31,7 +31,7 @@ public class SettingsSwitch extends Settings {
         saveSetting();
     }
 
-    public Settings setCheckedChangeListener(CheckedChangeListener changeListener){
+    public SettingsSwitch setCheckedChangeListener(CheckedChangeListener changeListener){
         this.checkedChangeListener=changeListener;
         return this;
     }

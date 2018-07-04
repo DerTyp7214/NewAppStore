@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.android.volley.Request.Method;
 import com.android.volley.toolbox.StringRequest;
+import com.dertyp7214.appstore.BuildConfig;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.helpers.SQLiteHandler;
 import com.dertyp7214.appstore.helpers.SessionManager;
@@ -227,7 +228,7 @@ public class LoginActivity extends Activity {
                             db.addUser(name, email1, uid, created_at);
 
                             AccountManager accountManager = AccountManager.get(LoginActivity.this); //this is Activity
-                            Account account = new Account(email1,"com.dertyp7214.appstore.ACCOUNT");
+                            Account account = new Account(email1,BuildConfig.APPLICATION_ID+".ACCOUNT");
                             boolean success = accountManager.addAccountExplicitly(account,password,null);
                             if(success){
                                 Log.d(TAG,"Account created");

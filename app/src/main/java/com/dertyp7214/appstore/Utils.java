@@ -94,7 +94,8 @@ import static com.dertyp7214.appstore.Config.UID;
 
 public class Utils extends AppCompatActivity {
 
-    private int PERMISSIONS = 10;
+    protected static final String PACKAGE_NAME = "com.dertyp7214.appstore";
+    protected int PERMISSIONS = 10;
     protected String oldAppPackageName = "com.hacker.appstore";
     private static HashMap<String, Drawable> icons = new HashMap<>();
     public Logs logs;

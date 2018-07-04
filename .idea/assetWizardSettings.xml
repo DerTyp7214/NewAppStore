@@ -36,7 +36,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="scalingPercent" value="54" />
+                                                <entry key="scalingPercent" value="52" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -50,7 +50,6 @@
                                       <entry key="backgroundColor" value="5782ff" />
                                       <entry key="foregroundImage" value="I:\Userfolder\Downloads\if_file-download_svg-vector-glyph_763309.svg" />
                                       <entry key="previewDensity" value="XXXHIGH" />
-                                      <entry key="showGrid" value="true" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -69,11 +68,6 @@
                                 </PersistentState>
                               </value>
                             </entry>
-                          </map>
-                        </option>
-                        <option name="values">
-                          <map>
-                            <entry key="outputIconType" value="LAUNCHER_LEGACY" />
                           </map>
                         </option>
                       </PersistentState>

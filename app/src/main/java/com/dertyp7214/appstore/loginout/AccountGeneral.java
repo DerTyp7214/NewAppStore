@@ -10,7 +10,7 @@ public class AccountGeneral {
     /**
      * Account type id
      */
-    public static final String ACCOUNT_TYPE = "com.hacker.appstore.auth";
+    public static final String ACCOUNT_TYPE = "com.dertyp7214.appstore.auth";
 
     /**
      * Account name

@@ -8,8 +8,10 @@ package com.dertyp7214.appstore.screens;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -414,6 +416,20 @@ public class SettingsScreen extends Utils implements MyInterface {
                             .start();
                 })
         )));
+        if(BuildConfig.DEBUG){
+            SettingsSwitch hideIcon = new SettingsSwitch("hide_appicon", getString(R.string.text_hide_icon), this, getSettings(this).getBoolean("hide_appicon", false))
+                    .setCheckedChangeListener(value -> {
+                        getSettings(this).edit().putBoolean("hide_appicon", value).apply();
+                        PackageManager p = getPackageManager();
+                        ComponentName componentName = new ComponentName(this, Splashscreen.class);
+                        if(value)
+                            p.setComponentEnabledSetting(componentName,PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+                        else
+                            p.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+                    });
+            settingsList.add(new SettingsPlaceholder("debug", getString(R.string.text_debug), this));
+            settingsList.add(hideIcon);
+        }
         return settingsList;
     }
 
