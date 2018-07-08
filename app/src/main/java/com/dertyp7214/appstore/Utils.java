@@ -5,51 +5,27 @@
 
 package com.dertyp7214.appstore;
 
-import android.Manifest;
-import android.animation.ArgbEvaluator;
-import android.animation.ValueAnimator;
-import android.app.Activity;
+import android.*;
+import android.animation.*;
+import android.annotation.SuppressLint;
+import android.app.*;
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.Looper;
-import android.os.Parcelable;
-import android.support.annotation.ColorInt;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.text.Html;
-import android.util.Base64;
-import android.util.Log;
-import android.view.Menu;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.content.*;
+import android.content.pm.*;
+import android.content.res.*;
+import android.graphics.*;
+import android.graphics.drawable.*;
+import android.net.*;
+import android.os.*;
+import android.support.annotation.*;
+import android.support.v4.app.*;
+import android.support.v4.content.*;
+import android.support.v4.graphics.drawable.*;
+import android.support.v7.app.*;
+import android.text.*;
+import android.util.*;
+import android.view.*;
+import android.widget.*;
 
 import com.dertyp7214.appstore.components.CustomAppBarLayout;
 import com.dertyp7214.appstore.components.CustomToolbar;
@@ -70,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.Process;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -92,6 +69,7 @@ import java.util.regex.Pattern;
 import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Config.UID;
 
+@SuppressLint("Registered")
 public class Utils extends AppCompatActivity {
 
     protected static final String PACKAGE_NAME = "com.dertyp7214.appstore";
@@ -145,16 +123,20 @@ public class Utils extends AppCompatActivity {
         }
     }
 
-    protected void applyTheme(){
+    protected void applyTheme() {
         ThemeStore themeStore = ThemeStore.getInstance(this);
         setStatusBarColor(themeStore.getPrimaryDarkColor());
         setNavigationBarColor(this, getWindow().getDecorView(), themeStore.getPrimaryColor(), 300);
-        if(toolbar!=null){
+        if (toolbar != null) {
             toolbar.setBackgroundColor(themeStore.getPrimaryColor());
             toolbar.setToolbarIconColor(themeStore.getPrimaryColor());
         } else {
-            Objects.requireNonNull(getSupportActionBar()).setBackgroundDrawable(new ColorDrawable(themeStore.getPrimaryColor()));
-            getSupportActionBar().setTitle(Html.fromHtml("<font color='"+String.format("#%06X", 0xFFFFFF & themeStore.getPrimaryTextColor())+"'>"+getSupportActionBar().getTitle()+"</font>"));
+            Objects.requireNonNull(getSupportActionBar())
+                    .setBackgroundDrawable(new ColorDrawable(themeStore.getPrimaryColor()));
+            getSupportActionBar().setTitle(Html.fromHtml("<font color='" + String.format("#%06X",
+                                                                                         0xFFFFFF & themeStore
+                                                                                                 .getPrimaryTextColor()
+            ) + "'>" + getSupportActionBar().getTitle() + "</font>"));
         }
     }
 
@@ -164,35 +146,43 @@ public class Utils extends AppCompatActivity {
                 Utils.this.runOnUiThread(() -> {
                     progressBar.setVisibility(View.VISIBLE);
                     progressBar.setIndeterminate(true);
-                    progressBar.setProgressTintList(ColorStateList.valueOf(ThemeStore.getInstance(this).getAccentColor()));
+                    progressBar.setProgressTintList(
+                            ColorStateList.valueOf(ThemeStore.getInstance(this).getAccentColor()));
                     subTitle.setText(getString(R.string.text_loading));
                 });
                 Thread.sleep(300);
-                String version = getWebContent(Config.API_URL+"/apps/list.php?version="+getPackageName());
-                if(version==null)
+                String version = getWebContent(
+                        Config.API_URL + "/apps/list.php?version=" + getPackageName());
+                if (version == null)
                     throw new InterruptedException();
-                if(!version.equals(BuildConfig.VERSION_NAME)){
+                if (!version.equals(BuildConfig.VERSION_NAME)) {
                     runOnUiThread(() -> subTitle.setText(getString(R.string.text_touch_to_update)));
-                    settings.addSettingsOnClick((name, setting, subTitle1, imageRight) -> new Thread(() -> {
-                        Looper.prepare();
-                        runOnUiThread(() -> {
-                            progressBar.setVisibility(View.VISIBLE);
-                            progressBar.setMax(100);
-                        });
-                        File file = getWebContent(Config.API_URL + Config.APK_PATH
-                                        .replace("{id}", getPackageName())
-                                        .replace("{uid}", Config.UID(this)),
-                                new File(Environment.getExternalStorageDirectory(), ".appStore"),
-                                42,
-                                progress -> runOnUiThread(() -> {
-                                    if (Build.VERSION_CODES.N <= Build.VERSION.SDK_INT)
-                                        progressBar.setProgress(progress, true);
-                                    else
-                                        progressBar.setProgress(progress);
-                                }));
-                        install_apk(this, file);
-                        runOnUiThread(() -> progressBar.setVisibility(View.INVISIBLE));
-                    }).start());
+                    settings.addSettingsOnClick(
+                            (name, setting, subTitle1, imageRight) -> new Thread(() -> {
+                                Looper.prepare();
+                                runOnUiThread(() -> {
+                                    progressBar.setVisibility(View.VISIBLE);
+                                    progressBar.setMax(100);
+                                });
+                                File file = getWebContent(
+                                        Config.API_URL + Config.APK_PATH
+                                                .replace("{id}", getPackageName())
+                                                .replace("{uid}", Config.UID(this)),
+                                        new File(
+                                                Environment.getExternalStorageDirectory(),
+                                                ".appStore"
+                                        ),
+                                        42,
+                                        progress -> runOnUiThread(() -> {
+                                            if (Build.VERSION_CODES.N <= Build.VERSION.SDK_INT)
+                                                progressBar.setProgress(progress, true);
+                                            else
+                                                progressBar.setProgress(progress);
+                                        })
+                                );
+                                install_apk(this, file);
+                                runOnUiThread(() -> progressBar.setVisibility(View.INVISIBLE));
+                            }).start());
                 } else {
                     runOnUiThread(() -> subTitle.setText(getString(R.string.text_latest_version)));
                 }
@@ -207,7 +197,7 @@ public class Utils extends AppCompatActivity {
         }).start();
     }
 
-    public void sleep(long duration){
+    public void sleep(long duration) {
         try {
             Thread.sleep(duration);
         } catch (InterruptedException e) {
@@ -215,36 +205,41 @@ public class Utils extends AppCompatActivity {
         }
     }
 
-    public Bitmap getBitmapFromResource(@DrawableRes int resource){
+    public Bitmap getBitmapFromResource(@DrawableRes int resource) {
         return BitmapFactory.decodeResource(getResources(), resource);
     }
 
-    public void startActivity(Activity context, Class aClass){
+    public void startActivity(Activity context, Class aClass) {
         startActivity(new Intent(context, aClass));
     }
 
-    public void startActivity(Activity context, Class aClass, Bundle options){
+    public void startActivity(Activity context, Class aClass, Bundle options) {
         startActivity(new Intent(context, aClass), options);
     }
 
-    public class startActivityAsync{
+    public class startActivityAsync {
+
         private Activity activity;
         private Class aClass;
         private Bundle options;
         private long time = 0;
-        public startActivityAsync(Activity activity, Class aClass){
+
+        public startActivityAsync(Activity activity, Class aClass) {
             this(activity, aClass, null);
         }
-        public startActivityAsync(Activity activity, Class aClass, Bundle options){
-            this.activity=activity;
-            this.aClass=aClass;
-            this.options=options;
+
+        public startActivityAsync(Activity activity, Class aClass, Bundle options) {
+            this.activity = activity;
+            this.aClass = aClass;
+            this.options = options;
         }
-        public startActivityAsync setTime(long time){
-            this.time=time;
+
+        public startActivityAsync setTime(long time) {
+            this.time = time;
             return this;
         }
-        public void start(Async async){
+
+        public void start(Async async) {
             new Thread(() -> {
                 sleep(time);
                 async.run(activity, aClass, options);
@@ -252,7 +247,8 @@ public class Utils extends AppCompatActivity {
         }
     }
 
-    public interface Async{
+    public interface Async {
+
         void run(Activity activity, Class aClass, Bundle options);
     }
 
@@ -274,7 +270,7 @@ public class Utils extends AppCompatActivity {
         return result;
     }
 
-    public void setMargins (View v, int l, int t, int r, int b) {
+    public void setMargins(View v, int l, int t, int r, int b) {
         if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
             ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
             p.setMargins(l, t, r, b);
@@ -282,15 +278,16 @@ public class Utils extends AppCompatActivity {
         }
     }
 
-    public static void removeMyApp(String packageName, Context context){
-        getWebContent(Config.API_URL+"/apps/myapps.php?uid="+Config.UID(context)+"&remove="+packageName);
+    public static void removeMyApp(String packageName, Context context) {
+        getWebContent(Config.API_URL + "/apps/myapps.php?uid=" + Config
+                .UID(context) + "&remove=" + packageName);
     }
 
-    public String cutString(String string, int cutAt){
-        if(string.length()<cutAt)
+    public String cutString(String string, int cutAt) {
+        if (string.length() < cutAt)
             return string;
         StringBuilder ret = new StringBuilder();
-        for(int i=0;i<cutAt;i++)
+        for (int i = 0; i < cutAt; i++)
             ret.append(string.charAt(i));
         ret.append("...");
         return ret.toString();
@@ -301,23 +298,23 @@ public class Utils extends AppCompatActivity {
     public static HashMap<String, SearchItem> appsList = new HashMap<>();
     public static SearchItem currentApp;
 
-    public Bundle checkExtra(Bundle extra){
+    public Bundle checkExtra(Bundle extra) {
         if (extra == null) finish();
         assert extra != null;
         if (extra.size() > 1) finish();
         return extra;
     }
 
-    public static List<ApplicationInfo> getInstalledApps(@NonNull Context context){
+    public static List<ApplicationInfo> getInstalledApps(@NonNull Context context) {
         final PackageManager pm = context.getPackageManager();
         return pm.getInstalledApplications(PackageManager.GET_META_DATA);
     }
 
-    public static ApplicationInfo getApplicationInfo(Context context, String packageName){
+    public static ApplicationInfo getApplicationInfo(Context context, String packageName) {
         ApplicationInfo info = null;
-        try{
+        try {
             info = context.getPackageManager().getApplicationInfo(packageName, 0);
-        } catch (Exception ignored){
+        } catch (Exception ignored) {
         }
         return info;
     }
@@ -330,11 +327,13 @@ public class Utils extends AppCompatActivity {
     }
 
     public static Drawable decodeBase64(Context context, String input) {
-        byte[] decodedBytes = Base64.decode(input,0);
-        return new BitmapDrawable(context.getResources(), BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length));
+        byte[] decodedBytes = Base64.decode(input, 0);
+        return new BitmapDrawable(
+                context.getResources(), BitmapFactory
+                .decodeByteArray(decodedBytes, 0, decodedBytes.length));
     }
 
-    public Parcelable checkExtraKey(Bundle extra, String key){
+    public Parcelable checkExtraKey(Bundle extra, String key) {
         if (extra == null) finish();
         assert extra != null;
         if (extra.getParcelable(key) == null) finish();
@@ -362,28 +361,27 @@ public class Utils extends AppCompatActivity {
         return retBuf.toString();
     }
 
-    public CustomAppBarLayout getAppBar(){
+    public CustomAppBarLayout getAppBar() {
         return findViewById(R.id.app_bar);
     }
 
-    public static SharedPreferences getSettings(@NonNull Context context){
-        return context.getSharedPreferences("settings_"+Config.UID(context), MODE_PRIVATE);
+    public static SharedPreferences getSettings(@NonNull Context context) {
+        return context.getSharedPreferences("settings_" + Config.UID(context), MODE_PRIVATE);
     }
 
     public <V extends View> Collection<V> findChildrenByClass(Class<V> clazz, ViewGroup... viewGroups) {
         Collection<V> collection = new ArrayList<>();
-        for(ViewGroup viewGroup : viewGroups)
+        for (ViewGroup viewGroup : viewGroups)
             collection.addAll(gatherChildrenByClass(viewGroup, clazz, new ArrayList<V>()));
         return collection;
     }
 
     private <V extends View> Collection<V> gatherChildrenByClass(@NonNull ViewGroup viewGroup, Class<V> clazz, @NonNull Collection<V> childrenFound) {
 
-        for (int i = 0; i < viewGroup.getChildCount(); i++)
-        {
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
             final View child = viewGroup.getChildAt(i);
             if (clazz.isAssignableFrom(child.getClass())) {
-                childrenFound.add((V)child);
+                childrenFound.add((V) child);
             }
             if (child instanceof ViewGroup) {
                 gatherChildrenByClass((ViewGroup) child, clazz, childrenFound);
@@ -393,74 +391,76 @@ public class Utils extends AppCompatActivity {
         return childrenFound;
     }
 
-    public void importSettings(Map<String, Object> settings){
+    public void importSettings(Map<String, Object> settings) {
         SharedPreferences.Editor prefs = getSettings(this).edit();
-        for(String key : settings.keySet()){
+        for (String key : settings.keySet()) {
             Object obj = settings.get(key);
-            if(obj instanceof Float)
+            if (obj instanceof Float)
                 prefs.putFloat(key, (float) obj);
-            else if(obj instanceof String)
+            else if (obj instanceof String)
                 prefs.putString(key, (String) obj);
-            else if(obj instanceof Boolean)
+            else if (obj instanceof Boolean)
                 prefs.putBoolean(key, (boolean) obj);
-            else if(obj instanceof Integer)
+            else if (obj instanceof Integer)
                 prefs.putInt(key, (int) obj);
-            else if(obj instanceof Long)
+            else if (obj instanceof Long)
                 prefs.putLong(key, (long) obj);
-            else if(obj instanceof Set)
+            else if (obj instanceof Set)
                 prefs.putStringSet(key, (Set<String>) obj);
         }
         prefs.apply();
     }
 
-    public String exportSettings(){
+    public String exportSettings() {
         Map<String, ?> settings = getSettings(this).getAll();
         return new JSONObject(settings).toString();
     }
 
-    public static void setSettings(@NonNull Context context, @NonNull SharedPreferences settings){
+    public static void setSettings(@NonNull Context context, @NonNull SharedPreferences settings) {
         Map<String, ?> objectMap = settings.getAll();
         SharedPreferences.Editor prefs = getSettings(context).edit();
-        for(String key : objectMap.keySet()){
+        for (String key : objectMap.keySet()) {
             Object obj = objectMap.get(key);
-            if(obj instanceof Float)
+            if (obj instanceof Float)
                 prefs.putFloat(key, (float) obj);
-            else if(obj instanceof String)
+            else if (obj instanceof String)
                 prefs.putString(key, (String) obj);
-            else if(obj instanceof Boolean)
+            else if (obj instanceof Boolean)
                 prefs.putBoolean(key, (boolean) obj);
-            else if(obj instanceof Integer)
+            else if (obj instanceof Integer)
                 prefs.putInt(key, (int) obj);
-            else if(obj instanceof Long)
+            else if (obj instanceof Long)
                 prefs.putLong(key, (long) obj);
-            else if(obj instanceof Set)
+            else if (obj instanceof Set)
                 prefs.putStringSet(key, (Set<String>) obj);
         }
         prefs.apply();
     }
 
-    public boolean serverOnline(){
+    public boolean serverOnline() {
         try {
             URL url = new URL(Config.API_URL);
-            SocketAddress sockaddr = new InetSocketAddress(InetAddress.getByName(url.getHost()), 80);
+            SocketAddress sockaddr = new InetSocketAddress(
+                    InetAddress.getByName(url.getHost()), 80);
             Socket sock = new Socket();
             int timeoutMs = 2000;
             sock.connect(sockaddr, timeoutMs);
             return true;
-        } catch(IOException ignored) {
+        } catch (IOException ignored) {
         }
         return false;
     }
 
-    public boolean haveConnection(){
+    public boolean haveConnection() {
         try {
             URL url = new URL("http://www.google.de");
-            SocketAddress sockaddr = new InetSocketAddress(InetAddress.getByName(url.getHost()), 80);
+            SocketAddress sockaddr = new InetSocketAddress(
+                    InetAddress.getByName(url.getHost()), 80);
             Socket sock = new Socket();
             int timeoutMs = 2000;
             sock.connect(sockaddr, timeoutMs);
             return true;
-        } catch(IOException ignored) {
+        } catch (IOException ignored) {
         }
         return false;
     }
@@ -501,10 +501,13 @@ public class Utils extends AppCompatActivity {
 
     }
 
-    public static void setNavigationBarColor(Activity activity, View view, @ColorInt int color, int duration){
-        if(getSettings(activity).getBoolean(COLORED_NAVIGATIONBAR, false) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && view != null) {
+    public static void setNavigationBarColor(Activity activity, View view, @ColorInt int color, int duration) {
+        if (getSettings(activity).getBoolean(COLORED_NAVIGATIONBAR,
+                                             false
+        ) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && view != null) {
             Window window = activity.getWindow();
-            ValueAnimator animator = ValueAnimator.ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), color);
+            ValueAnimator animator = ValueAnimator
+                    .ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), color);
             animator.setDuration(duration);
             animator.addUpdateListener(animation -> {
                 int c = (int) animation.getAnimatedValue();
@@ -515,9 +518,10 @@ public class Utils extends AppCompatActivity {
                 window.setNavigationBarColor(c);
             });
             animator.start();
-        } else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && view != null){
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && view != null) {
             Window window = activity.getWindow();
-            ValueAnimator animator = ValueAnimator.ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), Color.BLACK);
+            ValueAnimator animator = ValueAnimator
+                    .ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), Color.BLACK);
             animator.setDuration(duration);
             animator.addUpdateListener(animation -> {
                 int c = (int) animation.getAnimatedValue();
@@ -531,10 +535,11 @@ public class Utils extends AppCompatActivity {
         }
     }
 
-    public static void setStatusBarColor(Activity activity, View view, @ColorInt int color, int duration){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+    public static void setStatusBarColor(Activity activity, View view, @ColorInt int color, int duration) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Window window = activity.getWindow();
-            ValueAnimator animator = ValueAnimator.ofObject(new ArgbEvaluator(), window.getStatusBarColor(), color);
+            ValueAnimator animator = ValueAnimator
+                    .ofObject(new ArgbEvaluator(), window.getStatusBarColor(), color);
             animator.setDuration(duration);
             animator.addUpdateListener(animation -> {
                 int c = (int) animation.getAnimatedValue();
@@ -548,24 +553,25 @@ public class Utils extends AppCompatActivity {
         }
     }
 
-    public void setNavigationBarColor(@ColorInt int color){
+    public void setNavigationBarColor(@ColorInt int color) {
         getWindow().setNavigationBarColor(color);
     }
 
-    public void setStatusBarColor(@ColorInt int color){
+    public void setStatusBarColor(@ColorInt int color) {
         getWindow().setStatusBarColor(color);
     }
 
-    public int getNavigationBarColor(){
+    public int getNavigationBarColor() {
         return getWindow().getNavigationBarColor();
     }
 
-    public int getStatusBarColor(){
+    public int getStatusBarColor() {
         return getWindow().getStatusBarColor();
     }
 
-    public static boolean isColorBright(int color){
-        double darkness = 1-(0.299*Color.red(color) + 0.587*Color.green(color) + 0.114*Color.blue(color))/255;
+    public static boolean isColorBright(int color) {
+        double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color
+                .blue(color)) / 255;
         return darkness < 0.5;
     }
 
@@ -581,26 +587,33 @@ public class Utils extends AppCompatActivity {
         int r = Math.round(Color.red(color) * factor);
         int g = Math.round(Color.green(color) * factor);
         int b = Math.round(Color.blue(color) * factor);
-        return Color.argb(a,
-                Math.min(r,255),
-                Math.min(g,255),
-                Math.min(b,255));
+        return Color.argb(
+                a,
+                Math.min(r, 255),
+                Math.min(g, 255),
+                Math.min(b, 255)
+        );
     }
 
-    public static Bitmap drawableToBitmap (Drawable drawable) {
+    public static Bitmap drawableToBitmap(Drawable drawable) {
         Bitmap bitmap = null;
 
         if (drawable instanceof BitmapDrawable) {
             BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
-            if(bitmapDrawable.getBitmap() != null) {
+            if (bitmapDrawable.getBitmap() != null) {
                 return bitmapDrawable.getBitmap();
             }
         }
 
-        if(drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
-            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
+        if (drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1,
+                                         Bitmap.Config.ARGB_8888
+            ); // Single color bitmap will be created of 1x1 pixel
         } else {
-            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+            bitmap = Bitmap
+                    .createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(),
+                                  Bitmap.Config.ARGB_8888
+                    );
         }
 
         Canvas canvas = new Canvas(bitmap);
@@ -628,7 +641,8 @@ public class Utils extends AppCompatActivity {
         return null;
     }
 
-    public interface Listener{
+    public interface Listener {
+
         void run(int progress);
     }
 
@@ -640,10 +654,10 @@ public class Utils extends AppCompatActivity {
 
             InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream(), 8192);
 
-            if(!path.exists())
+            if (!path.exists())
                 path.mkdirs();
 
-            File downloadedFile = new File(path, "download_app_"+id+".apk");
+            File downloadedFile = new File(path, "download_app_" + id + ".apk");
 
             OutputStream outputStream = new FileOutputStream(downloadedFile);
 
@@ -655,7 +669,7 @@ public class Utils extends AppCompatActivity {
 
             while ((read = inputStream.read(buffer)) != -1) {
                 total += read;
-                if(fileSize > 0)
+                if (fileSize > 0)
                     listener.run((int) (total * 100 / fileSize));
                 outputStream.write(buffer, 0, read);
             }
@@ -670,14 +684,14 @@ public class Utils extends AppCompatActivity {
         return null;
     }
 
-    public boolean checkAppDir(){
+    public boolean checkAppDir() {
         File appDir = new File(Environment.getExternalStorageDirectory(), ".appStore");
         deleteDirectory(appDir);
         return appDir.mkdirs();
     }
 
     private boolean deleteDirectory(File path) {
-        if( path.exists() ) {
+        if (path.exists()) {
             File[] files = path.listFiles();
             for (File file : files) {
                 if (file.isDirectory()) {
@@ -687,11 +701,11 @@ public class Utils extends AppCompatActivity {
                 }
             }
         }
-        return(path.delete());
+        return (path.delete());
     }
 
-    public void checkForOldAppStore(){
-        if(!getSettings(this).getBoolean("old_appstore", false)) {
+    public void checkForOldAppStore() {
+        if (!getSettings(this).getBoolean("old_appstore", false)) {
             if (appInstalled(this, oldAppPackageName)) {
                 DialogInterface.OnClickListener onClickListener = (dialog, which) -> {
                     switch (which) {
@@ -725,7 +739,7 @@ public class Utils extends AppCompatActivity {
             if (file.exists()) {
                 return true;
             }
-        } catch (Exception e1) {
+        } catch (Exception ignored) {
         }
 
         return runCommand("/system/xbin/which su")
@@ -733,7 +747,7 @@ public class Utils extends AppCompatActivity {
     }
 
     public boolean runCommand(String command) {
-        logs=new Logs(this);
+        logs = new Logs(this);
         boolean executedSuccesfully;
         try {
             Runtime.getRuntime().exec(command);
@@ -746,7 +760,7 @@ public class Utils extends AppCompatActivity {
     }
 
     public void executeCommand(String cmds) {
-        logs=new Logs(this);
+        logs = new Logs(this);
         logs.info("COMMAND", cmds);
         try {
             Process process = Runtime.getRuntime().exec("su");
@@ -759,15 +773,17 @@ public class Utils extends AppCompatActivity {
             os.close();
 
             process.waitFor();
-        }catch (Exception ignored){
+        } catch (Exception ignored) {
 
         }
     }
 
     public void checkPermissions() {
-        ActivityCompat.requestPermissions(this,
+        ActivityCompat.requestPermissions(
+                this,
                 permissons().toArray(new String[0]),
-                PERMISSIONS);
+                PERMISSIONS
+        );
     }
 
     public void setTimeOut(int duration, Callback callback) {
@@ -782,6 +798,7 @@ public class Utils extends AppCompatActivity {
     }
 
     public interface Callback {
+
         void run();
     }
 
@@ -797,7 +814,9 @@ public class Utils extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS) {
             for (String permission : permissions) {
-                if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(this,
+                                                      permission
+                ) != PackageManager.PERMISSION_GRANTED) {
                     finish();
                 }
             }
@@ -815,8 +834,8 @@ public class Utils extends AppCompatActivity {
         return false;
     }
 
-    public static Drawable drawableFromUrl(Context context, String url){
-        if(icons.containsKey(url))
+    public static Drawable drawableFromUrl(Context context, String url) {
+        if (icons.containsKey(url))
             return icons.get(url);
         try {
             Bitmap bmp;
@@ -829,11 +848,12 @@ public class Utils extends AppCompatActivity {
             Drawable drawable = new BitmapDrawable(context.getResources(), bmp);
             icons.put(url, drawable);
             return drawable;
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             Bitmap bitmap = drawableToBitmap(context.getDrawable(R.drawable.ic_person));
             int color = ThemeStore.getInstance(context).getAccentColor();
-            return new BitmapDrawable(context.getResources(), overlay(createBitmap(bitmap, color), bitmap));
+            return new BitmapDrawable(
+                    context.getResources(), overlay(createBitmap(bitmap, color), bitmap));
         }
     }
 
@@ -841,13 +861,16 @@ public class Utils extends AppCompatActivity {
         new Thread(() -> {
             SharedPreferences preferences = getSettings(this);
             SharedPreferences.Editor editor = preferences.edit();
-            SharedPreferences colors = getSharedPreferences("colors_"+UID(this), MODE_PRIVATE);
+            SharedPreferences colors = getSharedPreferences("colors_" + UID(this), MODE_PRIVATE);
             SharedPreferences.Editor editorColor = colors.edit();
 
             try {
-                JSONObject jsonObject = new JSONObject(getWebContent(API_URL + "/apps/prefs.php?user=" + UID(this)));
+                JSONObject jsonObject = new JSONObject(
+                        getWebContent(API_URL + "/apps/prefs.php?user=" + UID(this)));
 
-                for (Iterator<String> it = jsonObject.getJSONObject("prefs").keys(); it.hasNext(); ) {
+                for (
+                        Iterator<String> it = jsonObject.getJSONObject("prefs").keys(); it
+                        .hasNext(); ) {
                     String key = it.next();
                     Object obj = jsonObject.getJSONObject("prefs").get(key);
                     if (obj instanceof String)
@@ -865,7 +888,9 @@ public class Utils extends AppCompatActivity {
 
                 }
 
-                for (Iterator<String> it = jsonObject.getJSONObject("colors").keys(); it.hasNext(); ) {
+                for (
+                        Iterator<String> it = jsonObject.getJSONObject("colors").keys(); it
+                        .hasNext(); ) {
                     String key = it.next();
                     Object obj = jsonObject.getJSONObject("colors").get(key);
                     if (obj instanceof String)
@@ -893,9 +918,10 @@ public class Utils extends AppCompatActivity {
         }).start();
     }
 
-    private static Bitmap  createBitmap(Bitmap copy, @ColorInt int color){
-        Bitmap bmp=Bitmap.createBitmap(copy.getWidth(),copy.getHeight(),Bitmap.Config.ARGB_8888);
-        Canvas canvas=new Canvas(bmp);
+    private static Bitmap createBitmap(Bitmap copy, @ColorInt int color) {
+        Bitmap bmp = Bitmap
+                .createBitmap(copy.getWidth(), copy.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
         canvas.drawColor(color);
         return bmp;
     }
@@ -908,16 +934,20 @@ public class Utils extends AppCompatActivity {
         return bmOverlay;
     }
 
-    public static class ByteBuffer{
+    public static class ByteBuffer {
+
         private final byte[] bytes;
         private final int buffer;
-        public ByteBuffer(byte[] bytes, int buffer){
-            this.bytes=bytes;
-            this.buffer=buffer;
+
+        public ByteBuffer(byte[] bytes, int buffer) {
+            this.bytes = bytes;
+            this.buffer = buffer;
         }
+
         public byte[] getBytes() {
             return bytes;
         }
+
         public int getBuffer() {
             return buffer;
         }
@@ -930,14 +960,18 @@ public class Utils extends AppCompatActivity {
                 if (fileNameArray[fileNameArray.length - 1].equals("apk")) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         Uri downloaded_apk = getFileUri(context, file);
-                        Intent intent = new Intent(Intent.ACTION_VIEW).setDataAndType(downloaded_apk,
-                                "application/vnd.android.package-archive");
+                        Intent intent = new Intent(Intent.ACTION_VIEW).setDataAndType(
+                                downloaded_apk,
+                                "application/vnd.android.package-archive"
+                        );
                         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         context.startActivity(intent);
                     } else {
                         Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setDataAndType(Uri.fromFile(file),
-                                "application/vnd.android.package-archive");
+                        intent.setDataAndType(
+                                Uri.fromFile(file),
+                                "application/vnd.android.package-archive"
+                        );
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(intent);
                     }
@@ -950,16 +984,18 @@ public class Utils extends AppCompatActivity {
 
     private static Uri getFileUri(Context context, File file) {
         return FileProvider.getUriForFile(context,
-                context.getApplicationContext().getPackageName() + ".GenericFileProvider", file);
+                                          context.getApplicationContext()
+                                                  .getPackageName() + ".GenericFileProvider", file
+        );
     }
 
-    public static void n(Object o){
+    public static void n(Object o) {
 
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if(toolbar!=null)
+        if (toolbar != null)
             toolbar.setToolbarIconColor(ThemeStore.getInstance(this).getPrimaryColor());
         return super.onCreateOptionsMenu(menu);
     }

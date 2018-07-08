@@ -5,28 +5,18 @@
 
 package com.dertyp7214.appstore.screens;
 
-import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ShortcutInfo;
-import android.content.pm.ShortcutManager;
-import android.graphics.Bitmap;
-import android.graphics.PixelFormat;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
-import android.os.Build;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
-import android.view.Window;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.animation.*;
+import android.content.*;
+import android.content.pm.*;
+import android.graphics.*;
+import android.graphics.drawable.*;
+import android.os.*;
+import android.support.annotation.*;
+import android.support.v4.content.*;
+import android.support.v4.view.animation.*;
+import android.view.*;
+import android.view.animation.*;
+import android.widget.*;
 
 import com.dertyp7214.appstore.BuildConfig;
 import com.dertyp7214.appstore.Config;
@@ -48,23 +38,27 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Objects;
 
 import static com.dertyp7214.appstore.Config.API_URL;
 
 public class Splashscreen extends Utils {
+
     int onStartCount = 0;
-    public void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        Window window = getWindow();
-        window.setFormat(PixelFormat.RGBA_8888);
-    }
-    /** Called when the activity is first created. */
+    /**
+     * Called when the activity is first created.
+     */
     Thread splashTread;
     int duration = 500;
     int restDuration = duration;
     int oldPercentage = 0;
     Logs logs;
+
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        Window window = getWindow();
+        window.setFormat(PixelFormat.RGBA_8888);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,10 +70,16 @@ public class Splashscreen extends Utils {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+    }    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS) {
             for (String permission : permissions) {
-                if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        permission
+                ) != PackageManager.PERMISSION_GRANTED) {
                     finish();
                 }
             }
@@ -87,18 +87,15 @@ public class Splashscreen extends Utils {
         }
     }
 
-    private int getDuration(int percentage){
-        int dur = (duration/100*(percentage-oldPercentage));
-        restDuration = restDuration-dur;
-        oldPercentage=percentage;
+    private int getDuration(int percentage) {
+        int dur = (duration / 100 * (percentage - oldPercentage));
+        restDuration -= dur;
+        oldPercentage = percentage;
         logs.info("PERCENTAGE", percentage + "\n" + dur + "\n" + restDuration);
         return dur;
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
+
 
     private void StartAnimations() {
         Animation anim = AnimationUtils.loadAnimation(this, R.anim.alpha);
@@ -113,7 +110,8 @@ public class Splashscreen extends Utils {
         ObjectAnimator scaleDown = ObjectAnimator.ofPropertyValuesHolder(
                 imgLauncher,
                 PropertyValuesHolder.ofFloat("scaleX", 1.1f),
-                PropertyValuesHolder.ofFloat("scaleY", 1.1f));
+                PropertyValuesHolder.ofFloat("scaleY", 1.1f)
+        );
         scaleDown.setDuration(700);
         scaleDown.setInterpolator(new FastOutSlowInInterpolator());
         scaleDown.setRepeatCount(ObjectAnimator.INFINITE);
@@ -129,17 +127,27 @@ public class Splashscreen extends Utils {
 
                 Config.SERVER_ONLINE = serverOnline();
 
-                setProgress(progressBar, 10, true, getDuration(10), getString(R.string.splash_checkLogin));
+                setProgress(
+                        progressBar, 10, true, getDuration(10),
+                        getString(R.string.splash_checkLogin)
+                );
 
-                if(!BuildConfig.DEBUG) {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1 && Utils.appInstalled(this, BuildConfig.APPLICATION_ID + ".debug")) {
+                if (!BuildConfig.DEBUG) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1 && Utils
+                            .appInstalled(this, BuildConfig.APPLICATION_ID + ".debug")) {
+
+                        Intent intent = new Intent(Intent.ACTION_MAIN);
+                        intent.setClassName(
+                                BuildConfig.APPLICATION_ID + ".debug",
+                                BuildConfig.APPLICATION_ID + ".debug.screens.SplashScreen"
+                        );
 
                         ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
                         ShortcutInfo shortcut = new ShortcutInfo.Builder(this, "debug_store")
                                 .setShortLabel("Debug Version")
                                 .setLongLabel("Debug Version of the AppStore")
                                 .setIcon(Icon.createWithResource(this, R.drawable.ic_launcher))
-                                .setIntent(Objects.requireNonNull(getPackageManager().getLaunchIntentForPackage(BuildConfig.APPLICATION_ID + ".debug")))
+                                .setIntent(intent)
                                 .build();
 
                         assert shortcutManager != null;
@@ -153,40 +161,64 @@ public class Splashscreen extends Utils {
                     HashMap<String, String> user = db.getUserDetails();
                     String userName = user.get("name");
 
-                    setProgress(progressBar, 20, true, getDuration(20), getString(R.string.splash_getUserData));
+                    setProgress(
+                            progressBar, 20, true, getDuration(20),
+                            getString(R.string.splash_getUserData)
+                    );
 
-                    String url = API_URL + "/apps/pic/" + URLEncoder.encode(userName, "UTF-8").replace("+", "_") + ".png";
+                    String url = API_URL + "/apps/pic/" + URLEncoder.encode(userName, "UTF-8")
+                            .replace("+", "_") + ".png";
                     File imgFile = new File(getFilesDir(), userName + ".png");
                     if (!imgFile.exists()) {
                         Drawable profilePic = Utils.drawableFromUrl(this, url);
                         FileOutputStream fileOutputStream = new FileOutputStream(imgFile);
-                        drawableToBitmap(profilePic).compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                        drawableToBitmap(profilePic)
+                                .compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
                     }
 
-                    setProgress(progressBar, 40, true, getDuration(40), getString(R.string.splash_getUserIMage));
+                    setProgress(
+                            progressBar, 40, true, getDuration(40),
+                            getString(R.string.splash_getUserIMage)
+                    );
 
                     syncPreferences();
                 }
 
-                setProgress(progressBar, 60, true, getDuration(60), getString(R.string.splash_synsPreferences));
+                setProgress(
+                        progressBar, 60, true, getDuration(60),
+                        getString(R.string.splash_synsPreferences)
+                );
 
-                for(int i=0;i<55;i++) {
-                    setProgress(progressBar, 60+(int)(((float)40/55)*i), true, getDuration(60+(int)(((float)40/55)*i)), String.format(getString(R.string.splash_writePreferences), (int)(((float)100/55)*i)+"%"));
+                for (int i = 0; i < 55; i++) {
+                    setProgress(
+                            progressBar, 60 + (int) (((float) 40 / 55) * i), true,
+                            getDuration(60 + (int) (((float) 40 / 55) * i)),
+                            String.format(
+                                    getString(R.string.splash_writePreferences),
+                                    (int) (((float) 100 / 55) * i) + "%"
+                            )
+                    );
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
+                logs.info("ERROR", e.toString());
             } finally {
 
-                runOnUiThread(() -> ((TextView) findViewById(R.id.txt_loading)).setText(getString(R.string.splash_applying)));
+                runOnUiThread(() -> ((TextView) findViewById(R.id.txt_loading))
+                        .setText(getString(R.string.splash_applying)));
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     progressBar.setProgress(100, true);
                 } else {
                     progressBar.setProgress(100);
                 }
 
-                Intent intent = new Intent(Splashscreen.this,
-                        LoginActivity.class);
+                logs.info("FINALLY", restDuration + "");
+
+                Intent intent = new Intent(
+                        Splashscreen.this,
+                        LoginActivity.class
+                );
                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                 startActivity(intent);
                 Splashscreen.this.finish();
@@ -206,15 +238,16 @@ public class Splashscreen extends Utils {
         }
     }
 
-    public boolean serverOnline(){
+    public boolean serverOnline() {
         try {
             URL url = new URL(Config.API_URL);
-            SocketAddress sockaddr = new InetSocketAddress(InetAddress.getByName(url.getHost()), 80);
+            SocketAddress sockaddr = new InetSocketAddress(
+                    InetAddress.getByName(url.getHost()), 80);
             Socket sock = new Socket();
             int timeoutMs = 2000;
             sock.connect(sockaddr, timeoutMs);
             return true;
-        } catch(IOException ignored) {
+        } catch (IOException ignored) {
         }
         return false;
     }
