@@ -8,11 +8,13 @@ package com.dertyp7214.appstore.fragments;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,17 +31,22 @@ import com.dertyp7214.appstore.items.NoConnection;
 import com.dertyp7214.appstore.items.SearchItem;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.dertyp7214.appstore.Config.API_URL;
+import static com.dertyp7214.appstore.Utils.getSettings;
+import static com.dertyp7214.appstore.Utils.getWebContent;
+
 /**
  * Created by Anu on 22/04/17.
  */
-
 
 
 @SuppressLint("ValidFragment")
@@ -50,7 +57,7 @@ public class FragmentAppGroups extends TabFragment {
     private AppGroupAdapter adapter;
     private Activity context;
     private List<AppGroupItem> appList = new ArrayList<>();
-    private String UID;
+    private String UID, version;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -103,19 +110,29 @@ public class FragmentAppGroups extends TabFragment {
 
                         appList.clear();
 
-                        if (new JSONObject(LocalJSON.getJSON(context)).getBoolean("error") ||refresh)
-                            LocalJSON.setJSON(context, Utils.getWebContent(Config.API_URL + "/apps/list.php"));
+                        if (new JSONObject(LocalJSON.getJSON(context)).getBoolean("error")
+                                || refresh
+                                || ! getSettings(context).getString("last_refresh", "000000")
+                                .contentEquals(DateFormat.format("yyyyMMdd", new Date()))) {
+                            getSettings(context).edit().putString("last_refresh",
+                                    String.valueOf(DateFormat.format("yyyyMMdd", new Date())))
+                                    .apply();
+                            LocalJSON.setJSON(context,
+                                    getWebContent(Config.API_URL + "/apps/list.php?user=" + Config
+                                            .UID(context)));
+                        }
 
                         JSONObject object = new JSONObject(LocalJSON.getJSON(context));
 
                         JSONArray array = object.getJSONArray("apps");
 
-                        if(refresh) {
+                        if (refresh) {
                             if (FragmentMyApps.hasInstance())
                                 FragmentMyApps.getInstance().getMyApps();
                             JSONArray installedApps = new JSONArray();
                             for (int i = 0; i < array.length() - 1; i++) {
-                                if(Utils.appInstalled(context, array.getJSONObject(i).getString("ID"))){
+                                if (Utils.appInstalled(context,
+                                        array.getJSONObject(i).getString("ID"))) {
                                     installedApps.put(array.getJSONObject(i).getString("ID"));
                                 }
                             }
@@ -123,7 +140,7 @@ public class FragmentAppGroups extends TabFragment {
                                     .replace("{uid}", UID)
                                     .replace("{id}", installedApps.toString()
                                             .replace("&", "")));
-                            Log.d("FETCH", Utils.getWebContent(url));
+                            Log.d("FETCH", getWebContent(url));
                         }
 
                         List<SearchItem> appsList = new ArrayList<>();
@@ -131,17 +148,39 @@ public class FragmentAppGroups extends TabFragment {
                         for (int i = 0; i < array.length() - 1; i++) {
                             JSONObject obj = array.getJSONObject(i);
                             if (Utils.appInstalled(context, obj.getString("ID")))
-                                appsList.add(new SearchItem(obj.getString("title"), obj.getString("ID"), Utils.drawableFromUrl(context, obj.getString("image"))));
+                                appsList.add(
+                                        new SearchItem(obj.getString("title"), obj.getString("ID"),
+                                                Utils.drawableFromUrl(context,
+                                                        obj.getString("image")),
+                                                obj.getString("version"),
+                                                getUpdate(obj)));
                         }
 
-                        appList.add(new AppGroupItem(getString(R.string.text_installed_apps), appsList));
+                        for (SearchItem item : appsList)
+                            Utils.appsList.put(item.getId(), item);
 
-                    } catch (Exception ignored) {
+                        List<SearchItem> updateList = new ArrayList<>();
+
+                        for (SearchItem item : appsList) {
+                            if (! item.getVersion().equals(getLocalVersion(item)) && ! item
+                                    .getVersion().equals("0") && item.isUpdate())
+                                updateList.add(item);
+                        }
+
+                        if (updateList.size() > 0)
+                            appList.add(
+                                    new AppGroupItem(getString(R.string.text_update), updateList));
+
+                        appList.add(new AppGroupItem(getString(R.string.text_installed_apps),
+                                appsList));
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     context.runOnUiThread(() -> {
                         adapter.notifyDataSetChanged();
                         recyclerViewAppGroup.scrollBy(1, 1);
-                        recyclerViewAppGroup.scrollBy(-1, -1);
+                        recyclerViewAppGroup.scrollBy(- 1, - 1);
                         if (layout != null)
                             layout.setRefreshing(false);
                     });
@@ -166,8 +205,32 @@ public class FragmentAppGroups extends TabFragment {
         }).start();
     }
 
+    private boolean getUpdate(JSONObject object) {
+        try {
+            return object.getBoolean("update");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return true;
+        }
+    }
+
+    private String getLocalVersion(SearchItem item) {
+        try {
+            PackageInfo pinfo = context.getPackageManager().getPackageInfo(item.getId(), 0);
+            return pinfo.versionName;
+        } catch (Exception e) {
+            return getServerVersion(item);
+        }
+    }
+
+    private String getServerVersion(SearchItem item) {
+        if (version == null)
+            version = getWebContent(API_URL + "/apps/list.php?version=" + item.getId());
+        return version;
+    }
+
     @Override
-    public String getName(Context context){
+    public String getName(Context context) {
         return context.getString(R.string.home);
     }
 }

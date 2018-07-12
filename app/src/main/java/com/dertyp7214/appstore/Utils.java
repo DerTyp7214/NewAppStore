@@ -134,8 +134,8 @@ public class Utils extends AppCompatActivity {
             Objects.requireNonNull(getSupportActionBar())
                     .setBackgroundDrawable(new ColorDrawable(themeStore.getPrimaryColor()));
             getSupportActionBar().setTitle(Html.fromHtml("<font color='" + String.format("#%06X",
-                                                                                         0xFFFFFF & themeStore
-                                                                                                 .getPrimaryTextColor()
+                    0xFFFFFF & themeStore
+                            .getPrimaryTextColor()
             ) + "'>" + getSupportActionBar().getTitle() + "</font>"));
         }
     }
@@ -155,7 +155,7 @@ public class Utils extends AppCompatActivity {
                         Config.API_URL + "/apps/list.php?version=" + getPackageName());
                 if (version == null)
                     throw new InterruptedException();
-                if (!version.equals(BuildConfig.VERSION_NAME)) {
+                if (! version.equals(BuildConfig.VERSION_NAME)) {
                     runOnUiThread(() -> subTitle.setText(getString(R.string.text_touch_to_update)));
                     settings.addSettingsOnClick(
                             (name, setting, subTitle1, imageRight) -> new Thread(() -> {
@@ -503,7 +503,7 @@ public class Utils extends AppCompatActivity {
 
     public static void setNavigationBarColor(Activity activity, View view, @ColorInt int color, int duration) {
         if (getSettings(activity).getBoolean(COLORED_NAVIGATIONBAR,
-                                             false
+                false
         ) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && view != null) {
             Window window = activity.getWindow();
             ValueAnimator animator = ValueAnimator
@@ -607,12 +607,12 @@ public class Utils extends AppCompatActivity {
 
         if (drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
             bitmap = Bitmap.createBitmap(1, 1,
-                                         Bitmap.Config.ARGB_8888
+                    Bitmap.Config.ARGB_8888
             ); // Single color bitmap will be created of 1x1 pixel
         } else {
             bitmap = Bitmap
                     .createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(),
-                                  Bitmap.Config.ARGB_8888
+                            Bitmap.Config.ARGB_8888
                     );
         }
 
@@ -654,7 +654,7 @@ public class Utils extends AppCompatActivity {
 
             InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream(), 8192);
 
-            if (!path.exists())
+            if (! path.exists())
                 path.mkdirs();
 
             File downloadedFile = new File(path, "download_app_" + id + ".apk");
@@ -667,7 +667,7 @@ public class Utils extends AppCompatActivity {
             int read;
             long total = 0;
 
-            while ((read = inputStream.read(buffer)) != -1) {
+            while ((read = inputStream.read(buffer)) != - 1) {
                 total += read;
                 if (fileSize > 0)
                     listener.run((int) (total * 100 / fileSize));
@@ -705,7 +705,7 @@ public class Utils extends AppCompatActivity {
     }
 
     public void checkForOldAppStore() {
-        if (!getSettings(this).getBoolean("old_appstore", false)) {
+        if (! getSettings(this).getBoolean("old_appstore", false)) {
             if (appInstalled(this, oldAppPackageName)) {
                 DialogInterface.OnClickListener onClickListener = (dialog, which) -> {
                     switch (which) {
@@ -815,7 +815,7 @@ public class Utils extends AppCompatActivity {
         if (requestCode == PERMISSIONS) {
             for (String permission : permissions) {
                 if (ContextCompat.checkSelfPermission(this,
-                                                      permission
+                        permission
                 ) != PackageManager.PERMISSION_GRANTED) {
                     finish();
                 }
@@ -984,8 +984,8 @@ public class Utils extends AppCompatActivity {
 
     private static Uri getFileUri(Context context, File file) {
         return FileProvider.getUriForFile(context,
-                                          context.getApplicationContext()
-                                                  .getPackageName() + ".GenericFileProvider", file
+                context.getApplicationContext()
+                        .getPackageName() + ".GenericFileProvider", file
         );
     }
 

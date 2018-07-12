@@ -14,18 +14,22 @@ import android.os.*;
 import android.support.annotation.*;
 import android.support.v4.content.*;
 import android.support.v4.view.animation.*;
+import android.text.format.DateFormat;
 import android.view.*;
 import android.view.animation.*;
 import android.widget.*;
 
 import com.dertyp7214.appstore.BuildConfig;
 import com.dertyp7214.appstore.Config;
+import com.dertyp7214.appstore.LocalJSON;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.components.MVAccelerateDecelerateInterpolator;
 import com.dertyp7214.appstore.dev.Logs;
 import com.dertyp7214.appstore.helpers.SQLiteHandler;
 import com.dertyp7214.appstore.helpers.SessionManager;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,6 +41,7 @@ import java.net.SocketAddress;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 
 import static com.dertyp7214.appstore.Config.API_URL;
@@ -160,6 +165,15 @@ public class Splashscreen extends Utils {
                     SQLiteHandler db = new SQLiteHandler(getApplicationContext());
                     HashMap<String, String> user = db.getUserDetails();
                     String userName = user.get("name");
+
+                    if (new JSONObject(LocalJSON.getJSON(this)).getBoolean("error")
+                            || !getSettings(this).getString("last_refresh", "000000")
+                            .contentEquals(DateFormat.format("yyyyMMdd", new Date()))) {
+                        getSettings(this).edit().putString("last_refresh",
+                                String.valueOf(DateFormat.format("yyyyMMdd", new Date()))).apply();
+                        LocalJSON.setJSON(this,
+                                getWebContent(Config.API_URL + "/apps/list.php?user="+Config.UID(this)));
+                    }
 
                     setProgress(
                             progressBar, 20, true, getDuration(20),

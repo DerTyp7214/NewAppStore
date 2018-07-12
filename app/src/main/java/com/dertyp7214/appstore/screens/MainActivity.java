@@ -79,9 +79,9 @@ public class MainActivity extends Utils
     private Random random;
     private ThemeStore themeStore;
     private TabLayout tabLayout;
+    private ViewPager viewPager;
     private NavigationView navView;
     private Drawable profilePic;
-    private ViewPager viewPager;
     private MaterialSearchBar searchBar;
     private DrawerLayout drawer;
     private View app_bar;
@@ -303,7 +303,7 @@ public class MainActivity extends Utils
                 appItems.clear();
 
                 if(new JSONObject(LocalJSON.getJSON(MainActivity.this)).getBoolean("error"))
-                    LocalJSON.setJSON(MainActivity.this, Utils.getWebContent(API_URL + "/apps/list.php"));
+                    LocalJSON.setJSON(MainActivity.this, Utils.getWebContent(API_URL + "/apps/list.php?user="+Config.UID(this)));
 
                 JSONObject jsonObject = new JSONObject(LocalJSON.getJSON(MainActivity.this));
 

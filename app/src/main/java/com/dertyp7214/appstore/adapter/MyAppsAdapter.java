@@ -57,7 +57,8 @@ public class MyAppsAdapter extends RecyclerView.Adapter<MyAppsAdapter.ViewHolder
                 ((FragmentMyApps) context).getMyApps(position);
         }).start());
 
-        Utils.appsList.put(item.getPackageName(), new SearchItem(item.getAppTitle(), item.getPackageName(), item.getAppIcon()));
+        if (!Utils.appsList.containsKey(item.getPackageName()))
+            Utils.appsList.put(item.getPackageName(), new SearchItem(item.getAppTitle(), item.getPackageName(), item.getAppIcon()));
 
         holder.view.setOnClickListener(v -> {
             Pair<View, String> icon = Pair.create(holder.appIcon, "icon");

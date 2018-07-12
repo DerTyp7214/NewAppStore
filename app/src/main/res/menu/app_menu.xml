@@ -13,4 +13,11 @@ xmlns:app="http://schemas.android.com/apk/res-auto">
         android:title="@string/share"
         android:icon="@drawable/ic_share"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_update"
+        android:orderInCategory="400"
+        android:title="@string/text_update"
+        android:checkable="true"
+        app:showAsAction="never" />
 </menu>

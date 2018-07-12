@@ -48,7 +48,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         holder.appIcon.setImageDrawable(item.getAppIcon());
 
         for(SearchItem searchItem : appItemList)
-            Utils.appsList.put(searchItem.getId(), searchItem);
+            if (!Utils.appsList.containsKey(searchItem.getId()))
+                Utils.appsList.put(searchItem.getId(), searchItem);
 
         holder.view.setOnClickListener(v -> {
             Pair<View, String> icon = Pair.create(holder.appIcon, "icon");
