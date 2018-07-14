@@ -7,4 +7,5 @@
 <resources>
 <string name="payment_lang">EUR</string>
 <string name="currency">€</string>
+    <string name="language_model">de-DE</string>
 </resources>

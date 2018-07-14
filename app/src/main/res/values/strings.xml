@@ -180,4 +180,6 @@
     <string name="splash_applying">applying changes</string>
     <string name="text_hide_icon">Hide Appicon</string>
     <string name="text_debug">Debug</string>
+    <string name="search_bar_radius">SearchBar Radius</string>
+    <string name="language_model">en-US</string>
 </resources>

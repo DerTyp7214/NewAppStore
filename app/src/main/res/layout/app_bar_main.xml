@@ -20,12 +20,13 @@
         android:background="@android:color/white"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <com.mancj.materialsearchbar.MaterialSearchBar
+        <com.dertyp7214.appstore.components.MaterialSearchBar
             android:id="@+id/searchBar"
             style="@style/MaterialSearchBarLight"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
+            app:mt_speechMode="true"
             app:mt_navIconEnabled="true"
             app:mt_placeholder="@string/app_name" />
 

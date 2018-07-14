@@ -5,6 +5,8 @@
 
 package com.dertyp7214.appstore.screens;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,6 +15,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -46,6 +49,7 @@ import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.SearchAdapter;
+import com.dertyp7214.appstore.components.MaterialSearchBar;
 import com.dertyp7214.appstore.dev.Logs;
 import com.dertyp7214.appstore.fragments.FragmentAbout;
 import com.dertyp7214.appstore.fragments.FragmentAppGroups;
@@ -53,7 +57,6 @@ import com.dertyp7214.appstore.fragments.FragmentMyApps;
 import com.dertyp7214.appstore.fragments.TabFragment;
 import com.dertyp7214.appstore.helpers.SQLiteHandler;
 import com.dertyp7214.appstore.items.SearchItem;
-import com.mancj.materialsearchbar.MaterialSearchBar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -70,7 +73,8 @@ import java.util.Random;
 import static com.dertyp7214.appstore.Config.API_URL;
 
 public class MainActivity extends Utils
-        implements NavigationView.OnNavigationItemSelectedListener, MaterialSearchBar.OnSearchActionListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        MaterialSearchBar.OnSearchActionListener {
 
     private ViewPagerAdapter adapter;
     private SearchAdapter searchAdapter;
@@ -103,6 +107,8 @@ public class MainActivity extends Utils
         drawer = findViewById(R.id.drawer_layout);
         searchBar = findViewById(R.id.searchBar);
         searchBar.setOnSearchActionListener(this);
+        searchBar.setRoundedSearchBarEnabled(true);
+        searchBar.setupRoundedSearchBarEnabled(getSettings(this).getInt("search_bar_radius", 20));
         searchBar.setCardViewElevation(10);
         searchBar.addTextChangeListener(new TextWatcher() {
             @Override
@@ -132,12 +138,14 @@ public class MainActivity extends Utils
         navView.setPadding(0, 0, 0, getNavigationBarHeight());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setNavigationBarColor(this, toolbar, ThemeStore.getInstance(this).getPrimaryColor(), 300);
+            setNavigationBarColor(this, toolbar, ThemeStore.getInstance(this).getPrimaryColor(),
+                    300);
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
@@ -154,7 +162,8 @@ public class MainActivity extends Utils
         tabLayout = findViewById(R.id.tabBar);
         tabLayout.setupWithViewPager(viewPager);
         tabLayout.setSelectedTabIndicatorColor(themeStore.getPrimaryTextColor());
-        tabLayout.setTabTextColors(themeStore.getPrimaryTextColor(), themeStore.getPrimaryTextColor());
+        tabLayout.setTabTextColors(themeStore.getPrimaryTextColor(),
+                themeStore.getPrimaryTextColor());
 
         searchAdapter = new SearchAdapter(this, appItems);
 
@@ -166,12 +175,13 @@ public class MainActivity extends Utils
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                app_bar.setBackgroundColor(themeStore.getPrimaryHue((int) (((float) position + positionOffset) * 100)));
+                app_bar.setBackgroundColor(themeStore
+                        .getPrimaryHue((int) (((float) position + positionOffset) * 100)));
             }
 
             @Override
             public void onPageSelected(int position) {
-                switch (position){
+                switch (position) {
                     case 0:
                         navView.setCheckedItem(R.id.nav_home);
                         break;
@@ -193,8 +203,9 @@ public class MainActivity extends Utils
         setUpNavView();
     }
 
-    private int dpToPx(int dp){
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
+    private int dpToPx(int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+                getResources().getDisplayMetrics());
     }
 
     @Override
@@ -242,12 +253,15 @@ public class MainActivity extends Utils
                 if (file.exists()) {
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                    profilePic = new BitmapDrawable(getResources(), BitmapFactory.decodeFile(file.getAbsolutePath(), options));
+                    profilePic = new BitmapDrawable(getResources(),
+                            BitmapFactory.decodeFile(file.getAbsolutePath(), options));
                 } else {
-                    String url = API_URL + "/apps/pic/" + URLEncoder.encode(userName, "UTF-8").replace("+", "_") + ".png";
+                    String url = API_URL + "/apps/pic/" + URLEncoder.encode(userName, "UTF-8")
+                            .replace("+", "_") + ".png";
                     profilePic = Utils.drawableFromUrl(this, url);
                     FileOutputStream fileOutputStream = new FileOutputStream(file);
-                    drawableToBitmap(profilePic).compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                    drawableToBitmap(profilePic)
+                            .compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -277,15 +291,15 @@ public class MainActivity extends Utils
         }).start();
     }
 
-    private ColorStateList getColorStateList(int disabled, int enabled, int unchecked, int pressed){
-        int[][] state = new int[][] {
-                new int[] {-android.R.attr.state_enabled}, // disabled
-                new int[] {android.R.attr.state_enabled}, // enabled
-                new int[] {-android.R.attr.state_checked}, // unchecked
-                new int[] { android.R.attr.state_pressed}  // pressed
+    private ColorStateList getColorStateList(int disabled, int enabled, int unchecked, int pressed) {
+        int[][] state = new int[][]{
+                new int[]{- android.R.attr.state_enabled}, // disabled
+                new int[]{android.R.attr.state_enabled}, // enabled
+                new int[]{- android.R.attr.state_checked}, // unchecked
+                new int[]{android.R.attr.state_pressed}  // pressed
 
         };
-        int[] color = new int[] {
+        int[] color = new int[]{
                 disabled,
                 enabled,
                 unchecked,
@@ -294,16 +308,17 @@ public class MainActivity extends Utils
         return new ColorStateList(state, color);
     }
 
-    private void search(String query){
+    private void search(String query) {
         id = random.nextInt();
         thread = new Thread(() -> {
-            try{
+            try {
 
                 int localId = id;
                 appItems.clear();
 
-                if(new JSONObject(LocalJSON.getJSON(MainActivity.this)).getBoolean("error"))
-                    LocalJSON.setJSON(MainActivity.this, Utils.getWebContent(API_URL + "/apps/list.php?user="+Config.UID(this)));
+                if (new JSONObject(LocalJSON.getJSON(MainActivity.this)).getBoolean("error"))
+                    LocalJSON.setJSON(MainActivity.this, Utils.getWebContent(
+                            API_URL + "/apps/list.php?user=" + Config.UID(this)));
 
                 JSONObject jsonObject = new JSONObject(LocalJSON.getJSON(MainActivity.this));
 
@@ -311,26 +326,28 @@ public class MainActivity extends Utils
 
                 List<SearchItem> appItemList = new ArrayList<>();
 
-                for(int i=0;i<array.length()-1;i++) {
+                for (int i = 0; i < array.length() - 1; i++) {
                     JSONObject obj = array.getJSONObject(i);
-                    if (obj.getString("title").toLowerCase().contains(query.toLowerCase()) && !query.equals(""))
-                        appItemList.add(new SearchItem(obj.getString("title"), obj.getString("ID"), Utils.drawableFromUrl(MainActivity.this, obj.getString("image"))));
+                    if (obj.getString("title").toLowerCase().contains(query.toLowerCase())
+                            && ! query.equals(""))
+                        appItemList.add(new SearchItem(obj.getString("title"), obj.getString("ID"),
+                                Utils.drawableFromUrl(MainActivity.this, obj.getString("image"))));
                 }
 
-                if(id==localId)
+                if (id == localId)
                     appItems.addAll(appItemList);
 
                 MainActivity.this.runOnUiThread(() -> searchAdapter.notifyDataSetChanged());
 
-            }catch (Exception ignored){
+            } catch (Exception ignored) {
             }
         });
-        if(thread.isAlive())
+        if (thread.isAlive())
             thread.interrupt();
         thread.start();
     }
 
-    private void addFragment(TabFragment fragment){
+    private void addFragment(TabFragment fragment) {
         adapter.addFragment(fragment, fragment.getName(this));
     }
 
@@ -340,7 +357,7 @@ public class MainActivity extends Utils
         View searchView = findViewById(R.id.searchLayout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (searchView.getVisibility() == View.VISIBLE){
+        } else if (searchView.getVisibility() == View.VISIBLE) {
             View content = findViewById(R.id.content);
             content.setVisibility(View.VISIBLE);
             changeOpacity(searchView, true);
@@ -350,7 +367,7 @@ public class MainActivity extends Utils
         }
     }
 
-    private void changeOpacity(View view, boolean hide){
+    private void changeOpacity(View view, boolean hide) {
         float from = hide ? 1F : 0F;
         float to = hide ? 0F : 1F;
         AlphaAnimation animation1 = new AlphaAnimation(from, to);
@@ -399,7 +416,8 @@ public class MainActivity extends Utils
         } else if (id == R.id.nav_modules) {
             startActivity(this, ModulesScreen.class);
         } else if (id == R.id.nav_settings) {
-            new startActivityAsync(this, SettingsScreen.class).setTime(250).start(this::startActivity);
+            new startActivityAsync(this, SettingsScreen.class).setTime(250)
+                    .start(this::startActivity);
         } else if (id == R.id.nav_logout) {
             startActivity(this, LogOut.class);
         }
@@ -411,8 +429,8 @@ public class MainActivity extends Utils
 
     @Override
     public void onSearchStateChanged(boolean enabled) {
-        if(enabled&&!Config.SERVER_ONLINE) searchBar.disableSearch();
-        if(!enabled) {
+        if (enabled && ! Config.SERVER_ONLINE) searchBar.disableSearch();
+        if (! enabled) {
             View searchLayout = findViewById(R.id.searchLayout);
             View content = findViewById(R.id.content);
             changeOpacity(searchLayout, true);
@@ -424,6 +442,10 @@ public class MainActivity extends Utils
 
     @Override
     public void onSearchConfirmed(CharSequence text) {
+        submit(text);
+    }
+
+    private void submit(CharSequence text){
         search(text.toString());
         View searchLayout = findViewById(R.id.searchLayout);
         View content = findViewById(R.id.content);
@@ -434,15 +456,44 @@ public class MainActivity extends Utils
 
     @Override
     public void onButtonClicked(int buttonCode) {
-        switch (buttonCode){
+        switch (buttonCode) {
             case MaterialSearchBar.BUTTON_NAVIGATION:
                 drawer.openDrawer(Gravity.START);
                 break;
             case MaterialSearchBar.BUTTON_SPEECH:
+                openVoiceRecognizer();
                 break;
             case MaterialSearchBar.BUTTON_BACK:
                 searchBar.disableSearch();
                 break;
+        }
+    }
+
+    private void openVoiceRecognizer() {
+        if (! searchBar.isFocused())
+            searchBar.enableSearch();
+        Intent intent = new Intent(
+                RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, getString(R.string.language_model));
+        startActivityForResult(intent, 99);
+        searchBar.setText("");
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case 99: {
+                if (resultCode == RESULT_OK && null != data) {
+                    ArrayList<String> text = data
+                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    searchBar.setText(text.get(0));
+                    submit(text.get(0));
+                }
+                break;
+            }
         }
     }
 

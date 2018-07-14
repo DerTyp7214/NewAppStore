@@ -35,6 +35,7 @@ import com.dertyp7214.appstore.interfaces.MyInterface;
 import com.dertyp7214.appstore.settings.Settings;
 import com.dertyp7214.appstore.settings.SettingsColor;
 import com.dertyp7214.appstore.settings.SettingsPlaceholder;
+import com.dertyp7214.appstore.settings.SettingsSlider;
 import com.dertyp7214.appstore.settings.SettingsSwitch;
 import com.dertyp7214.githubsource.GitHubSource;
 import com.dertyp7214.githubsource.github.Repository;
@@ -468,6 +469,7 @@ public class SettingsScreen extends Utils implements MyInterface {
                             ThemeStore.getInstance(this).getPrimaryColor(), 300
                     );
                 }),
+                new SettingsSlider("search_bar_radius", getString(R.string.search_bar_radius), this),
                 new SettingsPlaceholder(
                         "user_preferences", getString(R.string.text_user_preferences), this),
                 new Settings(
