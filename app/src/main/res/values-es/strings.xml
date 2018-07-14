@@ -4,7 +4,6 @@
   -->
 
 <resources>
-    <string name="app_name" translatable="false">AppStore</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
@@ -80,7 +79,6 @@
     </string>
 
     <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
 
     <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
     <string-array name="pref_example_list_titles">
@@ -143,10 +141,10 @@
     <string name="askForUninstallOldAppstore">Dont ask me to remove the old AppStore</string>
     <string name="text_pay">Pay</string>
     <string name="text_amount">Amount</string>
-    <string name="payment_lang">USD</string>
+    <string name="payment_lang">EUR</string>
     <string name="text_pay_amount">Donate %s</string>
     <string name="text_pay_content">Do you want do Donate?</string>
-    <string name="currency">$</string>
+    <string name="currency">€</string>
     <string name="text_build_type">Build Type</string>
     <string name="text_loading">Loading</string>
     <string name="text_can_not_check">Can not check for Update</string>
@@ -181,5 +179,5 @@
     <string name="text_hide_icon">Hide Appicon</string>
     <string name="text_debug">Debug</string>
     <string name="search_bar_radius">SearchBar Radius</string>
-    <string name="language_model">en-US</string>
+    <string name="language_model">es-ES</string>
 </resources>
