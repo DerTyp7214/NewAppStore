@@ -4,87 +4,86 @@
   -->
 
 <resources>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_drawer_open">Abrir navigation drawer</string>
+    <string name="navigation_drawer_close">Cerrar navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
-    <string name="search">Search</string>
-    <string name="oldAppStoreFound">Old AppStore found,\ndo you want to delete it?</string>
-    <string name="home">Home</string>
+    <string name="nav_header_desc">Cabecera del menú</string>
+    <string name="action_settings">Ajustes</string>
+    <string name="search">Buscar</string>
+    <string name="oldAppStoreFound">Se ha encontrado una versión antigua de la AppStore,\n¿Quieres desinstalarla?</string>
+    <string name="home">Inicio</string>
     <string name="title_activity_app_screen">AppScreen</string>
-    <string name="delete">DELETE</string>
-    <string name="title_activity_home">Home</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Settings</string>
-    <string name="title_notifications">Notifications</string>
-    <string name="text_version">Version</string>
-    <string name="text_search_at_start">Show Googleapps on start</string>
-    <string name="text_colored_navbar">Colored Navigationbar</string>
-    <string name="text_swipe_snackbar">removed from notifications!</string>
+    <string name="delete">BORRAR</string>
+    <string name="title_activity_home">Inicio</string>
+    <string name="title_home">Inicio</string>
+    <string name="title_dashboard">Ajustes</string>
+    <string name="title_notifications">Notificaciones</string>
+    <string name="text_version">Versión</string>
+    <string name="text_search_at_start">Mostrar Googleapps al inicio</string>
+    <string name="text_colored_navbar">Navigationbar coloreado</string>
+    <string name="text_swipe_snackbar">borrado de notificaciones!</string>
     <string name="text_blur_dialog">blur Dialog</string>
-    <string name="text_check_update">Check update</string>
-    <string name="text_touch_to_update">Touch again to download Update</string>
-    <string name="text_latest_version">Latest version</string>
-    <string name="text_click_check">Click to check for updated</string>
+    <string name="text_check_update">Comprobar actualizaciones</string>
+    <string name="text_touch_to_update">Haz click otra vez para descargar la actualización</string>
+    <string name="text_latest_version">Versión más reciente</string>
+    <string name="text_click_check">Click para comprobar actualizaciones</string>
     <string name="text_api_key">API Key</string>
-    <string name="text_not_set">Not set</string>
-    <string name="text_github">DerTyp7214 on GitHub</string>
-    <string name="text_googleplus">Josua Lengwenath on Google+</string>
-    <string name="text_sourcecode">App Scourcecode on GitHub</string>
-    <string name="text_appdetails">App Details</string>
+    <string name="text_not_set">No añadido</string>
+    <string name="text_github">DerTyp7214 en GitHub</string>
+    <string name="text_googleplus">Josua Lengwenath en Google+</string>
+    <string name="text_sourcecode">App Scourcecode en GitHub</string>
+    <string name="text_appdetails">Detalles de la aplicación</string>
     <string name="text_social">Social</string>
-    <string name="text_prefs">Preferences</string>
-    <string name="text_dark_theme">Dark Theme</string>
-    <string name="text_donate">Donate</string>
-    <string name="text_donate_sub">Donate me on PayPal</string>
-    <string name="text_root_install">Install Apps with root</string>
-    <string name="text_dev_mode">Dev mode</string>
-    <string name="text_style">Style</string>
+    <string name="text_prefs">Preferencias</string>
+    <string name="text_dark_theme">Tema oscuro</string>
+    <string name="text_donate">Donar</string>
+    <string name="text_donate_sub">Dóname en PayPal</string>
+    <string name="text_root_install">Instalar Apps con root</string>
+    <string name="text_dev_mode">Modo desarrollo</string>
+    <string name="text_style">Estilo</string>
     <string name="text_color">Color</string>
-    <string name="text_open">Open</string>
-    <string name="text_install">Install</string>
-    <string name="text_uninstall">Uninstall</string>
-    <string name="text_update">Update</string>
-    <string name="text_size">Size</string>
-    <string name="notification_canceled">Canceled</string>
-    <string name="notification_cancel">Cancel</string>
-    <string name="notification_downloading">Downloading</string>
-    <string name="notification_download">Download</string>
-    <string name="notification_max_downloads">Max Downloads</string>
-    <string name="notification_connection_error">Connection Error</string>
-    <string name="notification_finished">Finished</string>
-    <string name="popup_error">Not clickable link!</string>
-    <string name="popup_close">Close</string>
+    <string name="text_open">Abrir</string>
+    <string name="text_install">Instalar</string>
+    <string name="text_uninstall">Desinstalar</string>
+    <string name="text_update">Actualizar</string>
+    <string name="text_size">Tamaño</string>
+    <string name="notification_canceled">Cancelado</string>
+    <string name="notification_cancel">Cancelar</string>
+    <string name="notification_downloading">Descargando</string>
+    <string name="notification_download">Descargar</string>
+    <string name="notification_max_downloads">Máximas descargas</string>
+    <string name="notification_connection_error">Error de conexión</string>
+    <string name="notification_finished">Finalizado</string>
+    <string name="popup_error">Enlace no clickeable!</string>
+    <string name="popup_close">Cerrar</string>
     <string name="popup_ok">OK</string>
-    <string name="adapter_loading">Loading</string>
-    <string name="input_hint">Search</string>
-    <string name="load_more">Load more</string>
-    <string name="description">Description</string>
-    <string name="versions">Versions</string>
-    <string name="large_text">Text</string>
-    <string name="server_offline">Server is Offline</string>
-    <string name="no_connection">No internet connection</string>
-    <string name="title_activity_settings">Settings</string>
+    <string name="adapter_loading">Cargando</string>
+    <string name="input_hint">Buscar</string>
+    <string name="load_more">Cargar más</string>
+    <string name="description">Descripción</string>
+    <string name="versions">Versiones</string>
+    <string name="large_text">Texto</string>
+    <string name="server_offline">El servidor está offline</string>
+    <string name="no_connection">No hay conexión a internet</string>
+    <string name="title_activity_settings">Ajustes</string>
 
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->
-    <string name="pref_header_general">General</string>
+    <string name="pref_header_general">Generales</string>
 
-    <string name="pref_title_social_recommendations">Enable social recommendations</string>
-    <string name="pref_description_social_recommendations">Recommendations for people to contact
-        based on your message history
+    <string name="pref_title_social_recommendations">Activar recomendaciones sociales</string>
+    <string name="pref_description_social_recommendations">Recomendaciones de contacto a personas basadas en tu historial de búsaqueda
     </string>
 
-    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_title_display_name">Nombre para mostrar</string>
 
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string name="pref_title_add_friends_to_messages">Añadir amigos a mensajes</string>
     <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
+        <item>Siempre</item>
+        <item>Cuando sea posible</item>
+        <item>Nunca</item>
     </string-array>
     <string-array name="pref_example_list_values">
         <item>1</item>
@@ -93,16 +92,16 @@
     </string-array>
 
     <!-- Example settings for Data & Sync -->
-    <string name="pref_header_data_sync">Data &amp; sync</string>
+    <string name="pref_header_data_sync">Datos y sincronización</string>
 
-    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string name="pref_title_sync_frequency">Frecuencia de sincronización</string>
     <string-array name="pref_sync_frequency_titles">
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
-        <item>6 hours</item>
-        <item>Never</item>
+        <item>15 minutos</item>
+        <item>30 minutos</item>
+        <item>1 hora</item>
+        <item>3 horas</item>
+        <item>6 horas</item>
+        <item>Nunca</item>
     </string-array>
     <string-array name="pref_sync_frequency_values">
         <item>15</item>
@@ -114,9 +113,9 @@
     </string-array>
 
     <string-array name="list_preference_entries">
-        <item>Entry 1</item>
-        <item>Entry 2</item>
-        <item>Entry 3</item>
+        <item>Entrada 1</item>
+        <item>Entrada 2</item>
+        <item>Entrada 3</item>
     </string-array>
 
     <string-array name="list_preference_entry_values">
@@ -127,62 +126,62 @@
 
     <string-array name="multi_select_list_preference_default_value" />
 
-    <string name="pref_title_system_sync_settings">System sync settings</string>
+    <string name="pref_title_system_sync_settings">Ajustes del sistema de sincronización</string>
 
     <!-- Example settings for Notifications -->
-    <string name="pref_header_notifications">Notifications</string>
+    <string name="pref_header_notifications">Notificaciones</string>
 
-    <string name="pref_title_new_message_notifications">New message notifications</string>
+    <string name="pref_title_new_message_notifications">Nuevos mensajes de notificaciones</string>
 
-    <string name="pref_title_ringtone">Ringtone</string>
-    <string name="pref_ringtone_silent">Silent</string>
+    <string name="pref_title_ringtone">Tono</string>
+    <string name="pref_ringtone_silent">Silencio</string>
 
-    <string name="pref_title_vibrate">Vibrate</string>
-    <string name="askForUninstallOldAppstore">Dont ask me to remove the old AppStore</string>
-    <string name="text_pay">Pay</string>
-    <string name="text_amount">Amount</string>
+    <string name="pref_title_vibrate">Vibrar</string>
+    <string name="askForUninstallOldAppstore">No preguntar por desinstalar una antigua AppStore</string>
+    <string name="text_pay">Pagar</string>
+    <string name="text_amount">Cantidad</string>
     <string name="payment_lang">EUR</string>
-    <string name="text_pay_amount">Donate %s</string>
-    <string name="text_pay_content">Do you want do Donate?</string>
+    <string name="text_pay_amount">Donar %s</string>
+    <string name="text_pay_content">¿Quieres hacer una donación?</string>
     <string name="currency">€</string>
     <string name="text_build_type">Build Type</string>
-    <string name="text_loading">Loading</string>
-    <string name="text_can_not_check">Can not check for Update</string>
+    <string name="text_loading">Cargando</string>
+    <string name="text_can_not_check">No es posible comprobar actualizaciones</string>
     <string name="hint_email">Email</string>
-    <string name="hint_password">Password</string>
-    <string name="hint_name">Fullname</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="hint_name">Nombre completo</string>
     <string name="btn_login">LOGIN</string>
-    <string name="btn_register">REGISTER</string>
-    <string name="btn_link_to_register">Not a member? Sign up now.</string>
-    <string name="btn_link_to_login">Already registred! Login Me.</string>
-    <string name="welcome">Welcome</string>
+    <string name="btn_register">REGISTRO</string>
+    <string name="btn_link_to_register">¿No estás registrado? Crea una cuenta.</string>
+    <string name="btn_link_to_login">¡Ya estás registrado! Ir al login.</string>
+    <string name="welcome">Bienvenido</string>
     <string name="btn_logout">LOGOUT</string>
-    <string name="name">Fullname</string>
-    <string name="bye">Bye</string>
-    <string name="pref_name">Account Details</string>
+    <string name="name">Nombre completo</string>
+    <string name="bye">Adiós</string>
+    <string name="pref_name">Detalles de la cuenta</string>
     <string name="key_pref_name">pref_name</string>
-    <string name="app_name_auth">AppStore Account</string>
-    <string name="text_installed_apps">Installed Apps</string>
-    <string name="my_apps">My Apps</string>
+    <string name="app_name_auth">Cuenta de AppStore</string>
+    <string name="text_installed_apps">Aplicaciones instaladas</string>
+    <string name="my_apps">Mis aplicaciones</string>
     <string name="text_logout">Logout</string>
-    <string name="text_settings">Settings</string>
-    <string name="text_modules">Modules</string>
-    <string name="text_change_profile_pic">Change Profilepicture</string>
+    <string name="text_settings">Ajustes</string>
+    <string name="text_modules">Módulos</string>
+    <string name="text_change_profile_pic">Cambiar la foto de perfil</string>
     <string name="text_user_preferences">Usersettings</string>
-    <string name="splash_checkLogin">checking if user is logged in</string>
-    <string name="splash_getUserData">get userdata</string>
-    <string name="splash_getUserIMage">loading userimage</string>
-    <string name="splash_synsPreferences">syncing preferences</string>
-    <string name="splash_writePreferences">writing preferences (%s)</string>
-    <string name="splash_finished">finished</string>
-    <string name="splash_applying">applying changes</string>
-    <string name="text_hide_icon">Hide Appicon</string>
+    <string name="splash_checkLogin">comprobando si un usuario está logueado</string>
+    <string name="splash_getUserData">obtener datos de usuario</string>
+    <string name="splash_getUserIMage">cargando imagen de perfil</string>
+    <string name="splash_synsPreferences">sincronizando preferencias</string>
+    <string name="splash_writePreferences">guardando preferencias (%s)</string>
+    <string name="splash_finished">finalizado</string>
+    <string name="splash_applying">aplicando cambios</string>
+    <string name="text_hide_icon">Ocultar icono de la aplicación</string>
     <string name="text_debug">Debug</string>
-    <string name="search_bar_radius">SearchBar Radius</string>
+    <string name="search_bar_radius">Radio del SearchBar</string>
     <string name="language_model">es-ES</string>
-    <string name="text_profile_of">Profile of: %s</string>
-    <string name="text_libraries">Libraries</string>
-    <string name="text_main_author">Main Author</string>
-    <string name="text_licenses">Licenses</string>
-    <string name="text_authors">Authors</string>
+    <string name="text_profile_of">Perfil de: %s</string>
+    <string name="text_libraries">Librerías</string>
+    <string name="text_main_author">Autor</string>
+    <string name="text_licenses">Licencias</string>
+    <string name="text_authors">Autores</string>
 </resources>
