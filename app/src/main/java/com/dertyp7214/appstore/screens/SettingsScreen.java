@@ -77,10 +77,7 @@ import static com.dertyp7214.appstore.Config.UID;
 public class SettingsScreen extends Utils implements MyInterface {
 
     private BottomSheetBehavior bottomSheetBehavior;
-    private SettingsAdapter settingsAdapter;
-    private RecyclerView settingList;
     private boolean setUp = false;
-    private ThemeStore themeStore;
 
     private static final String CONFIG_CLIENT_ID = SecretConfig.CONFIG_CLIENT_ID;
     private static final String CONFIG_CLIENT_ID_SANDBOX = SecretConfig.CONFIG_CLIENT_ID_SANDBOX;
@@ -91,7 +88,7 @@ public class SettingsScreen extends Utils implements MyInterface {
     private static final int REQUEST_CODE_PAYMENT = 1;
 
     public void onPostExecute() {
-        if (!setUp)
+        if (! setUp)
             setUpBottomSheet();
     }
 
@@ -106,7 +103,7 @@ public class SettingsScreen extends Utils implements MyInterface {
 
         themeStore = ThemeStore.getInstance(this);
 
-        if (!getSettings(this).getBoolean("root_install", false)) {
+        if (! getSettings(this).getBoolean("root_install", false)) {
             Config.root = isRooted();
         } else {
             Config.root = true;
@@ -129,7 +126,7 @@ public class SettingsScreen extends Utils implements MyInterface {
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                float offset = (1 - (-slideOffset)) / 1 * 0.7F;
+                float offset = (1 - (- slideOffset)) / 1 * 0.7F;
                 if (String.valueOf(offset).equals("NaN"))
                     offset = 0.7F;
                 try {
@@ -145,9 +142,9 @@ public class SettingsScreen extends Utils implements MyInterface {
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
-        settingList = findViewById(R.id.setting_rv);
+        RecyclerView settingList = findViewById(R.id.setting_rv);
 
-        settingsAdapter = new SettingsAdapter(getSettings(), this);
+        SettingsAdapter settingsAdapter = new SettingsAdapter(getSettings(), this);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         settingList.setLayoutManager(layoutManager);
         settingList.setItemAnimator(new DefaultItemAnimator());
@@ -211,7 +208,7 @@ public class SettingsScreen extends Utils implements MyInterface {
 
             SQLiteHandler db = new SQLiteHandler(getApplicationContext());
             HashMap<String, String> user = db.getUserDetails();
-            final String userName = user.get("name");
+            final String userID = user.get("uid");
 
             Thread t = new Thread(() -> {
                 final File f = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
@@ -226,7 +223,7 @@ public class SettingsScreen extends Utils implements MyInterface {
                                 "uploaded_file",
                                 file_path.substring(file_path.lastIndexOf("/") + 1), file_body
                         )
-                        .addFormDataPart("name", userName.replace(" ", "_"))
+                        .addFormDataPart("name", userID.replace(" ", "_"))
                         .build();
                 Request request = new Request.Builder()
                         .url(API_URL + "/apps/upload.php")
@@ -236,10 +233,10 @@ public class SettingsScreen extends Utils implements MyInterface {
                     Response response = client.newCall(request).execute();
                     assert response.body() != null;
                     Log.d("RESPONSE:", response.body().string());
-                    if (!response.isSuccessful()) {
+                    if (! response.isSuccessful()) {
                         throw new IOException("Error : " + response);
                     }
-                    File imgFile = new File(getFilesDir(), userName + ".png");
+                    File imgFile = new File(getFilesDir(), userID + ".png");
                     if (imgFile.exists()) if (imgFile.delete()) prog.dismiss();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -299,7 +296,7 @@ public class SettingsScreen extends Utils implements MyInterface {
                 int length = text.length();
                 String[] strings = text.split("\\.");
                 if (strings.length > 1)
-                    if (length > 0 && !Pattern.matches("[0-9]{0,2}", strings[1]) && strings[1]
+                    if (length > 0 && ! Pattern.matches("[0-9]{0,2}", strings[1]) && strings[1]
                             .length() > 1)
                         s.delete(length - 1, length);
             }
@@ -311,17 +308,17 @@ public class SettingsScreen extends Utils implements MyInterface {
             if (amount.length() > 0) {
                 new MaterialDialog.Builder(this)
                         .title(String.format(String.format(getString(R.string.text_pay_amount),
-                                                           amount.replace(".", ",") + "%s"
+                                amount.replace(".", ",") + "%s"
                         ), getString(R.string.currency)))
                         .content(R.string.text_pay_content)
                         .positiveText(android.R.string.yes)
                         .negativeText(android.R.string.no)
                         .onPositive((dialog, which) -> {
                             PayPalPayment donating = new PayPalPayment(new BigDecimal(amount),
-                                                                       getString(
-                                                                               R.string.payment_lang),
-                                                                       "Donation",
-                                                                       PayPalPayment.PAYMENT_INTENT_SALE
+                                    getString(
+                                            R.string.payment_lang),
+                                    "Donation",
+                                    PayPalPayment.PAYMENT_INTENT_SALE
                             );
                             Intent intent = new Intent(
                                     SettingsScreen.this,
@@ -337,13 +334,6 @@ public class SettingsScreen extends Utils implements MyInterface {
         });
     }
 
-    private void setColors() {
-        setStatusBarColor(themeStore.getPrimaryDarkColor());
-        toolbar.setBackgroundColor(themeStore.getPrimaryColor());
-        toolbar.setToolbarIconColor(themeStore.getPrimaryColor());
-        setNavigationBarColor(this, getWindow().getDecorView(), themeStore.getPrimaryColor(), 300);
-    }
-
     private List<Settings> getSettings() {
         List<Settings> settingsList = new ArrayList<>(Arrays.asList(
                 new SettingsPlaceholder("appdetails", getString(R.string.text_appdetails), this),
@@ -351,9 +341,9 @@ public class SettingsScreen extends Utils implements MyInterface {
                         .setSubTitle(BuildConfig.VERSION_NAME),
                 new Settings("check_update", getString(R.string.text_check_update), this)
                         .setSubTitle(getString(R.string.text_click_check))
-                        .addSettingsOnClick((name, instance, subTitle, imageRight) -> {
-                            checkForUpdate(instance, subTitle, imageRight);
-                        }),
+                        .addSettingsOnClick(
+                                (name, instance, subTitle, imageRight) -> checkForUpdate(instance,
+                                        subTitle, imageRight)),
                 new Settings("sourcecode", "Sourcecode", this)
                         .setSubTitle(getString(R.string.text_sourcecode))
                         .addSettingsOnClick((name, setting, subTitle, imageRight) -> {
@@ -365,12 +355,12 @@ public class SettingsScreen extends Utils implements MyInterface {
                                 GitHubSource.getInstance(
                                         SettingsScreen.this,
                                         new Repository("dertyp7214", "NewAppStore",
-                                                       getSettings(
-                                                               SettingsScreen.this)
-                                                               .getString(
-                                                                       "API_KEY",
-                                                                       null
-                                                               ))
+                                                getSettings(
+                                                        SettingsScreen.this)
+                                                        .getString(
+                                                                "API_KEY",
+                                                                null
+                                                        ))
                                 ).setColorStyle(new ColorStyle(
                                         store.getPrimaryColor(),
                                         store.getPrimaryDarkColor(),
@@ -381,9 +371,9 @@ public class SettingsScreen extends Utils implements MyInterface {
                         }),
                 new Settings("donate_paypal", getString(R.string.text_donate), this)
                         .setSubTitle(getString(R.string.text_donate_sub))
-                        .addSettingsOnClick((name, instance, subTitle, imageRight) -> {
-                            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                        }),
+                        .addSettingsOnClick(
+                                (name, instance, subTitle, imageRight) -> bottomSheetBehavior
+                                        .setState(BottomSheetBehavior.STATE_EXPANDED)),
                 new Settings("text_build_type", getString(R.string.text_build_type), this)
                         .setSubTitle(BuildConfig.BUILD_TYPE),
                 new SettingsPlaceholder("preferences", getString(R.string.text_prefs), this),
@@ -418,9 +408,8 @@ public class SettingsScreen extends Utils implements MyInterface {
                 new SettingsSwitch(
                         "dev_mode", getString(R.string.text_dev_mode), this,
                         getSettings(this).getBoolean("dev_mode", false)
-                ).setCheckedChangeListener(value -> {
-                    getSettings(SettingsScreen.this).edit().putBoolean("dev_mode", value).apply();
-                })
+                ).setCheckedChangeListener(value -> getSettings(SettingsScreen.this).edit()
+                        .putBoolean("dev_mode", value).apply())
         ));
         if (appInstalled(this, oldAppPackageName)) {
             SettingsSwitch settingsSwitch = new SettingsSwitch(
@@ -469,18 +458,18 @@ public class SettingsScreen extends Utils implements MyInterface {
                             ThemeStore.getInstance(this).getPrimaryColor(), 300
                     );
                 }),
-                new SettingsSlider("search_bar_radius", getString(R.string.search_bar_radius), this),
+                new SettingsSlider("search_bar_radius", getString(R.string.search_bar_radius),
+                        this),
                 new SettingsPlaceholder(
                         "user_preferences", getString(R.string.text_user_preferences), this),
                 new Settings(
                         "change_profile_pic", getString(R.string.text_change_profile_pic), this)
-                        .addSettingsOnClick((name, instance, subTitle, imageRight) -> {
-                            new MaterialFilePicker()
-                                    .withActivity(SettingsScreen.this)
-                                    .withRequestCode(10)
-                                    .withFilter(Pattern.compile(".*\\.(png|jpg|jpeg)$"))
-                                    .start();
-                        })
+                        .addSettingsOnClick(
+                                (name, instance, subTitle, imageRight) -> new MaterialFilePicker()
+                                        .withActivity(SettingsScreen.this)
+                                        .withRequestCode(10)
+                                        .withFilter(Pattern.compile(".*\\.(png|jpg|jpeg)$"))
+                                        .start())
         )));
         if (BuildConfig.DEBUG) {
             SettingsSwitch hideIcon = new SettingsSwitch(

@@ -5,9 +5,10 @@
 
 package com.dertyp7214.appstore.screens;
 
-import android.content.ActivityNotFoundException;
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.app.ActivityOptions;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -16,7 +17,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -31,9 +31,9 @@ import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
-import android.text.SpannableString;
 import android.text.TextWatcher;
-import android.text.style.ForegroundColorSpan;
+import android.util.Log;
+import android.util.Pair;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
@@ -49,6 +49,7 @@ import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.SearchAdapter;
+import com.dertyp7214.appstore.adapter.UserAdapter;
 import com.dertyp7214.appstore.components.MaterialSearchBar;
 import com.dertyp7214.appstore.dev.Logs;
 import com.dertyp7214.appstore.fragments.FragmentAbout;
@@ -56,6 +57,7 @@ import com.dertyp7214.appstore.fragments.FragmentAppGroups;
 import com.dertyp7214.appstore.fragments.FragmentMyApps;
 import com.dertyp7214.appstore.fragments.TabFragment;
 import com.dertyp7214.appstore.helpers.SQLiteHandler;
+import com.dertyp7214.appstore.helpers.SessionManager;
 import com.dertyp7214.appstore.items.SearchItem;
 
 import org.json.JSONArray;
@@ -78,12 +80,10 @@ public class MainActivity extends Utils
 
     private ViewPagerAdapter adapter;
     private SearchAdapter searchAdapter;
-    private Thread thread;
     private int id = 0;
     private Random random;
     private ThemeStore themeStore;
     private TabLayout tabLayout;
-    private ViewPager viewPager;
     private NavigationView navView;
     private Drawable profilePic;
     private MaterialSearchBar searchBar;
@@ -135,6 +135,7 @@ public class MainActivity extends Utils
         setMargins(searchBar, margin, margin, margin, margin);
 
         navView = findViewById(R.id.nav_view);
+        navView.setCheckedItem(R.id.nav_home);
         navView.setPadding(0, 0, 0, getNavigationBarHeight());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -151,7 +152,7 @@ public class MainActivity extends Utils
 
         navView.setNavigationItemSelectedListener(this);
 
-        viewPager = findViewById(R.id.pager);
+        ViewPager viewPager = findViewById(R.id.pager);
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
         addFragment(new FragmentAppGroups());
         addFragment(new FragmentMyApps());
@@ -230,10 +231,11 @@ public class MainActivity extends Utils
         new Thread(() -> {
             SQLiteHandler db = new SQLiteHandler(getApplicationContext());
             HashMap<String, String> user = db.getUserDetails();
+            String userID = user.get("uid");
             String userName = user.get("name");
             String userEmail = user.get("email");
             View bg = findViewById(R.id.nav_bg);
-            ImageView img = findViewById(R.id.nav_img);
+            ImageView img = findViewById(R.id.user_image);
             TextView name = findViewById(R.id.txt_name);
             TextView email = findViewById(R.id.txt_email);
             profilePic = getDrawable(R.mipmap.ic_launcher_round);
@@ -241,6 +243,7 @@ public class MainActivity extends Utils
                 try {
                     name.setText(userName);
                     email.setText(userEmail);
+                    setAccounts();
                 } catch (Exception e) {
                     e.printStackTrace();
                     logs.info("setUpNavView - runOnUiThread", e.toString() + "\n" + e.getMessage());
@@ -249,14 +252,14 @@ public class MainActivity extends Utils
                 }
             });
             try {
-                File file = new File(getFilesDir(), userName + ".png");
+                File file = new File(getFilesDir(), userID + ".png");
                 if (file.exists()) {
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inPreferredConfig = Bitmap.Config.ARGB_8888;
                     profilePic = new BitmapDrawable(getResources(),
                             BitmapFactory.decodeFile(file.getAbsolutePath(), options));
                 } else {
-                    String url = API_URL + "/apps/pic/" + URLEncoder.encode(userName, "UTF-8")
+                    String url = API_URL + "/apps/pic/" + URLEncoder.encode(userID, "UTF-8")
                             .replace("+", "_") + ".png";
                     profilePic = Utils.drawableFromUrl(this, url);
                     FileOutputStream fileOutputStream = new FileOutputStream(file);
@@ -267,11 +270,11 @@ public class MainActivity extends Utils
                 e.printStackTrace();
                 logs.info("setUpNavView", e.toString() + "\n" + e.getMessage());
             }
-            int color = Palette.from(Utils.drawableToBitmap(profilePic))
-                    .generate()
-                    .getDominantColor(ThemeStore.getInstance(this).getPrimaryColor());
             runOnUiThread(() -> {
                 try {
+                    int color = Palette.from(Utils.drawableToBitmap(profilePic))
+                            .generate()
+                            .getDominantColor(ThemeStore.getInstance(this).getPrimaryColor());
                     if (Utils.isColorBright(color)) {
                         name.setTextColor(Color.BLACK);
                         email.setTextColor(Color.BLACK);
@@ -281,6 +284,15 @@ public class MainActivity extends Utils
                     }
                     bg.setBackgroundColor(color);
                     img.setImageDrawable(profilePic);
+                    img.setOnClickListener(v -> {
+                        Intent intent = new Intent(MainActivity.this, UserProfile.class);
+                        intent.putExtra("uid", userID);
+                        Pair<View, String> icon = Pair.create(img, "profilePic");
+                        ActivityOptions options =
+                                ActivityOptions.makeSceneTransitionAnimation(this, icon);
+                        startActivity(intent, options.toBundle());
+                        drawer.closeDrawers();
+                    });
                 } catch (Exception e) {
                     e.printStackTrace();
                     logs.info("setUpNavView - runOnUiThread", e.toString() + "\n" + e.getMessage());
@@ -291,26 +303,80 @@ public class MainActivity extends Utils
         }).start();
     }
 
-    private ColorStateList getColorStateList(int disabled, int enabled, int unchecked, int pressed) {
-        int[][] state = new int[][]{
-                new int[]{- android.R.attr.state_enabled}, // disabled
-                new int[]{android.R.attr.state_enabled}, // enabled
-                new int[]{- android.R.attr.state_checked}, // unchecked
-                new int[]{android.R.attr.state_pressed}  // pressed
+    private void setAccounts() {
+        SQLiteHandler db = new SQLiteHandler(getApplicationContext());
+        HashMap<String, String> user = db.getUserDetails();
+        String userID = user.get("uid");
+        List<UserAdapter.User> users = new ArrayList<>();
+        AccountManager am = AccountManager.get(this);
+        UserAdapter userAdapter = new UserAdapter(this, users, uid -> v -> {
+            UserAdapter.User u = null;
+            for (UserAdapter.User us : users)
+                if (us.getUid().equals(uid))
+                    u = us;
+            if (u != null) {
+                SessionManager session = new SessionManager(getApplicationContext());
+                session.setLogin(true);
+                db.deleteUsers();
+                db.addUser(u.getName(), u.getEmail(), uid, u.getCreatedAt());
+                startActivity(this, Splashscreen.class);
+                drawer.closeDrawers();
+                finish();
+            }
+        });
+        new Thread(() -> {
+            for (Account account : am.getAccounts()) {
+                try {
+                    String uid = am.getUserData(account, "uid");
+                    if (! uid.equals(userID))
+                        users.add(new UserAdapter.User(uid, am.getUserData(account, "name"),
+                                account.name,
+                                am.getUserData(account, "created_at"),
+                                getUserImage(uid)));
+                } catch (Exception e) {
+                    logs.info("setAccounts", e.toString());
+                }
+            }
+            runOnUiThread(userAdapter::notifyDataSetChanged);
+        }).start();
+        LinearLayoutManager layoutManager =
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        layoutManager.setReverseLayout(true);
+        RecyclerView userRecyclerView = findViewById(R.id.rv_users);
+        userRecyclerView.setLayoutManager(layoutManager);
+        userRecyclerView.setAdapter(userAdapter);
+    }
 
-        };
-        int[] color = new int[]{
-                disabled,
-                enabled,
-                unchecked,
-                pressed
-        };
-        return new ColorStateList(state, color);
+    private Drawable getUserImage(String uid) {
+        Drawable profilePic;
+        try {
+            String url = API_URL + "/apps/pic/" + URLEncoder.encode(uid, "UTF-8")
+                    .replace("+", "_") + ".png";
+            File imgFile = new File(getFilesDir(), uid + ".png");
+            if (! imgFile.exists()) {
+                if (Config.SERVER_ONLINE) {
+                    profilePic = Utils.drawableFromUrl(this, url);
+                    FileOutputStream fileOutputStream = new FileOutputStream(imgFile);
+                    drawableToBitmap(profilePic)
+                            .compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+
+                } else
+                    profilePic = getResources().getDrawable(R.mipmap.ic_launcher, null);
+            } else {
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                profilePic = new BitmapDrawable(getResources(),
+                        BitmapFactory.decodeFile(imgFile.getAbsolutePath(), options));
+            }
+        } catch (Exception e) {
+            profilePic = getResources().getDrawable(R.mipmap.ic_launcher, null);
+        }
+        return profilePic;
     }
 
     private void search(String query) {
         id = random.nextInt();
-        thread = new Thread(() -> {
+        Thread thread = new Thread(() -> {
             try {
 
                 int localId = id;
@@ -363,7 +429,7 @@ public class MainActivity extends Utils
             changeOpacity(searchView, true);
             tabLayout.setVisibility(View.VISIBLE);
         } else {
-            super.onBackPressed();
+            finish();
         }
     }
 
@@ -385,23 +451,9 @@ public class MainActivity extends Utils
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        int id = item.getItemId();
-
         return super.onOptionsItemSelected(item);
     }
 
-    private void setTextColorForMenuItem(MenuItem menuItem, @ColorInt int color) {
-        SpannableString spanString = new SpannableString(menuItem.getTitle().toString());
-        spanString.setSpan(new ForegroundColorSpan(color), 0, spanString.length(), 0);
-        menuItem.setTitle(spanString);
-    }
-
-    private void resetAllMenuItemsTextColor(NavigationView navigationView) {
-        for (int i = 0; i < navigationView.getMenu().size(); i++)
-            setTextColorForMenuItem(navigationView.getMenu().getItem(i), Color.DKGRAY);
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
@@ -445,7 +497,7 @@ public class MainActivity extends Utils
         submit(text);
     }
 
-    private void submit(CharSequence text){
+    private void submit(CharSequence text) {
         search(text.toString());
         View searchLayout = findViewById(R.id.searchLayout);
         View content = findViewById(R.id.content);
@@ -501,7 +553,7 @@ public class MainActivity extends Utils
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
 
-        public ViewPagerAdapter(FragmentManager manager) {
+        ViewPagerAdapter(FragmentManager manager) {
             super(manager);
         }
 
@@ -515,7 +567,7 @@ public class MainActivity extends Utils
             return mFragmentList.size();
         }
 
-        public void addFragment(Fragment fragment, String title) {
+        void addFragment(Fragment fragment, String title) {
             mFragmentList.add(fragment);
             mFragmentTitleList.add(title);
         }

@@ -42,9 +42,9 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView title, subTitle;
         public View box;
-        public ProgressBar imageRight;
+        ProgressBar imageRight;
 
-        public ViewHolder(View view) {
+        ViewHolder(View view) {
             super(view);
             title = view.findViewById(R.id.text);
             subTitle = view.findViewById(R.id.subTitle);
@@ -57,7 +57,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         public CheckBox title;
         public View box;
 
-        public ViewHolderCheckBox(View view) {
+        ViewHolderCheckBox(View view) {
             super(view);
             title = view.findViewById(R.id.text);
             box = view.findViewById(R.id.box);
@@ -85,7 +85,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         public Switch title;
         public View box;
 
-        public ViewHolderSwitch(View view) {
+        ViewHolderSwitch(View view) {
             super(view);
             title = view.findViewById(R.id.text);
             box = view.findViewById(R.id.box);
@@ -98,7 +98,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         public TextView title;
         public View box, colorView;
 
-        public ViewHolderColor(View view) {
+        ViewHolderColor(View view) {
             super(view);
             title = view.findViewById(R.id.text);
             box = view.findViewById(R.id.box);
@@ -110,7 +110,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         public TextView title;
         public View box;
 
-        public ViewHolderPlaceHolder(View view) {
+        ViewHolderPlaceHolder(View view) {
             super(view);
             title = view.findViewById(R.id.text);
             box = view.findViewById(R.id.box);
@@ -118,11 +118,11 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public class ViewHolderSlider extends ViewHolder {
-        public TextView title, progress;
+        TextView title, progress;
         public View box;
         public SeekBar seekBar;
 
-        public ViewHolderSlider(View view) {
+        ViewHolderSlider(View view) {
             super(view);
             title = view.findViewById(R.id.text);
             box = view.findViewById(R.id.box);
@@ -219,7 +219,6 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, int position) {
-        final ThemeStore themeManager = ThemeStore.getInstance(context);
         switch (holder.getItemViewType()) {
             case 0:
                 final ViewHolder viewHolder = (ViewHolder) holder;
@@ -273,7 +272,8 @@ public class SettingsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         (SettingsSlider) itemList.get(position);
                 viewHolderSlider.title.setText(settingsSlider.getText());
                 viewHolderSlider.seekBar.setProgress(settingsSlider.getProgress());
-                viewHolderSlider.progress.setText(String.valueOf(viewHolderSlider.seekBar.getProgress()));
+                viewHolderSlider.progress
+                        .setText(String.valueOf(viewHolderSlider.seekBar.getProgress()));
                 viewHolderSlider.seekBar.setOnSeekBarChangeListener(
                         new SeekBar.OnSeekBarChangeListener() {
                             @Override

@@ -116,6 +116,9 @@
                 <data android:host="store.dertyp7214.de" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".screens.UserProfile"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

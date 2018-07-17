@@ -110,4 +110,9 @@
     <string name="text_hide_icon">Verstecke Appicon</string>
     <string name="text_debug">Debug</string>
     <string name="search_bar_radius">SearchBar Radius</string>
+    <string name="text_profile_of">Profil con: %s</string>
+    <string name="text_libraries">Bibliotheken</string>
+    <string name="text_main_author">Hauptentwickler</string>
+    <string name="text_licenses">Lizenzen</string>
+    <string name="text_authors">Entwickler</string>
 </resources>

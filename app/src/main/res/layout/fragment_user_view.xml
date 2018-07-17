@@ -1,0 +1,36 @@
+<!--
+  ~ /*
+  ~  * Copyright (c) 2018.
+  ~  * Created by Josua Lengwenath
+  ~  */
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.mikhaellopez.circularimageview.CircularImageView
+        android:id="@+id/user_image"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:contentDescription="@string/nav_header_desc"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:transitionName="profilePic"
+        app:civ_border_color="#50000000"
+        app:civ_border_width="2dp"
+        app:srcCompat="@mipmap/ic_launcher_round" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_users"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_alignTop="@+id/user_image"
+        android:layout_marginStart="7dp"
+        android:layout_toEndOf="@+id/user_image"
+        android:scrollbars="none"
+        tools:listitem="@layout/user_view" />
+
+
+</RelativeLayout>

@@ -59,19 +59,16 @@ public class LoginActivity extends Activity {
         setContentView(R.layout.activity_login);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-
             getWindow().setNavigationBarColor(getResources().getColor(R.color.bg_login));
             getWindow().setStatusBarColor(getResources().getColor(R.color.bg_login));
-
         }
 
-        if (ActivityCompat.checkSelfPermission(LoginActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-
-
-        } else {
-
-            ActivityCompat.requestPermissions(LoginActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQ_EXTERNAL_STORAGE);
-
+        if (! (ActivityCompat.checkSelfPermission(LoginActivity.this,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED)) {
+            ActivityCompat.requestPermissions(LoginActivity.this,
+                    new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQ_EXTERNAL_STORAGE);
         }
 
         inputEmail = findViewById(R.id.email);
@@ -93,8 +90,8 @@ public class LoginActivity extends Activity {
         if (session.isLoggedIn()) {
             // User is already logged in. Take him to main activity
             AccountManager am = AccountManager.get(this);
-            for(Account account : am.getAccounts()){
-                if((account.name).equals(db.getUserDetails().get("email"))) {
+            for (Account account : am.getAccounts()) {
+                if ((account.name).equals(db.getUserDetails().get("email"))) {
                     new Thread(() -> {
                         syncPreferences();
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -111,7 +108,7 @@ public class LoginActivity extends Activity {
             String password = inputPassword.getText().toString().trim();
 
             // Check for empty data in the form
-            if (!email.isEmpty() && !password.isEmpty()) {
+            if (! email.isEmpty() && ! password.isEmpty()) {
                 // login user
                 checkLogin(email, password);
             } else {
@@ -136,13 +133,15 @@ public class LoginActivity extends Activity {
         new Thread(() -> {
             SharedPreferences preferences = getSettings(this);
             SharedPreferences.Editor editor = preferences.edit();
-            SharedPreferences colors = getSharedPreferences("colors_"+UID(this), MODE_PRIVATE);
+            SharedPreferences colors = getSharedPreferences("colors_" + UID(this), MODE_PRIVATE);
             SharedPreferences.Editor editorColor = colors.edit();
 
             try {
-                JSONObject jsonObject = new JSONObject(getWebContent(API_URL + "/apps/prefs.php?user=" + UID(this)));
+                JSONObject jsonObject = new JSONObject(
+                        getWebContent(API_URL + "/apps/prefs.php?user=" + UID(this)));
 
-                for (Iterator<String> it = jsonObject.getJSONObject("prefs").keys(); it.hasNext(); ) {
+                for (Iterator<String> it = jsonObject.getJSONObject("prefs").keys();
+                     it.hasNext(); ) {
                     String key = it.next();
                     Object obj = jsonObject.getJSONObject("prefs").get(key);
                     if (obj instanceof String)
@@ -160,7 +159,8 @@ public class LoginActivity extends Activity {
 
                 }
 
-                for (Iterator<String> it = jsonObject.getJSONObject("colors").keys(); it.hasNext(); ) {
+                for (Iterator<String> it = jsonObject.getJSONObject("colors").keys();
+                     it.hasNext(); ) {
                     String key = it.next();
                     Object obj = jsonObject.getJSONObject("colors").get(key);
                     if (obj instanceof String)
@@ -190,7 +190,7 @@ public class LoginActivity extends Activity {
 
     /**
      * function to verify login details in mysql db
-     * */
+     */
     private void checkLogin(final String email, final String password) {
         // Tag used to cancel the request
         String tag_string_req = "req_login";
@@ -200,67 +200,74 @@ public class LoginActivity extends Activity {
 
         StringRequest strReq = new StringRequest(Method.POST,
                 AppConfig.URL_LOGIN, response -> {
-                    Log.d(TAG, "Login Response: " + response);
-                    hideDialog();
+            Log.d(TAG, "Login Response: " + response);
+            hideDialog();
 
-                    try {
-                        JSONObject jObj = new JSONObject(response);
-                        boolean error = jObj.getBoolean("error");
+            try {
+                JSONObject jObj = new JSONObject(response);
+                boolean error = jObj.getBoolean("error");
 
-                        // Check for error node in json
-                        if (!error) {
-                            // user successfully logged in
-                            // Create login session
-                            session.setLogin(true);
+                // Check for error node in json
+                if (! error) {
+                    // user successfully logged in
+                    // Create login session
+                    session.setLogin(true);
 
-                            db.deleteUsers();
+                    db.deleteUsers();
 
-                            // Now store the user in SQLite
-                            String uid = jObj.getString("uid");
+                    // Now store the user in SQLite
+                    String uid = jObj.getString("uid");
 
-                            JSONObject user = jObj.getJSONObject("user");
-                            String name = user.getString("name");
-                            String email1 = user.getString("email");
-                            String created_at = user
-                                    .getString("created_at");
+                    JSONObject user = jObj.getJSONObject("user");
+                    String name = user.getString("name");
+                    String email1 = user.getString("email");
+                    String created_at = user
+                            .getString("created_at");
 
-                            // Inserting row in users table
-                            db.addUser(name, email1, uid, created_at);
+                    // Inserting row in users table
+                    db.addUser(name, email1, uid, created_at);
 
-                            AccountManager accountManager = AccountManager.get(LoginActivity.this); //this is Activity
-                            Account account = new Account(email1,BuildConfig.APPLICATION_ID+".ACCOUNT");
-                            boolean success = accountManager.addAccountExplicitly(account,password,null);
-                            if(success){
-                                Log.d(TAG,"Account created");
-                            }else{
-                                Log.d(TAG,"Account creation failed. Look at previous logs to investigate");
-                            }
+                    Bundle userData = new Bundle();
+                    userData.putString("name", name);
+                    userData.putString("uid", uid);
+                    userData.putString("created_at", created_at);
 
-                            // Launch main activity
-                            new Thread(() -> {
-                                syncPreferences();
-                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                startActivity(intent);
-                                finish();
-                            }).start();
-                        } else {
-                            // Error in login. Get the error message
-                            String errorMsg = jObj.getString("error_msg");
-                            Toast.makeText(getApplicationContext(),
-                                    errorMsg, Toast.LENGTH_LONG).show();
-                        }
-                    } catch (JSONException e) {
-                        // JSON error
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "Json error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    AccountManager accountManager =
+                            AccountManager.get(LoginActivity.this); //this is Activity
+                    Account account = new Account(email1, BuildConfig.APPLICATION_ID + ".ACCOUNT");
+                    boolean success = accountManager.addAccountExplicitly(account, password, userData);
+                    if (success) {
+                        Log.d(TAG, "Account created");
+                    } else {
+                        Log.d(TAG, "Account creation failed. Look at previous logs to investigate");
                     }
 
-                }, error -> {
-                    Log.e(TAG, "Login Error: " + error.getMessage());
+                    // Launch main activity
+                    new Thread(() -> {
+                        syncPreferences();
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }).start();
+                } else {
+                    // Error in login. Get the error message
+                    String errorMsg = jObj.getString("error_msg");
                     Toast.makeText(getApplicationContext(),
-                            error.getMessage(), Toast.LENGTH_LONG).show();
-                    hideDialog();
-                }) {
+                            errorMsg, Toast.LENGTH_LONG).show();
+                }
+            } catch (JSONException e) {
+                // JSON error
+                e.printStackTrace();
+                Toast.makeText(getApplicationContext(), "Json error: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+
+        }, error -> {
+            Log.e(TAG, "Login Error: " + error.getMessage());
+            Toast.makeText(getApplicationContext(),
+                    error.getMessage(), Toast.LENGTH_LONG).show();
+            hideDialog();
+        }) {
 
             @Override
             protected Map<String, String> getParams() {
@@ -279,7 +286,7 @@ public class LoginActivity extends Activity {
     }
 
     private void showDialog() {
-        if (!pDialog.isShowing())
+        if (! pDialog.isShowing())
             pDialog.show();
     }
 

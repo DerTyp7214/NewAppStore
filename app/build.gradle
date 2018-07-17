@@ -9,7 +9,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
-        versionName "2.5"
+        versionName "2.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -52,4 +52,7 @@ dependencies {
     implementation 'com.mcxiaoke.volley:library-aar:1.0.0'
     implementation 'com.nbsp:library:1.09'
     implementation 'com.github.mancj:MaterialSearchBar:0.7.6'
+    implementation 'com.mikhaellopez:circularimageview:3.1.0'
+    implementation('de.psdev.licensesdialog:licensesdialog:1.8.3')
+
 }

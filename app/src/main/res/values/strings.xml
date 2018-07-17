@@ -182,4 +182,13 @@
     <string name="text_debug">Debug</string>
     <string name="search_bar_radius">SearchBar Radius</string>
     <string name="language_model">en-US</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="text_profile_of">Profile of: %s</string>
+    <string name="text_libraries">Libraries</string>
+    <string name="text_main_author">Main Author</string>
+    <string name="text_licenses">Licenses</string>
+    <string name="text_josua_lengwenath" translatable="false">Josua Lengwenath</string>
+    <string name="text_authors">Authors</string>
 </resources>

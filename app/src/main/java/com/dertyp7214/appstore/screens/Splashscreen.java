@@ -47,8 +47,6 @@ import java.util.HashMap;
 import static com.dertyp7214.appstore.Config.API_URL;
 
 public class Splashscreen extends Utils {
-
-    int onStartCount = 0;
     /**
      * Called when the activity is first created.
      */
@@ -99,8 +97,6 @@ public class Splashscreen extends Utils {
         logs.info("PERCENTAGE", percentage + "\n" + dur + "\n" + restDuration);
         return dur;
     }
-
-
 
     private void StartAnimations() {
         Animation anim = AnimationUtils.loadAnimation(this, R.anim.alpha);
@@ -164,7 +160,7 @@ public class Splashscreen extends Utils {
 
                     SQLiteHandler db = new SQLiteHandler(getApplicationContext());
                     HashMap<String, String> user = db.getUserDetails();
-                    String userName = user.get("name");
+                    String userID = user.get("uid");
 
                     if (new JSONObject(LocalJSON.getJSON(this)).getBoolean("error")
                             || !getSettings(this).getString("last_refresh", "000000")
@@ -180,9 +176,9 @@ public class Splashscreen extends Utils {
                             getString(R.string.splash_getUserData)
                     );
 
-                    String url = API_URL + "/apps/pic/" + URLEncoder.encode(userName, "UTF-8")
+                    String url = API_URL + "/apps/pic/" + URLEncoder.encode(userID, "UTF-8")
                             .replace("+", "_") + ".png";
-                    File imgFile = new File(getFilesDir(), userName + ".png");
+                    File imgFile = new File(getFilesDir(), userID + ".png");
                     if (!imgFile.exists()) {
                         Drawable profilePic = Utils.drawableFromUrl(this, url);
                         FileOutputStream fileOutputStream = new FileOutputStream(imgFile);
@@ -235,7 +231,7 @@ public class Splashscreen extends Utils {
                 );
                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                 startActivity(intent);
-                Splashscreen.this.finish();
+                finish();
             }
 
         });

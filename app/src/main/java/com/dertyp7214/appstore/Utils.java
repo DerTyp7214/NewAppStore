@@ -76,6 +76,7 @@ public class Utils extends AppCompatActivity {
     protected int PERMISSIONS = 10;
     protected String oldAppPackageName = "com.hacker.appstore";
     private static HashMap<String, Drawable> icons = new HashMap<>();
+    protected ThemeStore themeStore;
     public Logs logs;
 
     public CustomToolbar toolbar;
@@ -333,11 +334,27 @@ public class Utils extends AppCompatActivity {
                 .decodeByteArray(decodedBytes, 0, decodedBytes.length));
     }
 
-    public Parcelable checkExtraKey(Bundle extra, String key) {
-        if (extra == null) finish();
-        assert extra != null;
-        if (extra.getParcelable(key) == null) finish();
-        return extra.getParcelable(key);
+    protected void setColors() {
+        logs = Logs.getInstance(this);
+        logs.info("setColor", String.valueOf(themeStore != null));
+        if (themeStore != null) {
+            setStatusBarColor(themeStore.getPrimaryDarkColor());
+            toolbar.setBackgroundColor(themeStore.getPrimaryColor());
+            toolbar.setToolbarIconColor(themeStore.getPrimaryColor());
+            setNavigationBarColor(this, getWindow().getDecorView(), themeStore.getPrimaryColor(),
+                    300);
+        }
+    }
+
+    protected void setBackButton(){
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+    }
+
+    public Object checkExtraKey(Bundle extra, String key) {
+        checkExtra(extra);
+        if (extra.get(key) == null) finish();
+        return extra.get(key);
     }
 
     protected String readFromFileInputStream(FileInputStream fileInputStream) {
