@@ -177,7 +177,7 @@ public class MainActivity extends Utils
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 app_bar.setBackgroundColor(themeStore
-                        .getPrimaryHue((int) (((float) position + positionOffset) * 100)));
+                        .getPrimaryHue((int) (((float) position + positionOffset) * 36)));
             }
 
             @Override
