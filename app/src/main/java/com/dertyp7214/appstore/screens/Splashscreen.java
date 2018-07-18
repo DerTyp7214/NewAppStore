@@ -59,7 +59,7 @@ public class Splashscreen extends Utils {
     int restDuration = duration;
     int oldPercentage = 0;
     Logs logs;
-    boolean finishedUsers = false;
+    HashMap<String, Boolean> finishedUsers = new HashMap<>();
 
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -131,6 +131,10 @@ public class Splashscreen extends Utils {
         progressBar.setProgress(0);
 
         splashTread = new Thread(() -> {
+            String[] names = new String[]{
+                    getString(R.string.text_dertyp7214),
+                    getString(R.string.text_enol_simon)
+            };
             try {
 
                 Config.SERVER_ONLINE = serverOnline();
@@ -164,10 +168,6 @@ public class Splashscreen extends Utils {
                     }
                 }
 
-                String[] names = new String[]{
-                        getString(R.string.text_dertyp7214),
-                        getString(R.string.text_enol_simon)
-                };
                 setProgress(
                         progressBar, 10, getDuration(10),
                         getString(R.string.splash_getUserData)
@@ -193,8 +193,10 @@ public class Splashscreen extends Utils {
                                 e.printStackTrace();
                             }
                             logs.info("Loading Userdata finished", userName);
-                            finishedUsers = true;
+                            finishedUsers.put(userName, true);
                         }).start();
+                    } else {
+                        finishedUsers.put(userName, true);
                     }
                 }
 
@@ -269,13 +271,25 @@ public class Splashscreen extends Utils {
                 logs.info("FINALLY", restDuration + "");
 
                 int count = 0;
+                boolean finished = true;
 
-                while (!finishedUsers) {
+                for(String name : names)
+                    if(!finishedUsers.containsKey(name))
+                        finished = false;
+
+                while (! finished) {
+                    boolean contains = true;
                     count++;
                     logs.info("Waiting for about to finish", count);
                     try {
                         Thread.sleep(10);
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                    }
+                    for(String name : names)
+                        if(!finishedUsers.containsKey(name))
+                            contains = false;
+                    finished = contains;
+                    if (count > 100) finished = true;
                 }
 
                 Intent intent = new Intent(
