@@ -75,7 +75,9 @@ public class Splashscreen extends Utils {
     @Override
     protected void onStart() {
         super.onStart();
-    }    @Override
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS) {
             for (String permission : permissions) {
@@ -129,12 +131,13 @@ public class Splashscreen extends Utils {
                 Config.SERVER_ONLINE = serverOnline();
 
                 setProgress(
-                        progressBar, 10, true, getDuration(10),
+                        progressBar, 10, getDuration(10),
                         getString(R.string.splash_checkLogin)
                 );
 
-                if (!BuildConfig.DEBUG) {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1 && Utils
+                if (! BuildConfig.DEBUG) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1
+                            && Utils
                             .appInstalled(this, BuildConfig.APPLICATION_ID + ".debug")) {
 
                         Intent intent = new Intent(Intent.ACTION_MAIN);
@@ -163,23 +166,24 @@ public class Splashscreen extends Utils {
                     String userID = user.get("uid");
 
                     if (new JSONObject(LocalJSON.getJSON(this)).getBoolean("error")
-                            || !getSettings(this).getString("last_refresh", "000000")
+                            || ! getSettings(this).getString("last_refresh", "000000")
                             .contentEquals(DateFormat.format("yyyyMMdd", new Date()))) {
                         getSettings(this).edit().putString("last_refresh",
                                 String.valueOf(DateFormat.format("yyyyMMdd", new Date()))).apply();
                         LocalJSON.setJSON(this,
-                                getWebContent(Config.API_URL + "/apps/list.php?user="+Config.UID(this)));
+                                getWebContent(Config.API_URL + "/apps/list.php?user=" + Config
+                                        .UID(this)));
                     }
 
                     setProgress(
-                            progressBar, 20, true, getDuration(20),
+                            progressBar, 20, getDuration(20),
                             getString(R.string.splash_getUserData)
                     );
 
                     String url = API_URL + "/apps/pic/" + URLEncoder.encode(userID, "UTF-8")
                             .replace("+", "_") + ".png";
                     File imgFile = new File(getFilesDir(), userID + ".png");
-                    if (!imgFile.exists()) {
+                    if (! imgFile.exists()) {
                         Drawable profilePic = Utils.drawableFromUrl(this, url);
                         FileOutputStream fileOutputStream = new FileOutputStream(imgFile);
                         drawableToBitmap(profilePic)
@@ -187,7 +191,7 @@ public class Splashscreen extends Utils {
                     }
 
                     setProgress(
-                            progressBar, 40, true, getDuration(40),
+                            progressBar, 40, getDuration(40),
                             getString(R.string.splash_getUserIMage)
                     );
 
@@ -195,13 +199,13 @@ public class Splashscreen extends Utils {
                 }
 
                 setProgress(
-                        progressBar, 60, true, getDuration(60),
+                        progressBar, 60, getDuration(60),
                         getString(R.string.splash_synsPreferences)
                 );
 
                 for (int i = 0; i < 55; i++) {
                     setProgress(
-                            progressBar, 60 + (int) (((float) 40 / 55) * i), true,
+                            progressBar, 60 + (int) (((float) 40 / 55) * i),
                             getDuration(60 + (int) (((float) 40 / 55) * i)),
                             String.format(
                                     getString(R.string.splash_writePreferences),
@@ -238,10 +242,10 @@ public class Splashscreen extends Utils {
         splashTread.start();
     }
 
-    private void setProgress(ProgressBar progress, int percent, boolean animated, int waittime, String devString) throws InterruptedException {
+    private void setProgress(ProgressBar progress, int percent, int waittime, String devString) throws InterruptedException {
         runOnUiThread(() -> ((TextView) findViewById(R.id.txt_loading)).setText(devString));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            progress.setProgress(percent, animated);
+            progress.setProgress(percent, true);
             Thread.sleep(waittime);
         } else {
             progress.setProgress(percent);

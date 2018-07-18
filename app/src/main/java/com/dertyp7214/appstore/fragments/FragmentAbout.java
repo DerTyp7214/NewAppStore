@@ -50,8 +50,8 @@ public class FragmentAbout extends MaterialAboutFragment {
         notices.addNotice(
                 new Notice("RoundedImageView",
                         "https://github.com/vinc3m1/RoundedImageView",
-                        "Copyright 2017 Vincent Mi", new
-                        ApacheSoftwareLicense20()));
+                        "Copyright 2017 Vincent Mi",
+                        new ApacheSoftwareLicense20()));
         notices.addNotice(
                 new Notice("material-about-library",
                         "https://github.com/daniel-stoneuk/material-about-library",

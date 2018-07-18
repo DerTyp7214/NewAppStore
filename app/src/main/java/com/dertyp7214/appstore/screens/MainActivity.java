@@ -32,7 +32,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -131,7 +130,7 @@ public class MainActivity extends Utils
         app_bar.setBackgroundColor(ThemeStore.getInstance(this).getPrimaryColor());
         app_bar.setPadding(0, getStatusBarHeight(), 0, 0);
 
-        int margin = dpToPx(8);
+        int margin = getMargin();
         setMargins(searchBar, margin, margin, margin, margin);
 
         navView = findViewById(R.id.nav_view);
@@ -202,6 +201,10 @@ public class MainActivity extends Utils
         });
 
         setUpNavView();
+    }
+
+    private int getMargin() {
+        return dpToPx(6) + dpToPx(2);
     }
 
     private int dpToPx(int dp) {
