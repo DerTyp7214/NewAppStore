@@ -102,7 +102,7 @@
     <string name="text_user_preferences">Nutzereinstellungen</string>
     <string name="splash_checkLogin">Überprüfen, ob der Benutzer angemeldet ist</string>
     <string name="splash_getUserData">lade Nutzerdaten</string>
-    <string name="splash_getUserIMage">lade Profilbild</string>
+    <string name="splash_getUserImage">lade Profilbild</string>
     <string name="splash_synsPreferences">synchronisiere Einstellungen</string>
     <string name="splash_writePreferences">schreibe Einstellungen (%s)</string>
     <string name="splash_finished">fertig</string>
@@ -115,4 +115,8 @@
     <string name="text_main_author">Hauptentwickler</string>
     <string name="text_licenses">Lizenzen</string>
     <string name="text_authors">Entwickler</string>
+    <string name="text_translators">Übersetzer</string>
+    <string name="text_german">Deutsch</string>
+    <string name="text_english">Englisch</string>
+    <string name="text_spainish">Spanisch</string>
 </resources>

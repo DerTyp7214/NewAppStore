@@ -26,14 +26,18 @@ import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.components.MVAccelerateDecelerateInterpolator;
 import com.dertyp7214.appstore.dev.Logs;
+import com.dertyp7214.appstore.fragments.FragmentAbout;
 import com.dertyp7214.appstore.helpers.SQLiteHandler;
 import com.dertyp7214.appstore.helpers.SessionManager;
 
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -55,6 +59,7 @@ public class Splashscreen extends Utils {
     int restDuration = duration;
     int oldPercentage = 0;
     Logs logs;
+    boolean finishedUsers = false;
 
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -159,6 +164,40 @@ public class Splashscreen extends Utils {
                     }
                 }
 
+                String[] names = new String[]{
+                        getString(R.string.text_dertyp7214),
+                        getString(R.string.text_enol_simon)
+                };
+                setProgress(
+                        progressBar, 10, getDuration(10),
+                        getString(R.string.splash_getUserData)
+                );
+                for (String userName : names) {
+                    if (! FragmentAbout.users.containsKey(userName)) {
+                        new Thread(() -> {
+                            logs.info("Loading Userdata", userName);
+                            try {
+                                HashMap<String, Object> user = new HashMap<>();
+                                JSONObject jsonObject = new JSONObject(
+                                        getJSONObject("https://api.github.com/users/" + userName));
+                                user.put("id", jsonObject.getString("id"));
+                                String name =
+                                        jsonObject.getString("name").equals("null") ? jsonObject
+                                                .getString("login") : jsonObject.getString("name");
+                                user.put("name", name);
+                                user.put("image", Utils.drawableFromUrl(this,
+                                        "https://avatars0.githubusercontent.com/u/" + user
+                                                .get("id")));
+                                FragmentAbout.users.put(userName, user);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            logs.info("Loading Userdata finished", userName);
+                            finishedUsers = true;
+                        }).start();
+                    }
+                }
+
                 if (new SessionManager(getApplicationContext()).isLoggedIn()) {
 
                     SQLiteHandler db = new SQLiteHandler(getApplicationContext());
@@ -192,7 +231,7 @@ public class Splashscreen extends Utils {
 
                     setProgress(
                             progressBar, 40, getDuration(40),
-                            getString(R.string.splash_getUserIMage)
+                            getString(R.string.splash_getUserImage)
                     );
 
                     syncPreferences();
@@ -216,7 +255,7 @@ public class Splashscreen extends Utils {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                logs.info("ERROR", e.toString());
+                logs.error("ERROR", e.toString());
             } finally {
 
                 runOnUiThread(() -> ((TextView) findViewById(R.id.txt_loading))
@@ -228,6 +267,16 @@ public class Splashscreen extends Utils {
                 }
 
                 logs.info("FINALLY", restDuration + "");
+
+                int count = 0;
+
+                while (!finishedUsers) {
+                    count++;
+                    logs.info("Waiting for about to finish", count);
+                    try {
+                        Thread.sleep(10);
+                    } catch (Exception ignored) {}
+                }
 
                 Intent intent = new Intent(
                         Splashscreen.this,
@@ -266,4 +315,30 @@ public class Splashscreen extends Utils {
         return false;
     }
 
+    private String getJSONObject(String url) {
+        String api_key = Utils.getSettings(this).getString("API_KEY", null);
+        try {
+            URL web = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) web.openConnection();
+            connection.setRequestProperty("Authorization", "token " + api_key);
+            BufferedReader in;
+
+            if (api_key == null || api_key.equals(""))
+                in = new BufferedReader(new InputStreamReader(web.openStream()));
+            else
+                in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+            String inputLine;
+            StringBuilder ret = new StringBuilder();
+
+            while ((inputLine = in.readLine()) != null)
+                ret.append(inputLine);
+
+            in.close();
+            return ret.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{\"message\": \"Something went wrong.\"}";
+        }
+    }
 }

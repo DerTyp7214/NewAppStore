@@ -73,7 +73,7 @@ public class UserProfile extends Utils {
                     userHashMap.put(uid, user);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    logs.info("setUser", e.toString());
+                    logs.error("setUser", e.toString());
                     userImage = getResources().getDrawable(R.mipmap.ic_launcher, null);
                 }
             } else

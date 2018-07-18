@@ -102,8 +102,8 @@ public class SimpleJSONObject extends JSONObject {
         final Field declaredField = JSONObject.class.getDeclaredField(FIELDNAME_NAME_VALUE_PAIRS);
         declaredField.setAccessible(true);
 
-        @SuppressWarnings("unchecked")
-        final Map<String, Object> map = (Map<String, Object>) declaredField.get(this);
+        @SuppressWarnings("unchecked") final Map<String, Object> map =
+                (Map<String, Object>) declaredField.get(this);
 
         return map;
     }

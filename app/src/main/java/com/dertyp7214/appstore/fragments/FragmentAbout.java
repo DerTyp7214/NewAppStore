@@ -6,14 +6,25 @@
 package com.dertyp7214.appstore.fragments;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 
 import com.danielstone.materialaboutlibrary.MaterialAboutFragment;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
+import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
 import com.danielstone.materialaboutlibrary.model.MaterialAboutCard;
 import com.danielstone.materialaboutlibrary.model.MaterialAboutList;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.Objects;
 
 import de.psdev.licensesdialog.LicensesDialog;
@@ -24,6 +35,8 @@ import de.psdev.licensesdialog.model.Notice;
 import de.psdev.licensesdialog.model.Notices;
 
 public class FragmentAbout extends MaterialAboutFragment {
+
+    public static HashMap<String, HashMap<String, Object>> users = new HashMap<>();
 
     public FragmentAbout() {
 
@@ -112,6 +125,12 @@ public class FragmentAbout extends MaterialAboutFragment {
                         "https://github.com/JakeWharton/butterknife",
                         "Copyright 2013 Jake Wharton",
                         new ApacheSoftwareLicense20()));
+        notices.addNotice(
+                new Notice("FancyToast-Android",
+                        "https://github.com/Shashank02051997/FancyToast-Android",
+                        "Copyright 2017 Shashank Singhal",
+                        new ApacheSoftwareLicense20()));
+
         MaterialAboutCard card = new MaterialAboutCard.Builder()
                 .title(getString(R.string.text_authors))
                 .addItem(new MaterialAboutActionItem.Builder()
@@ -120,8 +139,21 @@ public class FragmentAbout extends MaterialAboutFragment {
                         .icon(Utils.drawableFromUrl(context,
                                 "https://avatars0.githubusercontent.com/u/37804065"))
                         .setIconGravity(MaterialAboutActionItem.GRAVITY_MIDDLE)
+                        .setOnClickAction(() -> openGitHubProfile("DerTyp7214"))
                         .build())
                 .build();
+
+        MaterialAboutCard translators = new MaterialAboutCard.Builder()
+                .title(getString(R.string.text_translators))
+                .addItem(translator(
+                        getString(R.string.text_english) + ", " + getString(R.string.text_german),
+                        getString(R.string.text_dertyp7214),
+                        context))
+                .addItem(translator(getString(R.string.text_spainish),
+                        getString(R.string.text_enol_simon),
+                        context))
+                .build();
+
         MaterialAboutCard libraries = new MaterialAboutCard.Builder()
                 .title(getString(R.string.text_libraries))
                 .addItem(new MaterialAboutActionItem.Builder()
@@ -140,9 +172,84 @@ public class FragmentAbout extends MaterialAboutFragment {
                         })
                         .build())
                 .build();
+
         return new MaterialAboutList.Builder()
                 .addCard(card)
+                .addCard(translators)
                 .addCard(libraries)
                 .build();
+    }
+
+    private HashMap<String, Object> getUSerMap(String userName, Context context) {
+        HashMap<String, Object> userMap = new HashMap<>();
+        if (users.containsKey(userName))
+            return users.get(userName);
+        try {
+            JSONObject jsonObject = new JSONObject(
+                    getJSONObject("https://api.github.com/users/" + userName, context));
+            userMap.put("id", jsonObject.getString("id"));
+            String name = jsonObject.getString("name").equals("null") ? jsonObject
+                    .getString("login") : jsonObject.getString("name");
+            userMap.put("name", name);
+            userMap.put("image", Utils.drawableFromUrl(context,
+                    "https://avatars0.githubusercontent.com/u/" + userMap.get("id")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        users.put(userName, userMap);
+        return userMap;
+    }
+
+    private String getJSONObject(String url, Context context) {
+        String api_key = Utils.getSettings(context).getString("API_KEY", null);
+        try {
+            URL web = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) web.openConnection();
+            connection.setRequestProperty("Authorization", "token " + api_key);
+            BufferedReader in;
+
+            if (api_key == null || api_key.equals(""))
+                in = new BufferedReader(new InputStreamReader(web.openStream()));
+            else
+                in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+            String inputLine;
+            StringBuilder ret = new StringBuilder();
+
+            while ((inputLine = in.readLine()) != null)
+                ret.append(inputLine);
+
+            in.close();
+            return ret.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{\"message\": \"Something went wrong.\"}";
+        }
+    }
+
+    private MaterialAboutItem translator(String language, String userName, Context context) {
+        HashMap<String, Object> user = getUSerMap(userName, context);
+        if (user.containsKey("id") && user.containsKey("name")) {
+            return new MaterialAboutActionItem.Builder()
+                    .text(language)
+                    .subText((String) user.get("name"))
+                    .icon((Drawable) user.get("image"))
+                    .setIconGravity(MaterialAboutActionItem.GRAVITY_MIDDLE)
+                    .setOnClickAction(() -> openGitHubProfile(userName))
+                    .build();
+        } else {
+            return new MaterialAboutActionItem.Builder()
+                    .text(getString(R.string.text_error_data))
+                    .subText(getString(R.string.text_error_data))
+                    .icon(getResources().getDrawable(R.drawable.ic_error_outline_black_24dp, null))
+                    .setIconGravity(MaterialAboutActionItem.GRAVITY_MIDDLE)
+                    .build();
+        }
+    }
+
+    private void openGitHubProfile(String userName) {
+        Intent gitIntent =
+                new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/" + userName));
+        startActivity(gitIntent);
     }
 }

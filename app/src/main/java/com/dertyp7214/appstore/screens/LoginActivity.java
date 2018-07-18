@@ -24,6 +24,7 @@ import com.android.volley.Request.Method;
 import com.android.volley.toolbox.StringRequest;
 import com.dertyp7214.appstore.BuildConfig;
 import com.dertyp7214.appstore.R;
+import com.dertyp7214.appstore.dev.Logs;
 import com.dertyp7214.appstore.helpers.SQLiteHandler;
 import com.dertyp7214.appstore.helpers.SessionManager;
 import com.dertyp7214.appstore.loginout.AppConfig;
@@ -258,8 +259,7 @@ public class LoginActivity extends Activity {
             } catch (JSONException e) {
                 // JSON error
                 e.printStackTrace();
-                Toast.makeText(getApplicationContext(), "Json error: " + e.getMessage(),
-                        Toast.LENGTH_LONG).show();
+                Logs.getInstance(this).error("Json error", e.getMessage());
             }
 
         }, error -> {

@@ -770,7 +770,7 @@ public class Utils extends AppCompatActivity {
             Runtime.getRuntime().exec(command);
             executedSuccesfully = true;
         } catch (Exception e) {
-            logs.info("ERROR", e.getMessage());
+            logs.error("ERROR", e.getMessage());
             executedSuccesfully = false;
         }
         return executedSuccesfully;

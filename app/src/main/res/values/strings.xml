@@ -173,7 +173,7 @@
     <string name="text_user_preferences">Usersettings</string>
     <string name="splash_checkLogin">checking if user is logged in</string>
     <string name="splash_getUserData">get userdata</string>
-    <string name="splash_getUserIMage">loading userimage</string>
+    <string name="splash_getUserImage">loading userimage</string>
     <string name="splash_synsPreferences">syncing preferences</string>
     <string name="splash_writePreferences">writing preferences (%s)</string>
     <string name="splash_finished">finished</string>
@@ -190,5 +190,12 @@
     <string name="text_main_author">Main Author</string>
     <string name="text_licenses">Licenses</string>
     <string name="text_josua_lengwenath" translatable="false">Josua Lengwenath</string>
+    <string name="text_dertyp7214" translatable="false">DerTyp7214</string>
     <string name="text_authors">Authors</string>
+    <string name="text_translators">Translators</string>
+    <string name="text_spainish">Spanish</string>
+    <string name="text_enol_simon" translatable="false">enoler</string>
+    <string name="text_english">English</string>
+    <string name="text_german">German</string>
+    <string name="text_error_data">Error loading data!</string>
 </resources>

@@ -249,7 +249,7 @@ public class MainActivity extends Utils
                     setAccounts();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    logs.info("setUpNavView - runOnUiThread", e.toString() + "\n" + e.getMessage());
+                    logs.error("setUpNavView - runOnUiThread", e.toString() + "\n" + e.getMessage());
                     sleep(100);
                     setUpNavView();
                 }
@@ -271,7 +271,7 @@ public class MainActivity extends Utils
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                logs.info("setUpNavView", e.toString() + "\n" + e.getMessage());
+                logs.error("setUpNavView", e.toString() + "\n" + e.getMessage());
             }
             runOnUiThread(() -> {
                 try {
@@ -298,7 +298,7 @@ public class MainActivity extends Utils
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
-                    logs.info("setUpNavView - runOnUiThread", e.toString() + "\n" + e.getMessage());
+                    logs.error("setUpNavView - runOnUiThread", e.toString() + "\n" + e.getMessage());
                     sleep(100);
                     setUpNavView();
                 }
@@ -337,7 +337,7 @@ public class MainActivity extends Utils
                                 am.getUserData(account, "created_at"),
                                 getUserImage(uid)));
                 } catch (Exception e) {
-                    logs.info("setAccounts", e.toString());
+                    logs.error("setAccounts", e.toString());
                 }
             }
             runOnUiThread(userAdapter::notifyDataSetChanged);
