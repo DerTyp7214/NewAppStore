@@ -776,8 +776,8 @@ public class Utils extends AppCompatActivity {
         return executedSuccesfully;
     }
 
-    public void executeCommand(String cmds) {
-        logs = new Logs(this);
+    public static void executeCommand(Activity activity, String cmds) {
+        Logs logs = new Logs(activity);
         logs.info("COMMAND", cmds);
         try {
             Process process = Runtime.getRuntime().exec("su");
@@ -791,7 +791,6 @@ public class Utils extends AppCompatActivity {
 
             process.waitFor();
         } catch (Exception ignored) {
-
         }
     }
 

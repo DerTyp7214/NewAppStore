@@ -8,6 +8,8 @@ package com.dertyp7214.appstore.fragments;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -29,6 +31,7 @@ import com.dertyp7214.appstore.adapter.AppGroupAdapter;
 import com.dertyp7214.appstore.items.AppGroupItem;
 import com.dertyp7214.appstore.items.NoConnection;
 import com.dertyp7214.appstore.items.SearchItem;
+import com.dertyp7214.appstore.recievers.PackageUpdateReceiver;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,6 +46,7 @@ import java.util.TimerTask;
 import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Utils.getSettings;
 import static com.dertyp7214.appstore.Utils.getWebContent;
+import static com.paypal.android.sdk.fw.br;
 
 /**
  * Created by Anu on 22/04/17.
@@ -52,12 +56,16 @@ import static com.dertyp7214.appstore.Utils.getWebContent;
 @SuppressLint("ValidFragment")
 public class FragmentAppGroups extends TabFragment {
 
-    private SwipeRefreshLayout refreshLayout;
+    public SwipeRefreshLayout refreshLayout;
     private RecyclerView recyclerViewAppGroup;
     private AppGroupAdapter adapter;
     private Activity context;
     private List<AppGroupItem> appList = new ArrayList<>();
     private String UID, version;
+    private Thread t;
+
+    @SuppressLint("StaticFieldLeak")
+    private static FragmentAppGroups instance;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -99,11 +107,30 @@ public class FragmentAppGroups extends TabFragment {
         refreshLayout.setRefreshing(true);
         getAppList(refreshLayout, false);
 
+        PackageUpdateReceiver.activity = context;
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        intentFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        intentFilter.addDataScheme("package");
+        context.registerReceiver(new PackageUpdateReceiver(), intentFilter);
+
+        instance = this;
+
         return view;
     }
 
-    private void getAppList(SwipeRefreshLayout layout, boolean refresh) {
-        new Thread(() -> {
+    public static boolean hasInstance(){
+        return instance != null;
+    }
+
+    public static FragmentAppGroups getInstance(){
+        return instance;
+    }
+
+    public void getAppList(SwipeRefreshLayout layout, boolean refresh) {
+        if(t!=null)
+            t.interrupt();
+        t = new Thread(() -> {
             if (haveConnection()) {
                 if (serverOnline()) {
                     try {
@@ -202,7 +229,8 @@ public class FragmentAppGroups extends TabFragment {
                         layout.setRefreshing(false);
                 });
             }
-        }).start();
+        });
+        t.start();
     }
 
     private boolean getUpdate(JSONObject object) {

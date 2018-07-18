@@ -7,6 +7,7 @@ package com.dertyp7214.appstore.screens;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.res.ColorStateList;
@@ -58,7 +59,6 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     private int dominantColor, oldColor;
     private FloatingActionButton fab;
     private SearchItem searchItem;
-    private Random random = new Random();
     private ThemeStore themeStore;
     private Button uninstall, open;
     private boolean installed;
@@ -66,6 +66,8 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private FragmentChangeLogs changeLogs;
     private MenuItem shareMenu;
+
+    private static AppScreen instance;
 
     public void onPostExecute() {
         Bundle extra = getIntent().getExtras();
@@ -122,6 +124,19 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
             collapsingToolbarLayout.setContentScrimColor(color);
         });
 
+        setUpButtons();
+
+        fab = findViewById(R.id.fab);
+        fab.setColorFilter(
+                Utils.isColorBright(themeStore.getAccentColor()) ? Color.BLACK : Color.WHITE);
+        fab.setBackgroundTintList(ColorStateList.valueOf(themeStore.getAccentColor()));
+        fab.setVisibility(View.GONE);
+        fab.setOnClickListener(this::share);
+
+        instance = this;
+    }
+
+    public void setUpButtons(){
         if (appInstalled(this, searchItem.getId())) {
             installed = true;
             open.setText(getString(R.string.text_open));
@@ -136,13 +151,14 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
             uninstall.setVisibility(View.INVISIBLE);
             open.setOnClickListener(this);
         }
+    }
 
-        fab = findViewById(R.id.fab);
-        fab.setColorFilter(
-                Utils.isColorBright(themeStore.getAccentColor()) ? Color.BLACK : Color.WHITE);
-        fab.setBackgroundTintList(ColorStateList.valueOf(themeStore.getAccentColor()));
-        fab.setVisibility(View.GONE);
-        fab.setOnClickListener(this::share);
+    public static boolean hasInstance(){
+        return instance != null;
+    }
+
+    public static AppScreen getInstance(){
+        return instance;
     }
 
     private void checkUpdates() {
@@ -153,7 +169,9 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
             if (! serverVersion.equals(localVersion) && ! serverVersion.equals("0")) {
                 runOnUiThread(() -> {
                     uninstall.setText(getString(R.string.text_update));
-                    uninstall.setOnClickListener(this::downloadApp);
+                    uninstall.setOnClickListener(
+                            v -> downloadApp(this, searchItem.getAppTitle(), searchItem.getId(),
+                                    v));
                 });
             }
         }).start();
@@ -178,28 +196,32 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         String url = APP_URL(searchItem.getId());
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, url);
         sendIntent.setType("text/plain");
-        startActivity(sendIntent);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, url);
+        startActivity(Intent.createChooser(sendIntent, getString(R.string.app_name)));
     }
 
-    private void downloadApp(View view) {
-        downloadApp(new DownloadListener() {
+    public static void downloadApp(Activity activity, String title, String id, View view) {
+        downloadApp(activity, title, id, new DownloadListener() {
             @Override
             public void started() {
-                new CustomSnackbar(AppScreen.this, getWindow().getNavigationBarColor())
+                int color = activity.getWindow().getNavigationBarColor() == Color.BLACK ? activity
+                        .getWindow().getStatusBarColor() : activity.getWindow()
+                        .getNavigationBarColor();
+                new CustomSnackbar(activity, color)
                         .make(view, "Download started", CustomSnackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
 
             @Override
             public void finished(File file) {
-                if (getSettings(AppScreen.this).getBoolean("root_install", false)) {
-                    executeCommand("rm -rf /data/local/tmp/app.apk");
-                    executeCommand("mv " + file.getAbsolutePath() + " /data/local/tmp/app.apk");
-                    executeCommand("pm install -r /data/local/tmp/app.apk\n");
+                if (getSettings(activity).getBoolean("root_install", false)) {
+                    executeCommand(activity, "rm -rf /data/local/tmp/app.apk");
+                    executeCommand(activity,
+                            "mv " + file.getAbsolutePath() + " /data/local/tmp/app.apk");
+                    executeCommand(activity, "pm install -r /data/local/tmp/app.apk\n");
                 } else
-                    Utils.install_apk(AppScreen.this, file);
+                    Utils.install_apk(activity, file);
             }
 
             @Override
@@ -246,7 +268,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
                 if (installed)
                     openApp();
                 else
-                    downloadApp(v);
+                    downloadApp(this, searchItem.getAppTitle(), searchItem.getId(), v);
                 break;
             case R.id.btn_uninstall:
                 removeApp();
@@ -272,42 +294,45 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         void error(String errorMessage);
     }
 
-    private void downloadApp(DownloadListener downloadListener) {
+    private static void downloadApp(Activity context, String title, String id, DownloadListener downloadListener) {
+        Random random = new Random();
         new Thread(() -> {
             Looper.prepare();
             int notiId = random.nextInt(65536);
             int finishedNotiId = random.nextInt(65536);
             Notifications notifications = new Notifications(
-                    AppScreen.this,
+                    context,
                     notiId,
-                    getString(R.string.app_name) + " - " + searchItem.getAppTitle(),
-                    getString(R.string.app_name) + " - " + searchItem.getAppTitle(),
+                    context.getString(R.string.app_name) + " - " + title,
+                    context.getString(R.string.app_name) + " - " + title,
                     "",
                     null,
                     true);
-            runOnUiThread(notifications::showNotification);
+            context.runOnUiThread(notifications::showNotification);
             downloadListener.started();
             Download download = new Download(API_URL + (Config.APK_PATH
-                    .replace("{id}", searchItem.getId())
-                    .replace("{uid}", Config.UID(this))));
+                    .replace("{id}", id)
+                    .replace("{uid}", Config.UID(context))));
             File file = new File(Environment.getExternalStorageDirectory(), ".appStore");
             File apk = download.startDownload(file, notiId,
-                    (pro) -> runOnUiThread(() -> notifications.setProgress(pro)));
+                    (pro) -> context.runOnUiThread(() -> notifications.setProgress(pro)));
             if (apk.exists()) {
-                runOnUiThread(() -> {
+                context.runOnUiThread(() -> {
                     notifications.removeNotification();
                     finishedNotification(
+                            context,
                             finishedNotiId,
-                            getString(R.string.app_name) + " - " + searchItem.getAppTitle(),
+                            context.getString(R.string.app_name) + " - " + title,
                             false).showNotification();
                 });
                 downloadListener.finished(apk);
             } else {
-                runOnUiThread(() -> {
+                context.runOnUiThread(() -> {
                     notifications.removeNotification();
                     finishedNotification(
+                            context,
                             finishedNotiId,
-                            getString(R.string.app_name) + " - " + searchItem.getAppTitle(),
+                            context.getString(R.string.app_name) + " - " + title,
                             true).showNotification();
                 });
                 downloadListener.error("ERROR");
@@ -315,9 +340,9 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         }).start();
     }
 
-    private Notifications finishedNotification(int id, String title, boolean error) {
+    private static Notifications finishedNotification(Activity context, int id, String title, boolean error) {
         Notifications notifications = new Notifications(
-                AppScreen.this,
+                context,
                 id,
                 title,
                 title,
