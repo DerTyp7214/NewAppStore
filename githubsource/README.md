@@ -1,12 +1,12 @@
 # GitHubSource
 
-```
+```java
 GitHubSource.getInstance(
-        <Activity>,
-        new Repository(<User>, <Repo>, <API_KEY>)
+        Activity,
+        new Repository(User, Repo, API_KEY)
 ).setColorStyle(new ColorStyle(
-        <PrimaryColor>,
-        <PrimaryDarkColor>,
-        <AccentColor>
+        PrimaryColor,
+        PrimaryDarkColor,
+        AccentColor
 )).open();
 ```
