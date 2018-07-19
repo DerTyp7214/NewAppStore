@@ -31,6 +31,7 @@ import com.dertyp7214.appstore.components.CustomAppBarLayout;
 import com.dertyp7214.appstore.components.CustomToolbar;
 import com.dertyp7214.appstore.dev.Logs;
 import com.dertyp7214.appstore.items.SearchItem;
+import com.dertyp7214.appstore.receivers.PackageUpdateReceiver;
 import com.dertyp7214.appstore.settings.Settings;
 
 import org.json.JSONObject;
@@ -80,6 +81,13 @@ public class Utils extends AppCompatActivity {
     public Logs logs;
 
     public CustomToolbar toolbar;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (PackageUpdateReceiver.activity == null)
+            PackageUpdateReceiver.activity = this;
+    }
 
     public String addAlpha(String originalColor, double alpha) {
         long alphaFixed = Math.round(alpha * 255);
@@ -346,7 +354,7 @@ public class Utils extends AppCompatActivity {
         }
     }
 
-    protected void setBackButton(){
+    protected void setBackButton() {
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
     }
@@ -682,14 +690,22 @@ public class Utils extends AppCompatActivity {
 
             int fileSize = urlConnection.getContentLength();
             int read;
+            int last = 0;
             long total = 0;
 
+            listener.run(0);
+
             while ((read = inputStream.read(buffer)) != - 1) {
+                int tmp = (int) (total * 100 / fileSize);
                 total += read;
-                if (fileSize > 0)
-                    listener.run((int) (total * 100 / fileSize));
+                if (fileSize > 0 && tmp > last + 2) {
+                    last = tmp;
+                    listener.run(tmp);
+                }
                 outputStream.write(buffer, 0, read);
             }
+
+            listener.run(100);
 
             outputStream.flush();
             outputStream.close();

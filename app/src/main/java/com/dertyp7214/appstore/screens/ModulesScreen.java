@@ -28,7 +28,7 @@ public class ModulesScreen extends Utils {
     private ModuleAdapter adapter;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_modules_screen);
         toolbar = findViewById(R.id.toolbar);

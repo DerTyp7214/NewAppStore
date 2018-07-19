@@ -8,8 +8,6 @@ package com.dertyp7214.appstore.fragments;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -31,7 +29,6 @@ import com.dertyp7214.appstore.adapter.AppGroupAdapter;
 import com.dertyp7214.appstore.items.AppGroupItem;
 import com.dertyp7214.appstore.items.NoConnection;
 import com.dertyp7214.appstore.items.SearchItem;
-import com.dertyp7214.appstore.recievers.PackageUpdateReceiver;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,7 +43,6 @@ import java.util.TimerTask;
 import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Utils.getSettings;
 import static com.dertyp7214.appstore.Utils.getWebContent;
-import static com.paypal.android.sdk.fw.br;
 
 /**
  * Created by Anu on 22/04/17.
@@ -106,13 +102,6 @@ public class FragmentAppGroups extends TabFragment {
 
         refreshLayout.setRefreshing(true);
         getAppList(refreshLayout, false);
-
-        PackageUpdateReceiver.activity = context;
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
-        intentFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-        intentFilter.addDataScheme("package");
-        context.registerReceiver(new PackageUpdateReceiver(), intentFilter);
 
         instance = this;
 

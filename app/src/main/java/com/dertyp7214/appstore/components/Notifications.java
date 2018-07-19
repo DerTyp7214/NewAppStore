@@ -117,7 +117,6 @@ public class Notifications {
         builder.setSubText(null);
         builder.setOngoing(false);
     }
-
     public void setFinished(){
         removeProgress();
         clearActions();

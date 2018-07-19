@@ -1,9 +1,16 @@
 /*
+ *
+ *  * Copyright (c) 2018.
+ *  * Created by Josua Lengwenath
+ *
+ */
+
+/*
  * Copyright (c) 2018.
  * Created by Josua Lengwenath
  */
 
-package com.dertyp7214.appstore;
+package com.dertyp7214.appstore.components;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -11,6 +18,9 @@ import android.support.annotation.ColorInt;
 import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.TextView;
+
+import com.dertyp7214.appstore.ThemeStore;
+import com.dertyp7214.appstore.Utils;
 
 public class CustomSnackbar {
 

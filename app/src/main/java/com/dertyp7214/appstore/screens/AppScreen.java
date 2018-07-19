@@ -7,7 +7,6 @@ package com.dertyp7214.appstore.screens;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.res.ColorStateList;
@@ -34,7 +33,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.dertyp7214.appstore.Config;
-import com.dertyp7214.appstore.CustomSnackbar;
+import com.dertyp7214.appstore.components.CustomSnackbar;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
@@ -76,7 +75,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_screen);
         CustomToolbar toolbar = findViewById(R.id.toolbar);
@@ -136,7 +135,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         instance = this;
     }
 
-    public void setUpButtons(){
+    public void setUpButtons() {
         if (appInstalled(this, searchItem.getId())) {
             installed = true;
             open.setText(getString(R.string.text_open));
@@ -153,11 +152,11 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         }
     }
 
-    public static boolean hasInstance(){
+    public static boolean hasInstance() {
         return instance != null;
     }
 
-    public static AppScreen getInstance(){
+    public static AppScreen getInstance() {
         return instance;
     }
 
@@ -205,8 +204,8 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         downloadApp(activity, title, id, new DownloadListener() {
             @Override
             public void started() {
-                int color = activity.getWindow().getNavigationBarColor() == Color.BLACK ? activity
-                        .getWindow().getStatusBarColor() : activity.getWindow()
+                int color = activity.getWindow().getNavigationBarColor() == Color.BLACK ?
+                        activity.getWindow().getStatusBarColor() : activity.getWindow()
                         .getNavigationBarColor();
                 new CustomSnackbar(activity, color)
                         .make(view, "Download started", CustomSnackbar.LENGTH_LONG)
@@ -217,8 +216,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
             public void finished(File file) {
                 if (getSettings(activity).getBoolean("root_install", false)) {
                     executeCommand(activity, "rm -rf /data/local/tmp/app.apk");
-                    executeCommand(activity,
-                            "mv " + file.getAbsolutePath() + " /data/local/tmp/app.apk");
+                    executeCommand(activity, "mv " + file.getAbsolutePath() + " /data/local/tmp/app.apk");
                     executeCommand(activity, "pm install -r /data/local/tmp/app.apk\n");
                 } else
                     Utils.install_apk(activity, file);
@@ -294,45 +292,45 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         void error(String errorMessage);
     }
 
-    private static void downloadApp(Activity context, String title, String id, DownloadListener downloadListener) {
+    private static void downloadApp(Activity activity, String title, String id, DownloadListener downloadListener) {
         Random random = new Random();
         new Thread(() -> {
             Looper.prepare();
             int notiId = random.nextInt(65536);
             int finishedNotiId = random.nextInt(65536);
             Notifications notifications = new Notifications(
-                    context,
+                    activity,
                     notiId,
-                    context.getString(R.string.app_name) + " - " + title,
-                    context.getString(R.string.app_name) + " - " + title,
+                    activity.getString(R.string.app_name) + " - " + title,
+                    activity.getString(R.string.app_name) + " - " + title,
                     "",
                     null,
                     true);
-            context.runOnUiThread(notifications::showNotification);
+            activity.runOnUiThread(notifications::showNotification);
             downloadListener.started();
             Download download = new Download(API_URL + (Config.APK_PATH
                     .replace("{id}", id)
-                    .replace("{uid}", Config.UID(context))));
+                    .replace("{uid}", Config.UID(activity))));
             File file = new File(Environment.getExternalStorageDirectory(), ".appStore");
             File apk = download.startDownload(file, notiId,
-                    (pro) -> context.runOnUiThread(() -> notifications.setProgress(pro)));
+                    (pro) -> activity.runOnUiThread(() -> notifications.setProgress(pro)));
             if (apk.exists()) {
-                context.runOnUiThread(() -> {
+                activity.runOnUiThread(() -> {
                     notifications.removeNotification();
                     finishedNotification(
-                            context,
+                            activity,
                             finishedNotiId,
-                            context.getString(R.string.app_name) + " - " + title,
+                            activity.getString(R.string.app_name) + " - " + title,
                             false).showNotification();
                 });
                 downloadListener.finished(apk);
             } else {
-                context.runOnUiThread(() -> {
+                activity.runOnUiThread(() -> {
                     notifications.removeNotification();
                     finishedNotification(
-                            context,
+                            activity,
                             finishedNotiId,
-                            context.getString(R.string.app_name) + " - " + title,
+                            activity.getString(R.string.app_name) + " - " + title,
                             true).showNotification();
                 });
                 downloadListener.error("ERROR");
@@ -340,9 +338,9 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         }).start();
     }
 
-    private static Notifications finishedNotification(Activity context, int id, String title, boolean error) {
+    private static Notifications finishedNotification(Activity activity, int id, String title, boolean error) {
         Notifications notifications = new Notifications(
-                context,
+                activity,
                 id,
                 title,
                 title,

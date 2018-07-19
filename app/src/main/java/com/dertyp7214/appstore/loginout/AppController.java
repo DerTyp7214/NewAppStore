@@ -6,11 +6,14 @@
 package com.dertyp7214.appstore.loginout;
 
 import android.app.Application;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.text.TextUtils;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.dertyp7214.appstore.receivers.PackageUpdateReceiver;
 
 public class AppController extends Application {
 
@@ -24,6 +27,12 @@ public class AppController extends Application {
     public void onCreate() {
         super.onCreate();
         mInstance = this;
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        intentFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        intentFilter.addDataScheme("package");
+        registerReceiver(new PackageUpdateReceiver(), intentFilter);
     }
 
     public static synchronized AppController getInstance() {

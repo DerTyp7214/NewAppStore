@@ -83,7 +83,8 @@ public class MyAppsAdapter extends RecyclerView.Adapter<MyAppsAdapter.ViewHolder
                 context.startActivity(context.getActivity().getPackageManager()
                         .getLaunchIntentForPackage(item.getPackageName()));
             else
-                AppScreen.downloadApp(context.getActivity(), item.getAppTitle(), item.getPackageName(), holder.openInstall);
+                AppScreen.downloadApp(context.getActivity(), item.getAppTitle(),
+                        item.getPackageName(), holder.openInstall);
         });
 
         int color = ThemeStore.getInstance(context.getActivity()).getAccentColor();

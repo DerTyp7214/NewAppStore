@@ -5,14 +5,13 @@
  *
  */
 
-package com.dertyp7214.appstore.recievers;
+package com.dertyp7214.appstore.receivers;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import com.dertyp7214.appstore.dev.Logs;
 import com.dertyp7214.appstore.fragments.FragmentAppGroups;
@@ -32,7 +31,7 @@ public class PackageUpdateReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String packageName =
                 Objects.requireNonNull(intent.getData()).getEncodedSchemeSpecificPart();
-        if(activity!=null)
+        if (activity != null)
             logs = Logs.getInstance(activity);
         log("info", "INTENT ACTION", intent.getAction());
         if (finished && context.getSharedPreferences("json", Context.MODE_PRIVATE)
@@ -52,9 +51,9 @@ public class PackageUpdateReceiver extends BroadcastReceiver {
         }
     }
 
-    private void log(String type, String title, Object content){
-        if(logs!=null)
-            switch (type){
+    private void log(String type, String title, Object content) {
+        if (logs != null)
+            switch (type) {
                 case "info":
                     logs.info(title, content);
                     break;

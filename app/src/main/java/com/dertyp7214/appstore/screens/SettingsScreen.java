@@ -93,7 +93,7 @@ public class SettingsScreen extends Utils implements MyInterface {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings_screen);
         toolbar = findViewById(R.id.toolbar);

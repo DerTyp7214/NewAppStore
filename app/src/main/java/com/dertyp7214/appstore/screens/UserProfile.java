@@ -43,7 +43,7 @@ public class UserProfile extends Utils {
     private TextView txt_name, txt_mail;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
         toolbar = findViewById(R.id.toolbar);
