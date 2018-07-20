@@ -119,4 +119,6 @@
     <string name="text_german">Deutsch</string>
     <string name="text_english">Englisch</string>
     <string name="text_spainish">Spanisch</string>
+    <string name="text_error_data">Fehler beim Laden der Daten!</string>
+    <string name="text_changes">"Änderungen "</string>
 </resources>

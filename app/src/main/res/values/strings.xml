@@ -198,5 +198,6 @@
     <string name="text_english">English</string>
     <string name="text_german">German</string>
     <string name="text_error_data">Error loading data!</string>
-    <string name="todo">TODO</string>
+    <string name="todo" translatable="false">TODO</string>
+    <string name="text_changes">Changes</string>
 </resources>

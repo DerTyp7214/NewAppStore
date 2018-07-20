@@ -188,4 +188,6 @@
     <string name="text_spainish">"Español "</string>
     <string name="text_english">"Inglés "</string>
     <string name="text_german">alemán</string>
+    <string name="text_error_data">"¡Error al cargar datos! "</string>
+    <string name="text_changes">"Cambios "</string>
 </resources>

@@ -10,13 +10,17 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.danielstone.materialaboutlibrary.MaterialAboutFragment;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
+import com.danielstone.materialaboutlibrary.items.MaterialAboutTitleItem;
 import com.danielstone.materialaboutlibrary.model.MaterialAboutCard;
 import com.danielstone.materialaboutlibrary.model.MaterialAboutList;
+import com.dertyp7214.appstore.BuildConfig;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
+import com.dertyp7214.appstore.components.ChangelogDialog;
 
 import org.json.JSONObject;
 
@@ -132,10 +136,10 @@ public class FragmentAbout extends MaterialAboutFragment {
                         new ApacheSoftwareLicense20()));
 
         MaterialAboutCard card = new MaterialAboutCard.Builder()
-                .title(getString(R.string.text_authors))
+                .title(R.string.text_authors)
                 .addItem(new MaterialAboutActionItem.Builder()
-                        .text(getString(R.string.text_main_author))
-                        .subText(getString(R.string.text_josua_lengwenath))
+                        .text(R.string.text_main_author)
+                        .subText(R.string.text_josua_lengwenath)
                         .icon(Utils.drawableFromUrl(context,
                                 "https://avatars0.githubusercontent.com/u/37804065"))
                         .setIconGravity(MaterialAboutActionItem.GRAVITY_MIDDLE)
@@ -144,7 +148,7 @@ public class FragmentAbout extends MaterialAboutFragment {
                 .build();
 
         MaterialAboutCard translators = new MaterialAboutCard.Builder()
-                .title(getString(R.string.text_translators))
+                .title(R.string.text_translators)
                 .addItem(translator(
                         getString(R.string.text_english) + ", " + getString(R.string.text_german),
                         getString(R.string.text_dertyp7214),
@@ -155,10 +159,23 @@ public class FragmentAbout extends MaterialAboutFragment {
                 .build();
 
         MaterialAboutCard libraries = new MaterialAboutCard.Builder()
-                .title(getString(R.string.text_libraries))
+                .addItem(new MaterialAboutTitleItem.Builder()
+                        .icon(R.mipmap.ic_launcher_round)
+                        .text(R.string.app_name)
+                        .build())
                 .addItem(new MaterialAboutActionItem.Builder()
-                        .text(getString(R.string.text_licenses))
-                        .icon(getResources().getDrawable(R.drawable.file_icon))
+                        .icon(R.drawable.ic_info_outline_black_24dp)
+                        .text(R.string.text_version)
+                        .subText(BuildConfig.VERSION_NAME)
+                        .build())
+                .addItem(new MaterialAboutActionItem.Builder()
+                        .icon(R.drawable.ic_update_black_24dp)
+                        .text(R.string.text_changes)
+                        .setOnClickAction(() -> ChangelogDialog.create().show())
+                        .build())
+                .addItem(new MaterialAboutActionItem.Builder()
+                        .text(R.string.text_licenses)
+                        .icon(R.drawable.file_icon)
                         .setIconGravity(MaterialAboutActionItem.GRAVITY_MIDDLE)
                         .setOnClickAction(() -> {
                             try {
@@ -174,9 +191,9 @@ public class FragmentAbout extends MaterialAboutFragment {
                 .build();
 
         return new MaterialAboutList.Builder()
+                .addCard(libraries)
                 .addCard(card)
                 .addCard(translators)
-                .addCard(libraries)
                 .build();
     }
 
