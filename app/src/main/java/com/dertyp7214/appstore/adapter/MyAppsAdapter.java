@@ -114,6 +114,9 @@ public class MyAppsAdapter extends RecyclerView.Adapter<MyAppsAdapter.ViewHolder
                 item.getPackageName())) {
             holder.play.setVisibility(View.VISIBLE);
             holder.openInstall.setVisibility(View.GONE);
+        } else {
+            holder.play.setVisibility(View.GONE);
+            holder.openInstall.setVisibility(View.VISIBLE);
         }
     }
 
