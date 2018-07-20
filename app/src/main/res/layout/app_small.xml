@@ -27,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/img"
-        android:layout_toStartOf="@+id/btn_openInstall"
+        android:layout_toStartOf="@+id/img_play"
         android:layout_toEndOf="@+id/img"
         android:maxLines="1"
         android:paddingStart="5dp"
@@ -41,7 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/title"
-        android:layout_toStartOf="@+id/btn_openInstall"
+        android:layout_toStartOf="@+id/img_play"
         android:layout_toEndOf="@+id/img"
         android:maxLines="1"
         android:paddingStart="5dp"
@@ -71,5 +71,17 @@
         android:paddingStart="7dp"
         android:paddingEnd="7dp"
         android:text="@string/text_install"
+        android:visibility="visible"
         tools:ignore="RelativeOverlap" />
+
+    <ImageView
+        android:id="@+id/img_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="0dp"
+        android:layout_toStartOf="@+id/btn_openInstall"
+        android:contentDescription="@string/todo"
+        android:visibility="gone"
+        app:srcCompat="@drawable/google_play" />
 </RelativeLayout>

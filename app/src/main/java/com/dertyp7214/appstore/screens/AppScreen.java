@@ -136,14 +136,15 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     }
 
     public void setUpButtons() {
-        if (appInstalled(this, searchItem.getId())) {
+        if (applicationInstalled(this, searchItem.getId())) {
             installed = true;
             open.setText(getString(R.string.text_open));
             uninstall.setText(getString(R.string.text_uninstall));
             uninstall.setVisibility(View.VISIBLE);
             uninstall.setOnClickListener(this);
             open.setOnClickListener(this);
-            checkUpdates();
+            if(!Utils.verifyInstallerId(this, searchItem.getId()))
+                checkUpdates();
         } else {
             installed = false;
             open.setText(getString(R.string.text_install));

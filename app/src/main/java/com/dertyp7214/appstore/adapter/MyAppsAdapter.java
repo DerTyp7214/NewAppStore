@@ -8,15 +8,18 @@ package com.dertyp7214.appstore.adapter;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.airbnb.lottie.LottieAnimationView;
@@ -51,8 +54,9 @@ public class MyAppsAdapter extends RecyclerView.Adapter<MyAppsAdapter.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull MyAppsAdapter.ViewHolder holder, int position) {
         MyAppItem item = appItemList.get(position);
-        boolean appInstalled = Utils.appInstalled(Objects.requireNonNull(context.getActivity()),
-                item.getPackageName());
+        boolean appInstalled =
+                Utils.applicationInstalled(Objects.requireNonNull(context.getActivity()),
+                        item.getPackageName());
 
         holder.appSize.setText(item.getAppSize());
         holder.appTitle.setText(item.getAppTitle());
@@ -80,11 +84,23 @@ public class MyAppsAdapter extends RecyclerView.Adapter<MyAppsAdapter.ViewHolder
                 .getString(R.string.text_open) : context.getString(R.string.text_install));
         holder.openInstall.setOnClickListener(v -> {
             if (appInstalled)
-                context.startActivity(context.getActivity().getPackageManager()
-                        .getLaunchIntentForPackage(item.getPackageName()));
-            else
-                AppScreen.downloadApp(context.getActivity(), item.getAppTitle(),
-                        item.getPackageName(), holder.openInstall);
+                if (! Utils.verifyInstallerId(context.getActivity(), item.getPackageName()))
+                    context.startActivity(context.getActivity().getPackageManager()
+                            .getLaunchIntentForPackage(item.getPackageName()));
+                else
+                    AppScreen.downloadApp(context.getActivity(), item.getAppTitle(),
+                            item.getPackageName(), holder.openInstall);
+        });
+
+        holder.play.setOnClickListener(v -> {
+            try {
+                context.startActivity(new Intent(Intent.ACTION_VIEW, Uri
+                        .parse("market://details?id=" + item.getPackageName())));
+            } catch (android.content.ActivityNotFoundException anfe) {
+                context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(
+                        "https://play.google.com/store/apps/details?id=" + item
+                                .getPackageName())));
+            }
         });
 
         int color = ThemeStore.getInstance(context.getActivity()).getAccentColor();
@@ -93,6 +109,12 @@ public class MyAppsAdapter extends RecyclerView.Adapter<MyAppsAdapter.ViewHolder
         bg.setStroke(3, color);
         holder.openInstall.setBackgroundDrawable(bg);
         holder.openInstall.setTextColor(color);
+
+        if (Utils.verifyInstallerId(Objects.requireNonNull(context.getActivity()),
+                item.getPackageName())) {
+            holder.play.setVisibility(View.VISIBLE);
+            holder.openInstall.setVisibility(View.GONE);
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -102,6 +124,7 @@ public class MyAppsAdapter extends RecyclerView.Adapter<MyAppsAdapter.ViewHolder
         View view;
         ImageButton clear;
         Button openInstall;
+        ImageView play;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -112,6 +135,7 @@ public class MyAppsAdapter extends RecyclerView.Adapter<MyAppsAdapter.ViewHolder
             clear = itemView.findViewById(R.id.btn_clear);
             view = itemView.findViewById(R.id.view);
             openInstall = itemView.findViewById(R.id.btn_openInstall);
+            play = itemView.findViewById(R.id.img_play);
 
         }
     }

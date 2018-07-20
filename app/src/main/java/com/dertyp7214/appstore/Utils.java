@@ -856,6 +856,19 @@ public class Utils extends AppCompatActivity {
     }
 
     public static boolean appInstalled(Context context, String uri) {
+        return applicationInstalled(context, uri) && !verifyInstallerId(context, uri);
+    }
+
+    public static boolean verifyInstallerId(Context context, String packageName) {
+        List<String> validInstallers = new ArrayList<>(
+                Arrays.asList("com.android.vending", "com.google.android.feedback"));
+
+        final String installer = context.getPackageManager().getInstallerPackageName(packageName);
+
+        return installer != null && validInstallers.contains(installer);
+    }
+
+    public static boolean applicationInstalled(Context context, String uri) {
         PackageManager pm = context.getPackageManager();
         try {
             pm.getPackageInfo(uri, PackageManager.GET_ACTIVITIES);

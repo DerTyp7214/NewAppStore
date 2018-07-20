@@ -158,7 +158,7 @@ public class FragmentAbout extends MaterialAboutFragment {
                 .title(getString(R.string.text_libraries))
                 .addItem(new MaterialAboutActionItem.Builder()
                         .text(getString(R.string.text_licenses))
-                        .icon(getResources().getDrawable(R.drawable.ic_public_black_24dp))
+                        .icon(getResources().getDrawable(R.drawable.file_icon))
                         .setIconGravity(MaterialAboutActionItem.GRAVITY_MIDDLE)
                         .setOnClickAction(() -> {
                             try {
