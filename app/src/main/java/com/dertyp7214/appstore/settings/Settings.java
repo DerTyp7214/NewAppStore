@@ -17,42 +17,42 @@ public class Settings {
     protected Context context;
     protected settingsOnClickListener onClickListener;
 
-    public Settings(String name, String text, Context context){
-        this.name=name;
-        this.text=text;
-        this.context=context;
+    public Settings(String name, String text, Context context) {
+        this.name = name;
+        this.text = text;
+        this.context = context;
     }
 
-    public Settings setSubTitle(String subTitle){
-        this.subTitle=subTitle;
+    public Settings setSubTitle(String subTitle) {
+        this.subTitle = subTitle;
         return this;
     }
 
-    public String getSubTitle(){
-        return subTitle!=null?subTitle:"";
+    public String getSubTitle() {
+        return subTitle != null ? subTitle : "";
     }
 
     public String getText() {
         return this.text;
     }
 
-    public void saveSetting(){
+    public void saveSetting() {
     }
 
-    public void loadSetting(){
+    public void loadSetting() {
     }
 
-    public Settings addSettingsOnClick(settingsOnClickListener onClickListener){
-        this.onClickListener=onClickListener;
+    public Settings addSettingsOnClick(settingsOnClickListener onClickListener) {
+        this.onClickListener = onClickListener;
         return this;
     }
 
-    public void onClick(TextView subTitle, ProgressBar imageRight){
-        if(onClickListener!=null)
+    public void onClick(TextView subTitle, ProgressBar imageRight) {
+        if (onClickListener != null)
             onClickListener.onClick(name, this, subTitle, imageRight);
     }
 
-    public interface settingsOnClickListener{
+    public interface settingsOnClickListener {
         void onClick(String name, Settings setting, TextView subTitle, ProgressBar imageRight);
     }
 }

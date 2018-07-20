@@ -249,7 +249,8 @@ public class MainActivity extends Utils
                     setAccounts();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    logs.error("setUpNavView - runOnUiThread", e.toString() + "\n" + e.getMessage());
+                    logs.error("setUpNavView - runOnUiThread",
+                            e.toString() + "\n" + e.getMessage());
                     sleep(100);
                     setUpNavView();
                 }
@@ -298,7 +299,8 @@ public class MainActivity extends Utils
                     });
                 } catch (Exception e) {
                     e.printStackTrace();
-                    logs.error("setUpNavView - runOnUiThread", e.toString() + "\n" + e.getMessage());
+                    logs.error("setUpNavView - runOnUiThread",
+                            e.toString() + "\n" + e.getMessage());
                     sleep(100);
                     setUpNavView();
                 }

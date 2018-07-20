@@ -46,6 +46,9 @@ import com.dertyp7214.appstore.interfaces.MyInterface;
 import com.dertyp7214.appstore.items.SearchItem;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
@@ -66,7 +69,14 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     private FragmentChangeLogs changeLogs;
     private MenuItem shareMenu;
 
+    @SuppressLint("StaticFieldLeak")
     private static AppScreen instance;
+
+    @SuppressLint("UseSparseArrays")
+    private static HashMap<Integer, Thread> threadHashMap = new HashMap<>();
+
+    @SuppressLint("UseSparseArrays")
+    public static HashMap<Integer, Download> downloadHashMap = new HashMap<>();
 
     public void onPostExecute() {
         Bundle extra = getIntent().getExtras();
@@ -143,7 +153,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
             uninstall.setVisibility(View.VISIBLE);
             uninstall.setOnClickListener(this);
             open.setOnClickListener(this);
-            if(!Utils.verifyInstallerId(this, searchItem.getId()))
+            if (! Utils.verifyInstallerId(this, searchItem.getId()))
                 checkUpdates();
         } else {
             installed = false;
@@ -217,7 +227,8 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
             public void finished(File file) {
                 if (getSettings(activity).getBoolean("root_install", false)) {
                     executeCommand(activity, "rm -rf /data/local/tmp/app.apk");
-                    executeCommand(activity, "mv " + file.getAbsolutePath() + " /data/local/tmp/app.apk");
+                    executeCommand(activity,
+                            "mv " + file.getAbsolutePath() + " /data/local/tmp/app.apk");
                     executeCommand(activity, "pm install -r /data/local/tmp/app.apk\n");
                 } else
                     Utils.install_apk(activity, file);
@@ -295,10 +306,10 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
 
     private static void downloadApp(Activity activity, String title, String id, DownloadListener downloadListener) {
         Random random = new Random();
-        new Thread(() -> {
+        int notiId = random.nextInt(65536);
+        int finishedNotiId = random.nextInt(65536);
+        Thread thread = new Thread(() -> {
             Looper.prepare();
-            int notiId = random.nextInt(65536);
-            int finishedNotiId = random.nextInt(65536);
             Notifications notifications = new Notifications(
                     activity,
                     notiId,
@@ -307,15 +318,17 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
                     "",
                     null,
                     true);
+            //notifications.setCancelButton();
             activity.runOnUiThread(notifications::showNotification);
             downloadListener.started();
             Download download = new Download(API_URL + (Config.APK_PATH
                     .replace("{id}", id)
                     .replace("{uid}", Config.UID(activity))));
+            downloadHashMap.put(notiId, download);
             File file = new File(Environment.getExternalStorageDirectory(), ".appStore");
             File apk = download.startDownload(file, notiId,
                     (pro) -> activity.runOnUiThread(() -> notifications.setProgress(pro)));
-            if (apk.exists()) {
+            if (apk != null && apk.exists()) {
                 activity.runOnUiThread(() -> {
                     notifications.removeNotification();
                     finishedNotification(
@@ -336,7 +349,9 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
                 });
                 downloadListener.error("ERROR");
             }
-        }).start();
+        });
+        thread.start();
+        threadHashMap.put(notiId, thread);
     }
 
     private static Notifications finishedNotification(Activity activity, int id, String title, boolean error) {
@@ -367,15 +382,43 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         return true;
     }
 
-    private static class Download {
+    public static class Download {
         private String url;
+        private Thread thread;
+        private boolean finished = false;
+        private File content;
+        private int id;
 
         Download(String url) {
             this.url = url;
         }
 
         File startDownload(File path, int id, DownloadState downloadState) {
-            return Utils.getWebContent(url, path, id, downloadState::state);
+            this.id = id;
+            thread = new Thread(() -> {
+                content = Utils.getWebContent(url, path, id, downloadState::state);
+                finished = true;
+            });
+            thread.start();
+            while (! finished) {
+                Log.d("WAITING", "...");
+                try {
+                    Thread.sleep(100);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            return content;
+        }
+
+        public void cancel() {
+            if (thread != null)
+                thread.interrupt();
+            try {
+                threadHashMap.get(id).interrupt();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         interface DownloadState {

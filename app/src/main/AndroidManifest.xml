@@ -119,6 +119,14 @@
         <activity
             android:name=".screens.UserProfile"
             android:theme="@style/AppTheme.NoActionBar" />
+
+        <receiver
+            android:name=".components.Notifications$DownloadCancelReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="Download_Cancelled" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

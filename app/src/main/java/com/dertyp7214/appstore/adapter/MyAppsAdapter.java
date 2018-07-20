@@ -84,12 +84,11 @@ public class MyAppsAdapter extends RecyclerView.Adapter<MyAppsAdapter.ViewHolder
                 .getString(R.string.text_open) : context.getString(R.string.text_install));
         holder.openInstall.setOnClickListener(v -> {
             if (appInstalled)
-                if (! Utils.verifyInstallerId(context.getActivity(), item.getPackageName()))
-                    context.startActivity(context.getActivity().getPackageManager()
-                            .getLaunchIntentForPackage(item.getPackageName()));
-                else
-                    AppScreen.downloadApp(context.getActivity(), item.getAppTitle(),
-                            item.getPackageName(), holder.openInstall);
+                context.startActivity(context.getActivity().getPackageManager()
+                        .getLaunchIntentForPackage(item.getPackageName()));
+            else
+                AppScreen.downloadApp(context.getActivity(), item.getAppTitle(),
+                        item.getPackageName(), holder.openInstall);
         });
 
         holder.play.setOnClickListener(v -> {

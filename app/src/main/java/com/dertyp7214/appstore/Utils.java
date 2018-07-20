@@ -688,9 +688,9 @@ public class Utils extends AppCompatActivity {
 
             byte[] buffer = new byte[8192];
 
-            int fileSize = urlConnection.getContentLength();
-            int read;
             int last = 0;
+            long fileSize = urlConnection.getContentLength();
+            long read;
             long total = 0;
 
             listener.run(0);
@@ -702,7 +702,7 @@ public class Utils extends AppCompatActivity {
                     last = tmp;
                     listener.run(tmp);
                 }
-                outputStream.write(buffer, 0, read);
+                outputStream.write(buffer, 0, (int) read);
             }
 
             listener.run(100);
@@ -855,17 +855,23 @@ public class Utils extends AppCompatActivity {
         }
     }
 
-    public static boolean appInstalled(Context context, String uri) {
-        return applicationInstalled(context, uri) && !verifyInstallerId(context, uri);
+    public static boolean appInstalled(Activity context, String uri) {
+        return applicationInstalled(context, uri) && ! verifyInstallerId(context, uri);
     }
 
-    public static boolean verifyInstallerId(Context context, String packageName) {
-        List<String> validInstallers = new ArrayList<>(
-                Arrays.asList("com.android.vending", "com.google.android.feedback"));
+    public static boolean verifyInstallerId(Activity context, String packageName) {
+        try {
+            List<String> validInstallers = new ArrayList<>(
+                    Arrays.asList("com.android.vending", "com.google.android.feedback"));
 
-        final String installer = context.getPackageManager().getInstallerPackageName(packageName);
+            final String installer =
+                    context.getPackageManager().getInstallerPackageName(packageName);
 
-        return installer != null && validInstallers.contains(installer);
+            return installer != null && validInstallers.contains(installer);
+        } catch (Exception e) {
+            Logs.getInstance(context).error("verifyInstallerId", e.toString());
+            return false;
+        }
     }
 
     public static boolean applicationInstalled(Context context, String uri) {
