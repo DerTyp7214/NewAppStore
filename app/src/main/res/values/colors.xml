@@ -20,4 +20,5 @@
     <color name="DarkBg">#303030</color>
     <color name="DarkFore">#424242</color>
     <color name="TransparentBlack">#ac000000</color>
+    <color name="LightTransparentBlack">#70000000</color>
 </resources>

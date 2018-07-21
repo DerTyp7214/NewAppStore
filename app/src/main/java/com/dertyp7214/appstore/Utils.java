@@ -82,6 +82,8 @@ public class Utils extends AppCompatActivity {
 
     public CustomToolbar toolbar;
 
+    public static HashMap<String, Drawable> userImageHashMap = new HashMap<>();
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -886,6 +888,10 @@ public class Utils extends AppCompatActivity {
     }
 
     public static Drawable drawableFromUrl(Context context, String url) {
+        return drawableFromUrl(context, url, R.drawable.ic_person);
+    }
+
+    public static Drawable drawableFromUrl(Context context, String url, @DrawableRes int def) {
         if (icons.containsKey(url))
             return icons.get(url);
         try {
@@ -901,7 +907,7 @@ public class Utils extends AppCompatActivity {
             return drawable;
         } catch (Exception e) {
             e.printStackTrace();
-            Bitmap bitmap = drawableToBitmap(context.getDrawable(R.drawable.ic_person));
+            Bitmap bitmap = drawableToBitmap(context.getDrawable(def));
             int color = ThemeStore.getInstance(context).getAccentColor();
             return new BitmapDrawable(
                     context.getResources(), overlay(createBitmap(bitmap, color), bitmap));

@@ -221,14 +221,24 @@ public class Splashscreen extends Utils {
                             getString(R.string.splash_getUserData)
                     );
 
-                    String url = API_URL + "/apps/pic/" + URLEncoder.encode(userID, "UTF-8")
-                            .replace("+", "_") + ".png";
-                    File imgFile = new File(getFilesDir(), userID + ".png");
-                    if (! imgFile.exists()) {
-                        Drawable profilePic = Utils.drawableFromUrl(this, url);
-                        FileOutputStream fileOutputStream = new FileOutputStream(imgFile);
-                        drawableToBitmap(profilePic)
-                                .compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                    for (String name : new String[]{userID, userID + "_bg"}) {
+                        String url = API_URL + "/apps/pic/" + URLEncoder.encode(name, "UTF-8")
+                                .replace("+", "_") + ".png";
+                        File imgFile = new File(getFilesDir(), name + ".png");
+                        if (! imgFile.exists()) {
+                            Drawable pic = Utils.drawableFromUrl(this, url,
+                                    name.endsWith("_bg") ? R.drawable.demo : R.drawable.ic_person);
+                            FileOutputStream fileOutputStream = new FileOutputStream(imgFile);
+                            drawableToBitmap(pic)
+                                    .compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                            Utils.userImageHashMap.put(name, pic);
+                        } else {
+                            BitmapFactory.Options options = new BitmapFactory.Options();
+                            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                            Drawable pic = new BitmapDrawable(getResources(),
+                                    BitmapFactory.decodeFile(imgFile.getAbsolutePath(), options));
+                            Utils.userImageHashMap.put(name, pic);
+                        }
                     }
 
                     setProgress(
@@ -273,8 +283,8 @@ public class Splashscreen extends Utils {
                 int count = 0;
                 boolean finished = true;
 
-                for(String name : names)
-                    if(!finishedUsers.containsKey(name))
+                for (String name : names)
+                    if (! finishedUsers.containsKey(name))
                         finished = false;
 
                 while (! finished) {
@@ -285,8 +295,8 @@ public class Splashscreen extends Utils {
                         Thread.sleep(10);
                     } catch (Exception ignored) {
                     }
-                    for(String name : names)
-                        if(!finishedUsers.containsKey(name))
+                    for (String name : names)
+                        if (! finishedUsers.containsKey(name))
                             contains = false;
                     finished = contains;
                     if (count > 100) finished = true;

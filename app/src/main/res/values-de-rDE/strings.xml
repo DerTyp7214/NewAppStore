@@ -121,4 +121,5 @@
     <string name="text_spainish">Spanisch</string>
     <string name="text_error_data">Fehler beim Laden der Daten!</string>
     <string name="text_changes">"Änderungen "</string>
+    <string name="text_project_github">Projekt auf GitHub</string>
 </resources>

@@ -7,16 +7,24 @@
 
 package com.dertyp7214.appstore.screens;
 
+import android.app.Fragment;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.dertyp7214.appstore.Config;
@@ -24,6 +32,7 @@ import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.dev.Logs;
+import com.dertyp7214.appstore.fragments.FragmentUserCard;
 
 import org.json.JSONObject;
 
@@ -41,6 +50,7 @@ public class UserProfile extends Utils {
     private Drawable userImage;
     private ImageView profileImageView;
     private TextView txt_name, txt_mail;
+    private RelativeLayout relativeLayout;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,13 +61,24 @@ public class UserProfile extends Utils {
         logs = Logs.getInstance(this);
 
         themeStore = ThemeStore.getInstance(this);
-        profileImageView = findViewById(R.id.user_image);
-        txt_name = findViewById(R.id.txt_name);
-        txt_mail = findViewById(R.id.txt_email);
-
         Bundle extras = getIntent().getExtras();
 
-        setUser((String) checkExtraKey(extras, "uid"));
+        FragmentUserCard fragmentUserCard =
+                (FragmentUserCard) getFragmentManager().findFragmentById(R.id.fragmentUserCard);
+        fragmentUserCard.setContentView(R.layout.user_image_settings, view -> {
+            relativeLayout = view.findViewById(R.id.relative);
+            relativeLayout.setBackground(Utils.userImageHashMap.get(Config.UID(this) + "_bg"));
+            profileImageView = view.findViewById(R.id.user_image);
+            txt_name = view.findViewById(R.id.txt_name);
+            txt_mail = view.findViewById(R.id.txt_email);
+            setUser((String) checkExtraKey(extras, "uid"));
+        });
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        relativeLayout.getLayoutParams().height = relativeLayout.getWidth() / 16 * 9;
     }
 
     private void setUser(String uid) {
@@ -108,10 +129,7 @@ public class UserProfile extends Utils {
             } else
                 profilePic = getResources().getDrawable(R.mipmap.ic_launcher, null);
         } else {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-            profilePic = new BitmapDrawable(getResources(),
-                    BitmapFactory.decodeFile(imgFile.getAbsolutePath(), options));
+            profilePic = Utils.userImageHashMap.get(uid);
         }
         return profilePic;
     }

@@ -134,6 +134,11 @@ public class FragmentAbout extends MaterialAboutFragment {
                         "https://github.com/Shashank02051997/FancyToast-Android",
                         "Copyright 2017 Shashank Singhal",
                         new ApacheSoftwareLicense20()));
+        notices.addNotice(
+                new Notice("Android Image Cropper",
+                        "https://github.com/ArthurHub/Android-Image-Cropper",
+                        "Copyright 2016, Arthur Teplitzki 2013, Edmodo, Inc.",
+                        new ApacheSoftwareLicense20()));
 
         MaterialAboutCard card = new MaterialAboutCard.Builder()
                 .title(R.string.text_authors)
@@ -160,18 +165,23 @@ public class FragmentAbout extends MaterialAboutFragment {
 
         MaterialAboutCard libraries = new MaterialAboutCard.Builder()
                 .addItem(new MaterialAboutTitleItem.Builder()
-                        .icon(R.mipmap.ic_launcher_round)
+                        .icon(R.mipmap.ic_launcher)
                         .text(R.string.app_name)
                         .build())
                 .addItem(new MaterialAboutActionItem.Builder()
-                        .icon(R.drawable.ic_info_outline_black_24dp)
+                        .icon(R.drawable.ic_info_outline_black)
                         .text(R.string.text_version)
                         .subText(BuildConfig.VERSION_NAME)
                         .build())
                 .addItem(new MaterialAboutActionItem.Builder()
                         .icon(R.drawable.ic_update_black_24dp)
                         .text(R.string.text_changes)
-                        .setOnClickAction(() -> ChangelogDialog.create().show())
+                        .setOnClickAction(() -> new ChangelogDialog(context))
+                        .build())
+                .addItem(new MaterialAboutActionItem.Builder()
+                        .icon(R.drawable.github)
+                        .text(R.string.text_project_github)
+                        .setOnClickAction(() -> openUrl(getString(R.string.url_github_project)))
                         .build())
                 .addItem(new MaterialAboutActionItem.Builder()
                         .text(R.string.text_licenses)
@@ -265,8 +275,12 @@ public class FragmentAbout extends MaterialAboutFragment {
     }
 
     private void openGitHubProfile(String userName) {
+        openUrl("https://github.com/" + userName);
+    }
+
+    private void openUrl(String url){
         Intent gitIntent =
-                new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/" + userName));
+                new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(gitIntent);
     }
 }

@@ -47,6 +47,7 @@ import com.paypal.android.sdk.payments.PayPalPayment;
 import com.paypal.android.sdk.payments.PayPalService;
 import com.paypal.android.sdk.payments.PaymentActivity;
 import com.paypal.android.sdk.payments.PaymentConfirmation;
+import com.theartofdev.edmodo.cropper.CropImage;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,7 +78,9 @@ import static com.dertyp7214.appstore.Config.UID;
 public class SettingsScreen extends Utils implements MyInterface {
 
     private BottomSheetBehavior bottomSheetBehavior;
+    private ProgressDialog prog;
     private boolean setUp = false;
+    private boolean profileImage = true;
 
     private static final String CONFIG_CLIENT_ID = SecretConfig.CONFIG_CLIENT_ID;
     private static final String CONFIG_CLIENT_ID_SANDBOX = SecretConfig.CONFIG_CLIENT_ID_SANDBOX;
@@ -201,17 +204,30 @@ public class SettingsScreen extends Utils implements MyInterface {
                 );
             }
         } else if (requestCode == 10 && resultCode == RESULT_OK) {
-            ProgressDialog prog = new ProgressDialog(SettingsScreen.this);
-            prog.setMessage("Uploading");
-            prog.setCancelable(false);
-            prog.show();
+            final File f = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
+            profileImage = true;
+            CropImage.activity(Uri.fromFile(f))
+                    .setAspectRatio(1, 1)
+                    .start(this);
+        } else if (requestCode == 11 && resultCode == RESULT_OK) {
+            final File f = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
+            profileImage = false;
+            CropImage.activity(Uri.fromFile(f))
+                    .setAspectRatio(16, 9)
+                    .start(this);
+        } else if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE
+                && resultCode == RESULT_OK) {
 
             SQLiteHandler db = new SQLiteHandler(getApplicationContext());
             HashMap<String, String> user = db.getUserDetails();
             final String userID = user.get("uid");
 
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            Uri uri = result.getUri();
+
+            File f = new File(Objects.requireNonNull(uri.getPath()));
+
             Thread t = new Thread(() -> {
-                final File f = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
                 String content_type = getMimeType(f.getPath());
                 final String file_path = f.getAbsolutePath();
                 OkHttpClient client = new OkHttpClient();
@@ -223,7 +239,8 @@ public class SettingsScreen extends Utils implements MyInterface {
                                 "uploaded_file",
                                 file_path.substring(file_path.lastIndexOf("/") + 1), file_body
                         )
-                        .addFormDataPart("name", userID.replace(" ", "_"))
+                        .addFormDataPart("name",
+                                userID.replace(" ", "_") + (profileImage ? "" : "_bg"))
                         .build();
                 Request request = new Request.Builder()
                         .url(API_URL + "/apps/upload.php")
@@ -236,12 +253,13 @@ public class SettingsScreen extends Utils implements MyInterface {
                     if (! response.isSuccessful()) {
                         throw new IOException("Error : " + response);
                     }
-                    File imgFile = new File(getFilesDir(), userID + ".png");
-                    if (imgFile.exists()) if (imgFile.delete()) prog.dismiss();
+                    File imgFile =
+                            new File(getFilesDir(), userID + (profileImage ? "" : "_bg") + ".png");
+                    if (imgFile.exists())
+                        if (imgFile.delete()) logs.info("changeProfileImage", "deleted!");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                prog.dismiss();
             });
             t.start();
         }
@@ -468,6 +486,14 @@ public class SettingsScreen extends Utils implements MyInterface {
                                 (name, instance, subTitle, imageRight) -> new MaterialFilePicker()
                                         .withActivity(SettingsScreen.this)
                                         .withRequestCode(10)
+                                        .withFilter(Pattern.compile(".*\\.(png|jpg|jpeg)$"))
+                                        .start()),
+                new Settings(
+                        "change_bg_pic", getString(R.string.text_change_bg_pic), this)
+                        .addSettingsOnClick(
+                                (name, instance, subTitle, imageRight) -> new MaterialFilePicker()
+                                        .withActivity(SettingsScreen.this)
+                                        .withRequestCode(11)
                                         .withFilter(Pattern.compile(".*\\.(png|jpg|jpeg)$"))
                                         .start())
         )));

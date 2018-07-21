@@ -276,7 +276,7 @@ public class MainActivity extends Utils
             }
             runOnUiThread(() -> {
                 try {
-                    int color = Palette.from(Utils.drawableToBitmap(profilePic))
+                    int color = Palette.from(Utils.drawableToBitmap(Utils.userImageHashMap.get(userID + "_bg")))
                             .generate()
                             .getDominantColor(ThemeStore.getInstance(this).getPrimaryColor());
                     if (Utils.isColorBright(color)) {
@@ -286,14 +286,18 @@ public class MainActivity extends Utils
                         name.setTextColor(Color.WHITE);
                         email.setTextColor(Color.WHITE);
                     }
-                    bg.setBackgroundColor(color);
+                    bg.setBackground(Utils.userImageHashMap.get(userID + "_bg"));
                     img.setImageDrawable(profilePic);
                     img.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, UserProfile.class);
                         intent.putExtra("uid", userID);
                         Pair<View, String> icon = Pair.create(img, "profilePic");
+                        Pair<View, String> nameTransition = Pair.create(name, "name");
+                        Pair<View, String> emailTransition = Pair.create(email, "email");
                         ActivityOptions options =
-                                ActivityOptions.makeSceneTransitionAnimation(this, icon);
+                                ActivityOptions
+                                        .makeSceneTransitionAnimation(this, icon, nameTransition,
+                                                emailTransition);
                         startActivity(intent, options.toBundle());
                         drawer.closeDrawers();
                     });

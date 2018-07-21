@@ -200,4 +200,7 @@
     <string name="text_error_data">Error loading data!</string>
     <string name="todo" translatable="false">TODO</string>
     <string name="text_changes">Changes</string>
+    <string name="text_project_github">Project on GitHub</string>
+    <string name="url_github_project" translatable="false">https://github.com/DerTyp7214/NewAppStore</string>
+    <string name="text_change_bg_pic">Change Backgroundimage</string>
 </resources>
