@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.annotation.DrawableRes;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.danielstone.materialaboutlibrary.MaterialAboutFragment;
@@ -144,9 +145,8 @@ public class FragmentAbout extends MaterialAboutFragment {
                 .title(R.string.text_authors)
                 .addItem(new MaterialAboutActionItem.Builder()
                         .text(R.string.text_main_author)
-                        .subText(R.string.text_josua_lengwenath)
-                        .icon(Utils.drawableFromUrl(context,
-                                "https://avatars0.githubusercontent.com/u/37804065"))
+                        .subText((String) getUSerMap(getString(R.string.text_dertyp7214), context).get("name"))
+                        .icon((Drawable) getUSerMap(getString(R.string.text_dertyp7214), context).get("image"))
                         .setIconGravity(MaterialAboutActionItem.GRAVITY_MIDDLE)
                         .setOnClickAction(() -> openGitHubProfile("DerTyp7214"))
                         .build())
@@ -222,6 +222,8 @@ public class FragmentAbout extends MaterialAboutFragment {
                     "https://avatars0.githubusercontent.com/u/" + userMap.get("id")));
         } catch (Exception e) {
             e.printStackTrace();
+            userMap.put("image", context.getResources().getDrawable(R.mipmap.ic_launcher));
+            userMap.put("name", context.getString(R.string.app_name));
         }
         users.put(userName, userMap);
         return userMap;
