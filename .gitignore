@@ -12,3 +12,4 @@
 app/src/main/java/com/dertyp7214/appstore/SecretConfig.java
 app/build
 assemble.cmd
+.gitignore
