@@ -1,1 +1,1 @@
-include ':app', ':githubsource'
+include ':app'
