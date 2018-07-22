@@ -5,11 +5,27 @@
 
 package com.dertyp7214.appstore.fragments;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.support.annotation.DrawableRes;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
+import android.text.Editable;
+import android.text.Html;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.danielstone.materialaboutlibrary.MaterialAboutFragment;
@@ -20,17 +36,33 @@ import com.danielstone.materialaboutlibrary.model.MaterialAboutCard;
 import com.danielstone.materialaboutlibrary.model.MaterialAboutList;
 import com.dertyp7214.appstore.BuildConfig;
 import com.dertyp7214.appstore.R;
+import com.dertyp7214.appstore.SecretConfig;
+import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.components.ChangelogDialog;
+import com.dertyp7214.appstore.screens.SettingsScreen;
+import com.dertyp7214.githubsource.GitHubSource;
+import com.dertyp7214.githubsource.github.Repository;
+import com.dertyp7214.githubsource.helpers.ColorStyle;
+import com.paypal.android.sdk.payments.PayPalConfiguration;
+import com.paypal.android.sdk.payments.PayPalPayment;
+import com.paypal.android.sdk.payments.PayPalService;
+import com.paypal.android.sdk.payments.PaymentActivity;
+import com.paypal.android.sdk.payments.PaymentConfirmation;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import de.psdev.licensesdialog.LicensesDialog;
 import de.psdev.licensesdialog.licenses.ApacheSoftwareLicense20;
@@ -39,12 +71,67 @@ import de.psdev.licensesdialog.licenses.MITLicense;
 import de.psdev.licensesdialog.model.Notice;
 import de.psdev.licensesdialog.model.Notices;
 
+import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
+import static android.support.design.widget.BottomSheetBehavior.STATE_HIDDEN;
+import static com.dertyp7214.appstore.SecretConfig.CONFIG_CLIENT_ID;
+import static com.dertyp7214.appstore.SecretConfig.CONFIG_CLIENT_ID_SANDBOX;
+import static com.dertyp7214.appstore.Utils.addAlpha;
+import static com.dertyp7214.appstore.Utils.getSettings;
+import static com.dertyp7214.appstore.Utils.setCursorColor;
+import static com.dertyp7214.appstore.Utils.tintWidget;
+
+@SuppressLint("ValidFragment")
 public class FragmentAbout extends MaterialAboutFragment {
 
     public static HashMap<String, HashMap<String, Object>> users = new HashMap<>();
+    public BottomSheetBehavior bottomSheetBehavior;
+    private boolean setUp = false;
 
-    public FragmentAbout() {
+    private Activity activity;
 
+    private static final String CONFIG_CLIENT_ID = SecretConfig.CONFIG_CLIENT_ID;
+    private static final String CONFIG_CLIENT_ID_SANDBOX = SecretConfig.CONFIG_CLIENT_ID_SANDBOX;
+    private static final String CONFIG_ENVIRONMENT =
+            BuildConfig.DEBUG ? PayPalConfiguration.ENVIRONMENT_SANDBOX
+                    : PayPalConfiguration.ENVIRONMENT_PRODUCTION;
+
+    private static final int REQUEST_CODE_PAYMENT = 1;
+
+    public FragmentAbout(Activity activity) {
+        this.activity = activity;
+
+        if (! setUp)
+            setUpBottomSheet();
+
+        LinearLayout bottomSheet = activity.findViewById(R.id.bottom_sheet);
+        View backGround = activity.findViewById(R.id.bg);
+
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+
+        bottomSheetBehavior.setState(STATE_HIDDEN);
+        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                if (newState == STATE_HIDDEN)
+                    backGround.setVisibility(View.GONE);
+                else
+                    backGround.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                float offset = (1 - (- slideOffset)) / 1 * 0.7F;
+                if (String.valueOf(offset).equals("NaN"))
+                    offset = 0.7F;
+                try {
+                    int color = Color.parseColor(addAlpha("#000000", offset));
+                    backGround.setBackgroundColor(color);
+                } catch (Exception ignored) {
+                }
+            }
+        });
+
+        backGround.setOnClickListener(v -> bottomSheetBehavior.setState(STATE_HIDDEN));
     }
 
     @Override
@@ -145,8 +232,10 @@ public class FragmentAbout extends MaterialAboutFragment {
                 .title(R.string.text_authors)
                 .addItem(new MaterialAboutActionItem.Builder()
                         .text(R.string.text_main_author)
-                        .subText((String) getUSerMap(getString(R.string.text_dertyp7214), context).get("name"))
-                        .icon((Drawable) getUSerMap(getString(R.string.text_dertyp7214), context).get("image"))
+                        .subText((String) getUSerMap(getString(R.string.text_dertyp7214), context)
+                                .get("name"))
+                        .icon((Drawable) getUSerMap(getString(R.string.text_dertyp7214), context)
+                                .get("image"))
                         .setIconGravity(MaterialAboutActionItem.GRAVITY_MIDDLE)
                         .setOnClickAction(() -> openGitHubProfile("DerTyp7214"))
                         .build())
@@ -163,7 +252,7 @@ public class FragmentAbout extends MaterialAboutFragment {
                         context))
                 .build();
 
-        MaterialAboutCard libraries = new MaterialAboutCard.Builder()
+        MaterialAboutCard about = new MaterialAboutCard.Builder()
                 .addItem(new MaterialAboutTitleItem.Builder()
                         .icon(R.mipmap.ic_launcher)
                         .text(R.string.app_name)
@@ -174,14 +263,25 @@ public class FragmentAbout extends MaterialAboutFragment {
                         .subText(BuildConfig.VERSION_NAME)
                         .build())
                 .addItem(new MaterialAboutActionItem.Builder()
+                        .icon(R.drawable.ic_build_black_24dp)
+                        .text(R.string.text_build_type)
+                        .subText(BuildConfig.BUILD_TYPE)
+                        .build())
+                .addItem(new MaterialAboutActionItem.Builder()
                         .icon(R.drawable.ic_update_black_24dp)
                         .text(R.string.text_changes)
                         .setOnClickAction(() -> new ChangelogDialog(context))
                         .build())
                 .addItem(new MaterialAboutActionItem.Builder()
+                        .icon(R.drawable.ic_donate)
+                        .text(R.string.text_donate_sub)
+                        .setOnClickAction(() -> bottomSheetBehavior
+                                .setState(BottomSheetBehavior.STATE_EXPANDED))
+                        .build())
+                .addItem(new MaterialAboutActionItem.Builder()
                         .icon(R.drawable.github)
                         .text(R.string.text_project_github)
-                        .setOnClickAction(() -> openUrl(getString(R.string.url_github_project)))
+                        .setOnClickAction(() -> openSourceCode(context))
                         .build())
                 .addItem(new MaterialAboutActionItem.Builder()
                         .text(R.string.text_licenses)
@@ -201,7 +301,7 @@ public class FragmentAbout extends MaterialAboutFragment {
                 .build();
 
         return new MaterialAboutList.Builder()
-                .addCard(libraries)
+                .addCard(about)
                 .addCard(card)
                 .addCard(translators)
                 .build();
@@ -230,7 +330,7 @@ public class FragmentAbout extends MaterialAboutFragment {
     }
 
     private String getJSONObject(String url, Context context) {
-        String api_key = Utils.getSettings(context).getString("API_KEY", null);
+        String api_key = getSettings(context).getString("API_KEY", null);
         try {
             URL web = new URL(url);
             HttpURLConnection connection = (HttpURLConnection) web.openConnection();
@@ -280,9 +380,180 @@ public class FragmentAbout extends MaterialAboutFragment {
         openUrl("https://github.com/" + userName);
     }
 
-    private void openUrl(String url){
+    private void openUrl(String url) {
         Intent gitIntent =
                 new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(gitIntent);
+    }
+
+    private void openSourceCode(Context context) {
+        ProgressDialog progressDialog = new ProgressDialog(context);
+        progressDialog.setMessage("Loading");
+        progressDialog.show();
+        new Thread(() -> {
+            ThemeStore store = ThemeStore.getInstance(context);
+            GitHubSource.getInstance(
+                    context,
+                    new Repository("dertyp7214", "NewAppStore",
+                            getSettings(
+                                    context)
+                                    .getString(
+                                            "API_KEY",
+                                            null
+                                    ))
+            ).setColorStyle(new ColorStyle(
+                    store.getPrimaryColor(),
+                    store.getPrimaryDarkColor(),
+                    store.getAccentColor()
+            )).open();
+            try {
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(progressDialog::dismiss);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void setUpBottomSheet() {
+        setUp = true;
+        EditText editText = activity.findViewById(R.id.text_amount);
+        Button button = activity.findViewById(R.id.btn_pay);
+
+        ThemeStore themeStore = ThemeStore.getInstance(activity);
+
+        button.setTextColor(themeStore.getAccentColor());
+
+        tintWidget(editText, themeStore.getAccentColor());
+        setCursorColor(editText, themeStore.getAccentColor());
+
+        final PayPalConfiguration config = new PayPalConfiguration()
+                .environment(CONFIG_ENVIRONMENT)
+                .clientId(BuildConfig.DEBUG ? CONFIG_CLIENT_ID_SANDBOX : CONFIG_CLIENT_ID)
+                .merchantName("AppStore")
+                .merchantPrivacyPolicyUri(
+                        Uri.parse("https://www.example.com/privacy"))
+                .merchantUserAgreementUri(
+                        Uri.parse("https://www.example.com/legal"));
+
+        Intent service = new Intent(activity, PayPalService.class);
+        service.putExtra(PayPalService.EXTRA_PAYPAL_CONFIGURATION, config);
+        activity.startService(service);
+
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String text = s.toString();
+                int length = text.length();
+                String[] strings = text.split("\\.");
+                if (strings.length > 1)
+                    if (length > 0 && ! Pattern.matches("[0-9]{0,2}", strings[1]) && strings[1]
+                            .length() > 1)
+                        s.delete(length - 1, length);
+            }
+        });
+
+        button.setOnClickListener(v -> {
+            bottomSheetBehavior.setState(STATE_HIDDEN);
+            String amount = editText.getText().toString();
+            if (amount.length() > 0) {
+                new MaterialDialog.Builder(activity)
+                        .title(String.format(String.format(getString(R.string.text_pay_amount),
+                                amount.replace(".", ",") + "%s"
+                        ), getString(R.string.currency)))
+                        .content(R.string.text_pay_content)
+                        .positiveText(android.R.string.yes)
+                        .negativeText(android.R.string.no)
+                        .onPositive((dialog, which) -> {
+                            PayPalPayment donating = new PayPalPayment(new BigDecimal(amount),
+                                    getString(
+                                            R.string.payment_lang),
+                                    "Donation",
+                                    PayPalPayment.PAYMENT_INTENT_SALE
+                            );
+                            Intent intent = new Intent(
+                                    activity,
+                                    PaymentActivity.class
+                            );
+
+                            intent.putExtra(PaymentActivity.EXTRA_PAYMENT, donating);
+
+                            startActivityForResult(intent, REQUEST_CODE_PAYMENT);
+                        })
+                        .show();
+            }
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_PAYMENT) {
+            if (resultCode == Activity.RESULT_OK) {
+                PaymentConfirmation confirm = data
+                        .getParcelableExtra(PaymentActivity.EXTRA_RESULT_CONFIRMATION);
+                if (confirm != null) {
+                    try {
+                        JSONObject jsonObject = confirm.toJSONObject();
+                        JSONObject response = jsonObject.getJSONObject("response");
+                        JSONObject payment = confirm.getPayment().toJSONObject();
+
+                        @SuppressLint("SimpleDateFormat")
+                        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                                "yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+                        String br = "<br/>";
+
+                        String content = ""
+                                + getH4("Id: ") + response.getString("id") + br
+                                + getH4("Time: ") + dateFormat
+                                .parse(response.getString("create_time")).toString() + br
+                                + getH4("State: ") + response.getString("state") + br
+                                + getH4("Amount: ") + payment.getString("amount") + getString(
+                                R.string.currency) + br
+                                + getH4("Description: ") + payment.getString("short_description");
+
+                        new MaterialDialog.Builder(activity)
+                                .title("Results")
+                                .content(Html.fromHtml(content))
+                                .positiveText(android.R.string.yes)
+                                .show();
+
+                    } catch (JSONException | ParseException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                Log.d("PAYPAL", "The user canceled.");
+            } else if (resultCode == PaymentActivity.RESULT_EXTRAS_INVALID) {
+                Log.d(
+                        "PAYPAL",
+                        "An invalid Payment or PayPalConfiguration was submitted. Please see the docs."
+                );
+            }
+        }
+    }
+
+    private String getH4(String string) {
+        return "<h4 style=\"display:inline\">" + string + "</h4>";
+    }
+
+    @Override
+    public void onDestroy() {
+        try {
+            activity.stopService(new Intent(activity, PayPalService.class));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        super.onDestroy();
     }
 }

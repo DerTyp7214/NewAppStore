@@ -71,6 +71,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
+import static android.support.design.widget.BottomSheetBehavior.STATE_HIDDEN;
 import static com.dertyp7214.appstore.Config.API_URL;
 
 public class MainActivity extends Utils
@@ -81,13 +83,13 @@ public class MainActivity extends Utils
     private SearchAdapter searchAdapter;
     private int id = 0;
     private Random random;
-    private ThemeStore themeStore;
     private TabLayout tabLayout;
     private NavigationView navView;
     private Drawable profilePic;
     private MaterialSearchBar searchBar;
     private DrawerLayout drawer;
     private View app_bar;
+    private FragmentAbout fragmentAbout;
 
     private List<SearchItem> appItems = new ArrayList<>();
 
@@ -102,6 +104,8 @@ public class MainActivity extends Utils
 
         checkAppDir();
         checkForOldAppStore();
+        setNavigationBarColor(this, getWindow().getDecorView(), themeStore.getPrimaryColor(),
+                300);
 
         drawer = findViewById(R.id.drawer_layout);
         searchBar = findViewById(R.id.searchBar);
@@ -137,11 +141,6 @@ public class MainActivity extends Utils
         navView.setCheckedItem(R.id.nav_home);
         navView.setPadding(0, 0, 0, getNavigationBarHeight());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setNavigationBarColor(this, toolbar, ThemeStore.getInstance(this).getPrimaryColor(),
-                    300);
-        }
-
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open,
@@ -155,7 +154,8 @@ public class MainActivity extends Utils
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
         addFragment(new FragmentAppGroups());
         addFragment(new FragmentMyApps());
-        adapter.addFragment(new FragmentAbout(), getString(R.string.mal_title_about));
+        fragmentAbout = new FragmentAbout(this);
+        adapter.addFragment(fragmentAbout, getString(R.string.mal_title_about));
 
         viewPager.setAdapter(adapter);
 
@@ -176,6 +176,8 @@ public class MainActivity extends Utils
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 app_bar.setBackgroundColor(themeStore
+                        .getPrimaryHue((int) (((float) position + positionOffset) * 36)));
+                getWindow().setNavigationBarColor(themeStore
                         .getPrimaryHue((int) (((float) position + positionOffset) * 36)));
             }
 
@@ -276,7 +278,8 @@ public class MainActivity extends Utils
             }
             runOnUiThread(() -> {
                 try {
-                    int color = Palette.from(Utils.drawableToBitmap(Utils.userImageHashMap.get(userID + "_bg")))
+                    int color = Palette.from(
+                            Utils.drawableToBitmap(Utils.userImageHashMap.get(userID + "_bg")))
                             .generate()
                             .getDominantColor(ThemeStore.getInstance(this).getPrimaryColor());
                     if (Utils.isColorBright(color)) {
@@ -437,8 +440,10 @@ public class MainActivity extends Utils
             content.setVisibility(View.VISIBLE);
             changeOpacity(searchView, true);
             tabLayout.setVisibility(View.VISIBLE);
+        } else if (fragmentAbout.bottomSheetBehavior.getState() == STATE_EXPANDED) {
+            fragmentAbout.bottomSheetBehavior.setState(STATE_HIDDEN);
         } else {
-            finish();
+            super.onBackPressed();
         }
     }
 

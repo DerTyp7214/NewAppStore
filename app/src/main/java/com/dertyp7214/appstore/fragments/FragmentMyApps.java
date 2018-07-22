@@ -77,7 +77,6 @@ public class FragmentMyApps extends TabFragment {
         recyclerView.setAdapter(adapter);
 
         CardView cardView = view.findViewById(R.id.card);
-        setMargins(cardView, - 1, - 1, - 1, getNavigationBarHeight() + 10);
 
         getMyApps();
 

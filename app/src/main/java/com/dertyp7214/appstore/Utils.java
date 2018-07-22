@@ -91,7 +91,7 @@ public class Utils extends AppCompatActivity {
             PackageUpdateReceiver.activity = this;
     }
 
-    public String addAlpha(String originalColor, double alpha) {
+    public static String addAlpha(String originalColor, double alpha) {
         long alphaFixed = Math.round(alpha * 255);
         String alphaHex = Long.toHexString(alphaFixed);
         if (alphaHex.length() == 1) {
@@ -103,13 +103,13 @@ public class Utils extends AppCompatActivity {
         return originalColor;
     }
 
-    public void tintWidget(View view, int color) {
+    public static void tintWidget(View view, int color) {
         Drawable wrappedDrawable = DrawableCompat.wrap(view.getBackground());
         DrawableCompat.setTint(wrappedDrawable.mutate(), color);
         view.setBackground(wrappedDrawable);
     }
 
-    public void setCursorColor(EditText view, @ColorInt int color) {
+    public static void setCursorColor(EditText view, @ColorInt int color) {
         try {
             // Get the cursor resource id
             Field field = TextView.class.getDeclaredField("mCursorDrawableRes");

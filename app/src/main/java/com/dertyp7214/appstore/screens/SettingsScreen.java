@@ -75,25 +75,10 @@ import static android.support.design.widget.BottomSheetBehavior.*;
 import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Config.UID;
 
-public class SettingsScreen extends Utils implements MyInterface {
+public class SettingsScreen extends Utils {
 
-    private BottomSheetBehavior bottomSheetBehavior;
     private ProgressDialog prog;
-    private boolean setUp = false;
     private boolean profileImage = true;
-
-    private static final String CONFIG_CLIENT_ID = SecretConfig.CONFIG_CLIENT_ID;
-    private static final String CONFIG_CLIENT_ID_SANDBOX = SecretConfig.CONFIG_CLIENT_ID_SANDBOX;
-    private static final String CONFIG_ENVIRONMENT =
-            BuildConfig.DEBUG ? PayPalConfiguration.ENVIRONMENT_SANDBOX
-                    : PayPalConfiguration.ENVIRONMENT_PRODUCTION;
-
-    private static final int REQUEST_CODE_PAYMENT = 1;
-
-    public void onPostExecute() {
-        if (! setUp)
-            setUpBottomSheet();
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -102,8 +87,6 @@ public class SettingsScreen extends Utils implements MyInterface {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        new MyTask(this).execute();
-
         themeStore = ThemeStore.getInstance(this);
 
         if (! getSettings(this).getBoolean("root_install", false)) {
@@ -111,34 +94,6 @@ public class SettingsScreen extends Utils implements MyInterface {
         } else {
             Config.root = true;
         }
-
-        LinearLayout bottomSheet = findViewById(R.id.bottom_sheet);
-        View backGround = findViewById(R.id.bg);
-
-        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-
-        bottomSheetBehavior.setState(STATE_HIDDEN);
-        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                if (newState == STATE_HIDDEN)
-                    backGround.setVisibility(View.GONE);
-                else
-                    backGround.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                float offset = (1 - (- slideOffset)) / 1 * 0.7F;
-                if (String.valueOf(offset).equals("NaN"))
-                    offset = 0.7F;
-                try {
-                    int color = Color.parseColor(addAlpha("#000000", offset));
-                    backGround.setBackgroundColor(color);
-                } catch (Exception ignored) {
-                }
-            }
-        });
 
         setColors();
 
@@ -160,50 +115,7 @@ public class SettingsScreen extends Utils implements MyInterface {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CODE_PAYMENT) {
-            if (resultCode == Activity.RESULT_OK) {
-                PaymentConfirmation confirm = data
-                        .getParcelableExtra(PaymentActivity.EXTRA_RESULT_CONFIRMATION);
-                if (confirm != null) {
-                    try {
-                        JSONObject jsonObject = confirm.toJSONObject();
-                        JSONObject response = jsonObject.getJSONObject("response");
-                        JSONObject payment = confirm.getPayment().toJSONObject();
-
-                        @SuppressLint("SimpleDateFormat")
-                        SimpleDateFormat dateFormat = new SimpleDateFormat(
-                                "yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-                        String br = "<br/>";
-
-                        String content = ""
-                                + getH4("Id: ") + response.getString("id") + br
-                                + getH4("Time: ") + dateFormat
-                                .parse(response.getString("create_time")).toString() + br
-                                + getH4("State: ") + response.getString("state") + br
-                                + getH4("Amount: ") + payment.getString("amount") + getString(
-                                R.string.currency) + br
-                                + getH4("Description: ") + payment.getString("short_description");
-
-                        new MaterialDialog.Builder(this)
-                                .title("Results")
-                                .content(Html.fromHtml(content))
-                                .positiveText(android.R.string.yes)
-                                .show();
-
-                    } catch (JSONException | ParseException e) {
-                        e.printStackTrace();
-                    }
-                }
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                Log.d("PAYPAL", "The user canceled.");
-            } else if (resultCode == PaymentActivity.RESULT_EXTRAS_INVALID) {
-                Log.d(
-                        "PAYPAL",
-                        "An invalid Payment or PayPalConfiguration was submitted. Please see the docs."
-                );
-            }
-        } else if (requestCode == 10 && resultCode == RESULT_OK) {
+        if (requestCode == 10 && resultCode == RESULT_OK) {
             final File f = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
             profileImage = true;
             CropImage.activity(Uri.fromFile(f))
@@ -270,130 +182,8 @@ public class SettingsScreen extends Utils implements MyInterface {
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
     }
 
-    private String getH4(String string) {
-        return "<h4 style=\"display:inline\">" + string + "</h4>";
-    }
-
-    private void setUpBottomSheet() {
-        setUp = true;
-        EditText editText = findViewById(R.id.text_amount);
-        Button button = findViewById(R.id.btn_pay);
-
-        button.setTextColor(themeStore.getAccentColor());
-
-        tintWidget(editText, themeStore.getAccentColor());
-        setCursorColor(editText, themeStore.getAccentColor());
-
-        final PayPalConfiguration config = new PayPalConfiguration()
-                .environment(CONFIG_ENVIRONMENT)
-                .clientId(BuildConfig.DEBUG ? CONFIG_CLIENT_ID_SANDBOX : CONFIG_CLIENT_ID)
-                .merchantName("AppStore")
-                .merchantPrivacyPolicyUri(
-                        Uri.parse("https://www.example.com/privacy"))
-                .merchantUserAgreementUri(
-                        Uri.parse("https://www.example.com/legal"));
-
-        Intent service = new Intent(this, PayPalService.class);
-        service.putExtra(PayPalService.EXTRA_PAYPAL_CONFIGURATION, config);
-        startService(service);
-
-        editText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                String text = s.toString();
-                int length = text.length();
-                String[] strings = text.split("\\.");
-                if (strings.length > 1)
-                    if (length > 0 && ! Pattern.matches("[0-9]{0,2}", strings[1]) && strings[1]
-                            .length() > 1)
-                        s.delete(length - 1, length);
-            }
-        });
-
-        button.setOnClickListener(v -> {
-            bottomSheetBehavior.setState(STATE_HIDDEN);
-            String amount = editText.getText().toString();
-            if (amount.length() > 0) {
-                new MaterialDialog.Builder(this)
-                        .title(String.format(String.format(getString(R.string.text_pay_amount),
-                                amount.replace(".", ",") + "%s"
-                        ), getString(R.string.currency)))
-                        .content(R.string.text_pay_content)
-                        .positiveText(android.R.string.yes)
-                        .negativeText(android.R.string.no)
-                        .onPositive((dialog, which) -> {
-                            PayPalPayment donating = new PayPalPayment(new BigDecimal(amount),
-                                    getString(
-                                            R.string.payment_lang),
-                                    "Donation",
-                                    PayPalPayment.PAYMENT_INTENT_SALE
-                            );
-                            Intent intent = new Intent(
-                                    SettingsScreen.this,
-                                    PaymentActivity.class
-                            );
-
-                            intent.putExtra(PaymentActivity.EXTRA_PAYMENT, donating);
-
-                            startActivityForResult(intent, REQUEST_CODE_PAYMENT);
-                        })
-                        .show();
-            }
-        });
-    }
-
     private List<Settings> getSettings() {
         List<Settings> settingsList = new ArrayList<>(Arrays.asList(
-                new SettingsPlaceholder("appdetails", getString(R.string.text_appdetails), this),
-                new Settings("version", getString(R.string.text_version), this)
-                        .setSubTitle(BuildConfig.VERSION_NAME),
-                new Settings("check_update", getString(R.string.text_check_update), this)
-                        .setSubTitle(getString(R.string.text_click_check))
-                        .addSettingsOnClick(
-                                (name, instance, subTitle, imageRight) -> checkForUpdate(instance,
-                                        subTitle, imageRight)),
-                new Settings("sourcecode", "Sourcecode", this)
-                        .setSubTitle(getString(R.string.text_sourcecode))
-                        .addSettingsOnClick((name, setting, subTitle, imageRight) -> {
-                            ProgressDialog progressDialog = new ProgressDialog(this);
-                            progressDialog.setMessage("Loading");
-                            progressDialog.show();
-                            new Thread(() -> {
-                                ThemeStore store = ThemeStore.getInstance(SettingsScreen.this);
-                                GitHubSource.getInstance(
-                                        SettingsScreen.this,
-                                        new Repository("dertyp7214", "NewAppStore",
-                                                getSettings(
-                                                        SettingsScreen.this)
-                                                        .getString(
-                                                                "API_KEY",
-                                                                null
-                                                        ))
-                                ).setColorStyle(new ColorStyle(
-                                        store.getPrimaryColor(),
-                                        store.getPrimaryDarkColor(),
-                                        store.getAccentColor()
-                                )).open();
-                                runOnUiThread(progressDialog::dismiss);
-                            }).start();
-                        }),
-                new Settings("donate_paypal", getString(R.string.text_donate), this)
-                        .setSubTitle(getString(R.string.text_donate_sub))
-                        .addSettingsOnClick(
-                                (name, instance, subTitle, imageRight) -> bottomSheetBehavior
-                                        .setState(BottomSheetBehavior.STATE_EXPANDED)),
-                new Settings("text_build_type", getString(R.string.text_build_type), this)
-                        .setSubTitle(BuildConfig.BUILD_TYPE),
                 new SettingsPlaceholder("preferences", getString(R.string.text_prefs), this),
                 new Settings("api_key", getString(R.string.text_api_key), this).setSubTitle(
                         cutString(
@@ -525,12 +315,8 @@ public class SettingsScreen extends Utils implements MyInterface {
 
     @Override
     public void onBackPressed() {
-        if (bottomSheetBehavior.getState() == STATE_EXPANDED)
-            bottomSheetBehavior.setState(STATE_HIDDEN);
-        else {
-            syncPreferencesToServer();
-            super.onBackPressed();
-        }
+        syncPreferencesToServer();
+        super.onBackPressed();
     }
 
     private void syncPreferencesToServer() {
@@ -559,27 +345,5 @@ public class SettingsScreen extends Utils implements MyInterface {
             getWebContent(API_URL + "/apps/prefs.php?user=" + UID(this) + "&prefs=" + jsonObject
                     .toString());
         }).start();
-    }
-
-    @Override
-    public void onDestroy() {
-        stopService(new Intent(this, PayPalService.class));
-        super.onDestroy();
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    private class MyTask extends AsyncTask<Void, Void, Void> {
-
-        MyInterface myinterface;
-
-        MyTask(MyInterface mi) {
-            myinterface = mi;
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            myinterface.onPostExecute();
-            return null;
-        }
     }
 }
