@@ -259,7 +259,9 @@ public class MainActivity extends Utils
             });
             try {
                 File file = new File(getFilesDir(), userID + ".png");
-                if (file.exists()) {
+                if (Utils.userImageHashMap.containsKey(userID)) {
+                    profilePic = Utils.userImageHashMap.get(userID);
+                } else if (file.exists()) {
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inPreferredConfig = Bitmap.Config.ARGB_8888;
                     profilePic = new BitmapDrawable(getResources(),
@@ -279,7 +281,10 @@ public class MainActivity extends Utils
             runOnUiThread(() -> {
                 try {
                     int color = Palette.from(
-                            Utils.drawableToBitmap(Utils.userImageHashMap.get(userID + "_bg")))
+                            Utils.drawableToBitmap(Utils.userImageHashMap
+                                    .containsKey(userID + "_bg") ? Utils.userImageHashMap
+                                    .get(userID + "_bg") : getResources()
+                                    .getDrawable(R.drawable.demo)))
                             .generate()
                             .getDominantColor(ThemeStore.getInstance(this).getPrimaryColor());
                     if (Utils.isColorBright(color)) {
@@ -289,7 +294,8 @@ public class MainActivity extends Utils
                         name.setTextColor(Color.WHITE);
                         email.setTextColor(Color.WHITE);
                     }
-                    bg.setBackground(Utils.userImageHashMap.get(userID + "_bg"));
+                    if (Utils.userImageHashMap.containsKey(userID + "_bg"))
+                        bg.setBackground(Utils.userImageHashMap.get(userID + "_bg"));
                     img.setImageDrawable(profilePic);
                     img.setOnClickListener(v -> {
                         Intent intent = new Intent(MainActivity.this, UserProfile.class);
