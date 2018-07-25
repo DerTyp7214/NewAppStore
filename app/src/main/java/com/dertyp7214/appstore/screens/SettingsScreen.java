@@ -72,6 +72,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import static android.support.design.widget.BottomSheetBehavior.*;
+import static com.dertyp7214.appstore.Config.ACTIVE_OVERLAY;
 import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Config.UID;
 
@@ -246,15 +247,16 @@ public class SettingsScreen extends Utils {
             });
             settingsList.add(settingsSwitch);
         }
+        settingsList.add(new SettingsPlaceholder("style", getString(R.string.text_style), this));
+        if (! ACTIVE_OVERLAY(this))
+            settingsList.add(new SettingsColor(
+                    "color_primary", getString(R.string.text_color), this,
+                    themeStore.getPrimaryColor()
+            ).addSettingsOnClick((name, Color, settingsColor) -> {
+                settingsColor.saveSetting();
+                setColors();
+            }));
         settingsList.addAll(new ArrayList<>(Arrays.asList(
-                new SettingsPlaceholder("style", getString(R.string.text_style), this),
-                new SettingsColor(
-                        "color_primary", getString(R.string.text_color), this,
-                        themeStore.getPrimaryColor()
-                ).addSettingsOnClick((name, Color, settingsColor) -> {
-                    settingsColor.saveSetting();
-                    setColors();
-                }),
                 new SettingsSwitch(
                         "colored_nav_bar", getString(R.string.text_colored_navbar), this,
                         getSettings(this).getBoolean("colored_nav_bar", false)

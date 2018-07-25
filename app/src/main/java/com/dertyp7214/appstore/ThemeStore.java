@@ -13,6 +13,7 @@ import android.util.Log;
 
 import java.util.Arrays;
 
+import static com.dertyp7214.appstore.Config.ACTIVE_OVERLAY;
 import static com.dertyp7214.appstore.Utils.manipulateColor;
 
 public class ThemeStore {
@@ -45,12 +46,14 @@ public class ThemeStore {
     }
 
     public int getPrimaryColor() {
-        return sharedPreferences
+        return ACTIVE_OVERLAY(context) ? context.getResources()
+                .getColor(R.color.colorPrimary) : sharedPreferences
                 .getInt(COLOR_PRIMARY, context.getResources().getColor(R.color.colorAccent));
     }
 
     public int getPrimaryDarkColor() {
-        return manipulateColor(getPrimaryColor(), 0.6F);
+        return ACTIVE_OVERLAY(context) ? context.getResources()
+                .getColor(R.color.colorPrimaryDark) : manipulateColor(getPrimaryColor(), 0.6F);
     }
 
     public int getPrimaryTextColor() {
@@ -65,7 +68,8 @@ public class ThemeStore {
         hsv[1] -= 0.03F;
         hsv[2] -= 0.13F;
         Log.d("AFTER", Arrays.toString(hsv));
-        return Color.HSVToColor(hsv);
+        return ACTIVE_OVERLAY(context) ? context.getResources()
+                .getColor(R.color.colorAccent) : Color.HSVToColor(hsv);
     }
 
     public int getPrimaryHue(int degree) {

@@ -392,20 +392,24 @@ public class FragmentAbout extends MaterialAboutFragment {
         progressDialog.show();
         new Thread(() -> {
             ThemeStore store = ThemeStore.getInstance(context);
-            GitHubSource.getInstance(
-                    context,
-                    new Repository("dertyp7214", "NewAppStore",
-                            getSettings(
-                                    context)
-                                    .getString(
-                                            "API_KEY",
-                                            null
-                                    ))
-            ).setColorStyle(new ColorStyle(
-                    store.getPrimaryColor(),
-                    store.getPrimaryDarkColor(),
-                    store.getAccentColor()
-            )).open();
+            try {
+                GitHubSource.getInstance(
+                        context,
+                        new Repository("dertyp7214", "NewAppStore",
+                                getSettings(
+                                        context)
+                                        .getString(
+                                                "API_KEY",
+                                                null
+                                        ))
+                ).setColorStyle(new ColorStyle(
+                        store.getPrimaryColor(),
+                        store.getPrimaryDarkColor(),
+                        store.getAccentColor()
+                )).open();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             try {
                 Handler handler = new Handler(Looper.getMainLooper());
                 handler.post(progressDialog::dismiss);

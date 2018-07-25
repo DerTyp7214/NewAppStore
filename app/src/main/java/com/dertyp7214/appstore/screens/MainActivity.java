@@ -14,7 +14,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
@@ -68,7 +67,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
@@ -84,6 +82,7 @@ public class MainActivity extends Utils
     private int id = 0;
     private Random random;
     private TabLayout tabLayout;
+    private ViewPager viewPager;
     private NavigationView navView;
     private Drawable profilePic;
     private MaterialSearchBar searchBar;
@@ -150,7 +149,7 @@ public class MainActivity extends Utils
 
         navView.setNavigationItemSelectedListener(this);
 
-        ViewPager viewPager = findViewById(R.id.pager);
+        viewPager = findViewById(R.id.pager);
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
         addFragment(new FragmentAppGroups());
         addFragment(new FragmentMyApps());
@@ -480,11 +479,11 @@ public class MainActivity extends Utils
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-            Objects.requireNonNull(tabLayout.getTabAt(0)).select();
+            scrollTo(0);
         } else if (id == R.id.nav_myapps) {
-            Objects.requireNonNull(tabLayout.getTabAt(1)).select();
+            scrollTo(1);
         } else if (id == R.id.nav_about) {
-            Objects.requireNonNull(tabLayout.getTabAt(2)).select();
+            scrollTo(2);
         } else if (id == R.id.nav_modules) {
             startActivity(this, ModulesScreen.class);
         } else if (id == R.id.nav_settings) {
@@ -497,6 +496,14 @@ public class MainActivity extends Utils
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void scrollTo(int index){
+        try {
+            viewPager.setCurrentItem(index, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
