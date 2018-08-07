@@ -77,6 +77,7 @@ import static com.dertyp7214.appstore.SecretConfig.CONFIG_CLIENT_ID;
 import static com.dertyp7214.appstore.SecretConfig.CONFIG_CLIENT_ID_SANDBOX;
 import static com.dertyp7214.appstore.Utils.addAlpha;
 import static com.dertyp7214.appstore.Utils.getSettings;
+import static com.dertyp7214.appstore.Utils.manipulateColor;
 import static com.dertyp7214.appstore.Utils.setCursorColor;
 import static com.dertyp7214.appstore.Utils.tintWidget;
 
@@ -403,8 +404,8 @@ public class FragmentAbout extends MaterialAboutFragment {
                                                 null
                                         ))
                 ).setColorStyle(new ColorStyle(
-                        store.getPrimaryColor(),
-                        store.getPrimaryDarkColor(),
+                        activity.getWindow().getNavigationBarColor(),
+                        manipulateColor(activity.getWindow().getNavigationBarColor(), 0.6F),
                         store.getAccentColor()
                 )).open();
             } catch (Exception e) {

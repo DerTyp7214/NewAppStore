@@ -97,9 +97,9 @@ public class Utils extends AppCompatActivity {
         if (alphaHex.length() == 1) {
             alphaHex = "0" + alphaHex;
         }
+        if(originalColor.replace("#", "").length()>6)
+            originalColor = originalColor.replaceFirst("#..", "#");
         originalColor = originalColor.replace("#", "#" + alphaHex);
-
-
         return originalColor;
     }
 

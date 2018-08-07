@@ -13,6 +13,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -22,6 +23,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
+import android.view.Display;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -66,8 +68,13 @@ public class UserProfile extends Utils {
         FragmentUserCard fragmentUserCard =
                 (FragmentUserCard) getFragmentManager().findFragmentById(R.id.fragmentUserCard);
         fragmentUserCard.setContentView(R.layout.user_image_settings, view -> {
+            Display display = getWindowManager().getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            int width = size.x;
+            Bitmap b = Utils.drawableToBitmap(Utils.userImageHashMap.get(Config.UID(this) + "_bg"));
             relativeLayout = view.findViewById(R.id.relative);
-            relativeLayout.setBackground(Utils.userImageHashMap.get(Config.UID(this) + "_bg"));
+            relativeLayout.setBackground(new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(b, width, (int) ((float) (width/16)*9), false)));
             profileImageView = view.findViewById(R.id.user_image);
             txt_name = view.findViewById(R.id.txt_name);
             txt_mail = view.findViewById(R.id.txt_email);

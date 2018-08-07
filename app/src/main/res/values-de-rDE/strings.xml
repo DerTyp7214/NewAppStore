@@ -42,7 +42,7 @@
     <string name="text_prefs">Einstellungen</string>
     <string name="text_dark_theme">Dunkles Thema</string>
     <string name="text_donate">Spenden</string>
-    <string name="text_donate_sub">Spende mit auf PayPal</string>
+    <string name="text_donate_sub">Spende mir auf PayPal</string>
     <string name="text_root_install">Apps mit Root installieren</string>
     <string name="text_dev_mode">Dev mode</string>
     <string name="text_style">Style</string>
