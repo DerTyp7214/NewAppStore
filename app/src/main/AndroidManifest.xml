@@ -27,6 +27,7 @@
         android:supportsRtl="true"
         android:resizeableActivity="false"
         android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning,UnusedAttribute">
         <activity
             android:name=".screens.Launcher"
@@ -58,7 +59,7 @@
             android:theme="@style/AppTheme.AppScreen" />
         <activity
             android:name=".screens.SettingsScreen"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar.Swipe" />
         <activity
             android:name=".screens.RegisterActivity"
             android:label="@string/app_name"
@@ -73,6 +74,7 @@
             android:name=".screens.LogOut"
             android:label="@string/app_name"
             android:launchMode="singleTop"
+            android:theme="@style/AppTheme.Swipe"
             android:windowSoftInputMode="adjustPan" />
 
         <provider
@@ -87,7 +89,7 @@
 
         <activity
             android:name=".screens.ModulesScreen"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar.Swipe" />
         <activity android:name="io.card.payment.DataEntryActivity" />
 
         <service
@@ -122,6 +124,13 @@
         <activity
             android:name=".screens.UserProfile"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".adapter.StartActivity"
+            android:noHistory="true"
+            android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
 
         <receiver
             android:name=".components.Notifications$DownloadCancelReceiver"
@@ -130,6 +139,16 @@
                 <action android:name="Download_Cancelled" />
             </intent-filter>
         </receiver>
+
+        <service android:name=".service.MessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+
+            <meta-data
+                android:name="firebase_messaging_auto_init_enabled"
+                android:value="false" />
+        </service>
     </application>
 
 </manifest>

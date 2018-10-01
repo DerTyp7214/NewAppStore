@@ -5,25 +5,35 @@
 
 package com.dertyp7214.appstore.screens;
 
-import android.animation.*;
-import android.content.*;
-import android.content.pm.*;
-import android.graphics.*;
-import android.graphics.drawable.*;
-import android.os.*;
-import android.support.annotation.*;
-import android.support.v4.content.*;
-import android.support.v4.view.animation.*;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ShortcutInfo;
+import android.content.pm.ShortcutManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
+import android.os.Build;
+import android.os.Bundle;
 import android.text.format.DateFormat;
-import android.view.*;
-import android.view.animation.*;
-import android.widget.*;
+import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.dertyp7214.appstore.BuildConfig;
 import com.dertyp7214.appstore.Config;
 import com.dertyp7214.appstore.LocalJSON;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
+import com.dertyp7214.appstore.adapter.StartActivity;
 import com.dertyp7214.appstore.components.MVAccelerateDecelerateInterpolator;
 import com.dertyp7214.appstore.dev.Logs;
 import com.dertyp7214.appstore.fragments.FragmentAbout;
@@ -44,9 +54,12 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 
 import static com.dertyp7214.appstore.Config.API_URL;
 
@@ -147,24 +160,27 @@ public class Splashscreen extends Utils {
                 if (! BuildConfig.DEBUG) {
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1
                             && Utils
-                            .appInstalled(this, BuildConfig.APPLICATION_ID + ".debug")) {
+                            .appInstalled(this, "com.dertyp7214.appstore.debug")) {
 
-                        Intent intent = new Intent(Intent.ACTION_MAIN);
-                        intent.setClassName(
-                                BuildConfig.APPLICATION_ID + ".debug",
-                                BuildConfig.APPLICATION_ID + ".debug.screens.SplashScreen"
-                        );
+                        Intent intent = new Intent(this, StartActivity.class);
+                        intent.setAction(Intent.ACTION_MAIN);
+                        intent.putExtra("action", "startDebug");
 
                         ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
                         ShortcutInfo shortcut = new ShortcutInfo.Builder(this, "debug_store")
                                 .setShortLabel("Debug Version")
                                 .setLongLabel("Debug Version of the AppStore")
-                                .setIcon(Icon.createWithResource(this, R.drawable.ic_launcher))
+                                .setIcon(Icon.createWithResource(this, R.mipmap.ic_launcher))
                                 .setIntent(intent)
                                 .build();
 
                         assert shortcutManager != null;
-                        shortcutManager.setDynamicShortcuts(Collections.singletonList(shortcut));
+                       // shortcutManager.setDynamicShortcuts(Collections.singletonList(shortcut));
+                    } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
+                        ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
+
+                        assert shortcutManager != null;
+                        shortcutManager.removeAllDynamicShortcuts();
                     }
                 }
 

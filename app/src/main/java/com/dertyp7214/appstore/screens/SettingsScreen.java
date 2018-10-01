@@ -5,48 +5,32 @@
 
 package com.dertyp7214.appstore.screens;
 
-import android.annotation.*;
-import android.app.*;
-import android.content.*;
-import android.content.pm.*;
-import android.graphics.*;
-import android.net.*;
-import android.os.*;
-import android.support.annotation.*;
-import android.support.design.widget.*;
-import android.support.v7.widget.*;
-import android.text.*;
-import android.util.*;
-import android.view.*;
-import android.webkit.*;
-import android.widget.*;
+import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.webkit.MimeTypeMap;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.dertyp7214.appstore.BuildConfig;
 import com.dertyp7214.appstore.Config;
 import com.dertyp7214.appstore.R;
-import com.dertyp7214.appstore.SecretConfig;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.SettingsAdapter;
 import com.dertyp7214.appstore.components.InputDialog;
 import com.dertyp7214.appstore.helpers.SQLiteHandler;
-import com.dertyp7214.appstore.interfaces.MyInterface;
 import com.dertyp7214.appstore.settings.Settings;
 import com.dertyp7214.appstore.settings.SettingsColor;
 import com.dertyp7214.appstore.settings.SettingsPlaceholder;
 import com.dertyp7214.appstore.settings.SettingsSlider;
 import com.dertyp7214.appstore.settings.SettingsSwitch;
-import com.dertyp7214.githubsource.GitHubSource;
-import com.dertyp7214.githubsource.github.Repository;
-import com.dertyp7214.githubsource.helpers.ColorStyle;
 import com.nbsp.materialfilepicker.MaterialFilePicker;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
-import com.paypal.android.sdk.payments.PayPalConfiguration;
-import com.paypal.android.sdk.payments.PayPalPayment;
-import com.paypal.android.sdk.payments.PayPalService;
-import com.paypal.android.sdk.payments.PaymentActivity;
-import com.paypal.android.sdk.payments.PaymentConfirmation;
+import com.r0adkll.slidr.Slidr;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import org.json.JSONException;
@@ -54,9 +38,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -64,6 +45,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -71,7 +56,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static android.support.design.widget.BottomSheetBehavior.*;
 import static com.dertyp7214.appstore.Config.ACTIVE_OVERLAY;
 import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Config.UID;
@@ -85,10 +69,9 @@ public class SettingsScreen extends Utils {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings_screen);
+        themeStore = ThemeStore.getInstance(this);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        themeStore = ThemeStore.getInstance(this);
 
         if (! getSettings(this).getBoolean("root_install", false)) {
             Config.root = isRooted();
@@ -97,6 +80,7 @@ public class SettingsScreen extends Utils {
         }
 
         setColors();
+        Slidr.attach(this, slidrConfig);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);

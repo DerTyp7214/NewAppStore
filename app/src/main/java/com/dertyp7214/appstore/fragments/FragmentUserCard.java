@@ -7,11 +7,8 @@
 
 package com.dertyp7214.appstore.fragments;
 
-import android.os.Bundle;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.NonNull;
 import android.app.Fragment;
-import android.support.v7.widget.CardView;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +16,10 @@ import android.widget.RelativeLayout;
 
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.dev.Logs;
+
+import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 
 public class FragmentUserCard extends Fragment {
 

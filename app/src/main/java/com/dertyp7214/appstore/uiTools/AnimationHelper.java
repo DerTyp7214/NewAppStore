@@ -6,7 +6,6 @@
 package com.dertyp7214.appstore.uiTools;
 
 import android.annotation.SuppressLint;
-import android.support.v4.graphics.PathParser;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -14,6 +13,8 @@ import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.PathInterpolator;
 import android.view.animation.TranslateAnimation;
+
+import androidx.core.graphics.PathParser;
 
 public class AnimationHelper {
 

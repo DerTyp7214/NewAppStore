@@ -8,10 +8,6 @@ package com.dertyp7214.appstore.fragments;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.ColorInt;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.graphics.ColorUtils;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.LayoutInflater;
@@ -26,6 +22,11 @@ import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.items.SearchItem;
 
 import java.util.Objects;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.core.graphics.ColorUtils;
+import androidx.fragment.app.Fragment;
 
 import static com.dertyp7214.appstore.Utils.manipulateColor;
 

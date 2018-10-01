@@ -52,5 +52,4 @@
         android:textColor="@color/grey_400"
         android:textSize="14sp"
         android:transitionName="email" />
-
 </RelativeLayout>

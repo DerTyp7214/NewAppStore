@@ -14,7 +14,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.support.v4.app.NotificationCompat;
 
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.dev.Logs;
@@ -23,6 +22,8 @@ import com.dertyp7214.appstore.screens.AppScreen;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.core.app.NotificationCompat;
+
 public class Notifications {
 
     private int id;
@@ -30,18 +31,25 @@ public class Notifications {
     private boolean progress;
     private Logs logs;
     private Thread thread;
-    private Activity context;
+    private Context context;
+    private Activity activity;
     private NotificationCompat.Builder builder;
 
     private static NotificationManager notificationManager;
     private static List<Integer> ids = new ArrayList<>();
 
-    public Notifications(Activity context, int id, String title, String subTitle, String content, Bitmap icon, boolean progress) {
+    public Notifications(Activity activity, int id, String title, String subTitle, String content, Bitmap icon, boolean progress) {
+        this(((Context) activity), id, title, subTitle, content, icon, progress);
+        this.logs = Logs.getInstance(activity);
+        this.activity=activity;
+        logs.debug("NOTI", "BUILDER: " + builder);
+    }
+
+    public Notifications(Context context, int id, String title, String subTitle, String content, Bitmap icon, boolean progress) {
         this.context = context;
         this.progress = progress;
         this.max = 100;
         this.id = id;
-        this.logs = Logs.getInstance(context);
 
         if (notificationManager == null)
             notificationManager =
@@ -53,7 +61,7 @@ public class Notifications {
                 .setContentTitle(title)
                 .setContentText(content)
                 .setPriority(
-                        progress ? NotificationCompat.PRIORITY_MIN : NotificationCompat.PRIORITY_LOW)
+                        progress ? NotificationCompat.PRIORITY_MIN : NotificationCompat.PRIORITY_DEFAULT)
                 .setSubText(subTitle);
         if (progress) {
             builder.setSubText("0%");
@@ -67,7 +75,6 @@ public class Notifications {
             notificationManager.createNotificationChannel(channel);
             builder.setChannelId(groupId);
         }
-        logs.debug("NOTI", "BUILDER: " + builder);
     }
 
     private void callAction() {
@@ -77,7 +84,7 @@ public class Notifications {
         thread = new Thread(() -> {
             try {
                 Thread.sleep(300000);
-                context.runOnUiThread(this::removeNotification);
+                activity.runOnUiThread(this::removeNotification);
             } catch (InterruptedException ignored) {
             }
         });
@@ -144,13 +151,18 @@ public class Notifications {
         clearActions();
         builder.setSubText(message);
         builder.setSmallIcon(android.R.drawable.ic_menu_close_clear_cancel);
-        logs.debug("CANCEL", id + "");
+        if (activity != null)
+            logs.debug("CANCEL", id + "");
         notificationManager.notify(id, builder.build());
         callAction();
     }
 
     public void removeNotification() {
         notificationManager.cancel(id);
+    }
+
+    public void setClickEvent(PendingIntent notiUpdate) {
+        builder.setContentIntent(notiUpdate);
     }
 
     public static class DownloadCancelReceiver extends BroadcastReceiver {

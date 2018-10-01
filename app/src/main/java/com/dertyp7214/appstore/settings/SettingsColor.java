@@ -15,7 +15,7 @@ import android.view.View;
 
 import com.dertyp7214.appstore.Config;
 import com.dertyp7214.appstore.R;
-import com.dertyp7214.appstore.colorPicker.ColorPicker;
+import com.dertyp7214.module.colorpicker.ColorPicker;
 
 public class SettingsColor extends Settings {
 
@@ -54,6 +54,7 @@ public class SettingsColor extends Settings {
     public void onClick(final View colorPlate){
         if(onClickListener!=null) {
             final ColorPicker colorPicker = new ColorPicker(context);
+            colorPicker.setMinMaxBrighness(0.45F, 1F);
             colorPicker.setListener(new ColorPicker.Listener() {
                 @Override
                 public void color(int i) {
@@ -74,21 +75,16 @@ public class SettingsColor extends Settings {
                 }
 
                 @Override
-                public void updateColor(int i) {
-
-                }
-
-                @Override
                 public void cancel() {
                     colorPicker.cancel();
                 }
             });
-            colorPicker.show();
             colorPicker.setAnimationTime(300);
             if(isString)
                 colorPicker.setColor(colorString);
             else
                 colorPicker.setColor(colorInt);
+            colorPicker.show();
         }
     }
 

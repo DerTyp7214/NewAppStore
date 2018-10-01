@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "221498299322",
+    "firebase_url": "https://newappstore-35d09.firebaseio.com",
+    "project_id": "newappstore-35d09",
+    "storage_bucket": "newappstore-35d09.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:221498299322:android:27fccddffded879f",
+        "android_client_info": {
+          "package_name": "com.dertyp7214.appstore"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "221498299322-avu99koi0mbffalb2j4g92g3u84a5vrd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVqhxa0xrKtoFL90HZp3Yo3ebOHGweGRY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

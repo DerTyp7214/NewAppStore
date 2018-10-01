@@ -14,7 +14,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,6 +36,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import androidx.core.app.ActivityCompat;
 
 import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Config.UID;

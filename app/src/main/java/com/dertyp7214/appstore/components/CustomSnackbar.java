@@ -14,13 +14,13 @@ package com.dertyp7214.appstore.components;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.annotation.ColorInt;
-import android.support.design.widget.Snackbar;
 import android.view.View;
-import android.widget.TextView;
 
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
+import com.google.android.material.snackbar.Snackbar;
+
+import androidx.annotation.ColorInt;
 
 public class CustomSnackbar {
 
@@ -56,8 +56,8 @@ public class CustomSnackbar {
         View snackbarView = snackbar.getView();
         snackbarView.setBackgroundColor(backgroundColor);
         snackbar.setActionTextColor(textColor);
-        TextView textView = snackbarView.findViewById(android.support.design.R.id.snackbar_text);
-        textView.setTextColor(textColor);
+        /* TextView textView = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        textView.setTextColor(textColor); */
         return this;
     }
 

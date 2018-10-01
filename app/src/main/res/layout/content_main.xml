@@ -22,18 +22,18 @@
         android:translationZ="10dp"
         android:visibility="invisible" />
 
-    <RelativeLayout
+    <com.dertyp7214.stylelib.layouts.StyleBottomLineLayout
         android:elevation="0dp"
         android:translationZ="0dp"
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.design.widget.CoordinatorLayout
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <android.support.v4.view.ViewPager
+            <androidx.viewpager.widget.ViewPager
                 android:id="@+id/pager"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -52,6 +52,6 @@
                 android:focusable="true" />
 
             <include layout="@layout/paypal_bottom_sheet" />
-        </android.support.design.widget.CoordinatorLayout>
-    </RelativeLayout>
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </com.dertyp7214.stylelib.layouts.StyleBottomLineLayout>
 </FrameLayout>

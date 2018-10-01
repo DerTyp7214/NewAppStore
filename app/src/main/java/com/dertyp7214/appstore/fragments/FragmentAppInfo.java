@@ -7,8 +7,6 @@ package com.dertyp7214.appstore.fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +16,9 @@ import com.dertyp7214.appstore.Config;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.items.SearchItem;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 
 public class FragmentAppInfo extends Fragment {
 

@@ -18,12 +18,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
-import android.support.annotation.ColorInt;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
-import android.support.v7.graphics.Palette;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.Menu;
@@ -33,24 +27,29 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.dertyp7214.appstore.Config;
-import com.dertyp7214.appstore.components.CustomSnackbar;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.components.CustomAppBarLayout;
+import com.dertyp7214.appstore.components.CustomSnackbar;
 import com.dertyp7214.appstore.components.CustomToolbar;
 import com.dertyp7214.appstore.components.Notifications;
 import com.dertyp7214.appstore.fragments.FragmentAppInfo;
 import com.dertyp7214.appstore.fragments.FragmentChangeLogs;
 import com.dertyp7214.appstore.interfaces.MyInterface;
 import com.dertyp7214.appstore.items.SearchItem;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+
+import androidx.annotation.ColorInt;
+import androidx.fragment.app.Fragment;
+import androidx.palette.graphics.Palette;
 
 import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Config.APP_URL;
@@ -68,6 +67,8 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private FragmentChangeLogs changeLogs;
     private MenuItem shareMenu;
+
+    private static final int MENU_UNINSTALL = Menu.FIRST + 2;
 
     @SuppressLint("StaticFieldLeak")
     private static AppScreen instance;
@@ -462,6 +463,19 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        new Thread(() -> {
+            String serverVersion = getServerVersion();
+            String localVersion = getLocalVersion();
+            if (! serverVersion.equals(localVersion) && ! serverVersion.equals("0")
+                    && menu.findItem(MENU_UNINSTALL) == null)
+                runOnUiThread(
+                        () -> menu.add(0, MENU_UNINSTALL, Menu.NONE, R.string.text_uninstall));
+        }).start();
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
         getMenuInflater().inflate(R.menu.app_menu, menu);
@@ -497,6 +511,10 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         switch (id) {
             case R.id.action_share:
                 share(null);
+                break;
+            case MENU_UNINSTALL:
+                removeApp();
+                break;
         }
 
         return super.onOptionsItemSelected(item);

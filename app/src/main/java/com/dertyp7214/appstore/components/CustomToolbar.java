@@ -9,9 +9,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.ColorInt;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +19,11 @@ import com.dertyp7214.appstore.Utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import javax.annotation.Nullable;
+
+import androidx.annotation.ColorInt;
+import androidx.appcompat.widget.Toolbar;
 
 public class CustomToolbar extends Toolbar {
 

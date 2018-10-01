@@ -15,20 +15,16 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomSheetBehavior;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.danielstone.materialaboutlibrary.MaterialAboutFragment;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutTitleItem;
@@ -36,14 +32,13 @@ import com.danielstone.materialaboutlibrary.model.MaterialAboutCard;
 import com.danielstone.materialaboutlibrary.model.MaterialAboutList;
 import com.dertyp7214.appstore.BuildConfig;
 import com.dertyp7214.appstore.R;
-import com.dertyp7214.appstore.SecretConfig;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.components.ChangelogDialog;
-import com.dertyp7214.appstore.screens.SettingsScreen;
 import com.dertyp7214.githubsource.GitHubSource;
 import com.dertyp7214.githubsource.github.Repository;
 import com.dertyp7214.githubsource.helpers.ColorStyle;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.paypal.android.sdk.payments.PayPalConfiguration;
 import com.paypal.android.sdk.payments.PayPalPayment;
 import com.paypal.android.sdk.payments.PayPalService;
@@ -64,6 +59,8 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import de.psdev.licensesdialog.LicensesDialog;
 import de.psdev.licensesdialog.licenses.ApacheSoftwareLicense20;
 import de.psdev.licensesdialog.licenses.BSD2ClauseLicense;
@@ -71,8 +68,6 @@ import de.psdev.licensesdialog.licenses.MITLicense;
 import de.psdev.licensesdialog.model.Notice;
 import de.psdev.licensesdialog.model.Notices;
 
-import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
-import static android.support.design.widget.BottomSheetBehavior.STATE_HIDDEN;
 import static com.dertyp7214.appstore.SecretConfig.CONFIG_CLIENT_ID;
 import static com.dertyp7214.appstore.SecretConfig.CONFIG_CLIENT_ID_SANDBOX;
 import static com.dertyp7214.appstore.Utils.addAlpha;
@@ -80,9 +75,10 @@ import static com.dertyp7214.appstore.Utils.getSettings;
 import static com.dertyp7214.appstore.Utils.manipulateColor;
 import static com.dertyp7214.appstore.Utils.setCursorColor;
 import static com.dertyp7214.appstore.Utils.tintWidget;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
 @SuppressLint("ValidFragment")
-public class FragmentAbout extends MaterialAboutFragment {
+public class FragmentAbout extends Fragment {
 
     public static HashMap<String, HashMap<String, Object>> users = new HashMap<>();
     public BottomSheetBehavior bottomSheetBehavior;
@@ -90,8 +86,6 @@ public class FragmentAbout extends MaterialAboutFragment {
 
     private Activity activity;
 
-    private static final String CONFIG_CLIENT_ID = SecretConfig.CONFIG_CLIENT_ID;
-    private static final String CONFIG_CLIENT_ID_SANDBOX = SecretConfig.CONFIG_CLIENT_ID_SANDBOX;
     private static final String CONFIG_ENVIRONMENT =
             BuildConfig.DEBUG ? PayPalConfiguration.ENVIRONMENT_SANDBOX
                     : PayPalConfiguration.ENVIRONMENT_PRODUCTION;
@@ -135,7 +129,7 @@ public class FragmentAbout extends MaterialAboutFragment {
         backGround.setOnClickListener(v -> bottomSheetBehavior.setState(STATE_HIDDEN));
     }
 
-    @Override
+    //@Override
     protected MaterialAboutList getMaterialAboutList(Context context) {
         final Notices notices = new Notices();
         notices.addNotice(

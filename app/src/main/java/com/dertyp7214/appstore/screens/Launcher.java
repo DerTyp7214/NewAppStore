@@ -7,9 +7,10 @@ package com.dertyp7214.appstore.screens;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 
 import com.dertyp7214.appstore.R;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class Launcher extends AppCompatActivity {
 

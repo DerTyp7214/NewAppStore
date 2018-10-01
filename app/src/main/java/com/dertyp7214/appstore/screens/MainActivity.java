@@ -7,6 +7,7 @@ package com.dertyp7214.appstore.screens;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,21 +15,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.support.annotation.NonNull;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.graphics.Palette;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Pair;
@@ -57,6 +46,8 @@ import com.dertyp7214.appstore.fragments.TabFragment;
 import com.dertyp7214.appstore.helpers.SQLiteHandler;
 import com.dertyp7214.appstore.helpers.SessionManager;
 import com.dertyp7214.appstore.items.SearchItem;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -69,9 +60,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import static android.support.design.widget.BottomSheetBehavior.STATE_EXPANDED;
-import static android.support.design.widget.BottomSheetBehavior.STATE_HIDDEN;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.palette.graphics.Palette;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
+
 import static com.dertyp7214.appstore.Config.API_URL;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED;
+import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
 public class MainActivity extends Utils
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -90,6 +93,8 @@ public class MainActivity extends Utils
     private View app_bar;
     private FragmentAbout fragmentAbout;
 
+    public static int color = Color.BLACK;
+
     private List<SearchItem> appItems = new ArrayList<>();
 
     @Override
@@ -103,8 +108,11 @@ public class MainActivity extends Utils
 
         checkAppDir();
         checkForOldAppStore();
-        setNavigationBarColor(this, getWindow().getDecorView(), themeStore.getPrimaryColor(),
-                300);
+        if (Build.VERSION.SDK_INT < 28)
+            setNavigationBarColor(this, getWindow().getDecorView(), themeStore.getPrimaryColor(),
+                    300);
+        else
+            setNavigationBarColor(this, getWindow().getDecorView(), Color.WHITE, 300);
 
         drawer = findViewById(R.id.drawer_layout);
         searchBar = findViewById(R.id.searchBar);
@@ -176,8 +184,11 @@ public class MainActivity extends Utils
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 app_bar.setBackgroundColor(themeStore
                         .getPrimaryHue((int) (((float) position + positionOffset) * 36)));
-                getWindow().setNavigationBarColor(themeStore
-                        .getPrimaryHue((int) (((float) position + positionOffset) * 36)));
+                if (Build.VERSION.SDK_INT < 28)
+                    getWindow().setNavigationBarColor(themeStore
+                            .getPrimaryHue((int) (((float) position + positionOffset) * 36)));
+                color = themeStore
+                        .getPrimaryHue((int) (((float) position + positionOffset) * 36));
             }
 
             @Override
@@ -498,7 +509,7 @@ public class MainActivity extends Utils
         return true;
     }
 
-    private void scrollTo(int index){
+    private void scrollTo(int index) {
         try {
             viewPager.setCurrentItem(index, true);
         } catch (Exception e) {
@@ -533,6 +544,7 @@ public class MainActivity extends Utils
         content.setVisibility(View.INVISIBLE);
     }
 
+    @SuppressLint("WrongConstant")
     @Override
     public void onButtonClicked(int buttonCode) {
         switch (buttonCode) {

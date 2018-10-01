@@ -5,34 +5,53 @@
 
 package com.dertyp7214.appstore;
 
-import android.*;
-import android.animation.*;
+import android.Manifest;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
-import android.app.*;
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.*;
-import android.content.pm.*;
-import android.content.res.*;
-import android.graphics.*;
-import android.graphics.drawable.*;
-import android.net.*;
-import android.os.*;
-import android.support.annotation.*;
-import android.support.v4.app.*;
-import android.support.v4.content.*;
-import android.support.v4.graphics.drawable.*;
-import android.support.v7.app.*;
-import android.text.*;
-import android.util.*;
-import android.view.*;
-import android.widget.*;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Looper;
+import android.text.Html;
+import android.util.Base64;
+import android.util.Log;
+import android.view.Menu;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.dertyp7214.appstore.components.CustomAppBarLayout;
 import com.dertyp7214.appstore.components.CustomToolbar;
 import com.dertyp7214.appstore.dev.Logs;
 import com.dertyp7214.appstore.items.SearchItem;
 import com.dertyp7214.appstore.receivers.PackageUpdateReceiver;
+import com.dertyp7214.appstore.screens.MainActivity;
 import com.dertyp7214.appstore.settings.Settings;
+import com.r0adkll.slidr.model.SlidrConfig;
+import com.r0adkll.slidr.model.SlidrListener;
 
 import org.json.JSONObject;
 
@@ -47,7 +66,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.Process;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -67,6 +85,17 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.core.graphics.drawable.DrawableCompat;
+
 import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Config.UID;
 
@@ -84,9 +113,40 @@ public class Utils extends AppCompatActivity {
 
     public static HashMap<String, Drawable> userImageHashMap = new HashMap<>();
 
+    protected SlidrConfig slidrConfig;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        themeStore = ThemeStore.getInstance(this);
+        slidrConfig = new SlidrConfig.Builder()
+                .listener(new SlidrListener() {
+                    @Override
+                    public void onSlideStateChanged(int state) {
+
+                    }
+
+                    @Override
+                    public void onSlideChange(float percent) {
+                        if (Build.VERSION.SDK_INT < 28)
+                            getWindow().setNavigationBarColor(
+                                    calculateColor(themeStore.getPrimaryColor(), MainActivity.color,
+                                            100, (int) (percent * 100)));
+                    }
+
+                    @Override
+                    public void onSlideOpened() {
+
+                    }
+
+                    @Override
+                    public void onSlideClosed() {
+
+                    }
+                })
+                .primaryColor(MainActivity.color)
+                .secondaryColor(themeStore.getPrimaryDarkColor())
+                .build();
         if (PackageUpdateReceiver.activity == null)
             PackageUpdateReceiver.activity = this;
     }
@@ -97,7 +157,7 @@ public class Utils extends AppCompatActivity {
         if (alphaHex.length() == 1) {
             alphaHex = "0" + alphaHex;
         }
-        if(originalColor.replace("#", "").length()>6)
+        if (originalColor.replace("#", "").length() > 6)
             originalColor = originalColor.replaceFirst("#..", "#");
         originalColor = originalColor.replace("#", "#" + alphaHex);
         return originalColor;
@@ -137,7 +197,11 @@ public class Utils extends AppCompatActivity {
     protected void applyTheme() {
         ThemeStore themeStore = ThemeStore.getInstance(this);
         setStatusBarColor(themeStore.getPrimaryDarkColor());
-        setNavigationBarColor(this, getWindow().getDecorView(), themeStore.getPrimaryColor(), 300);
+        if (Build.VERSION.SDK_INT < 28)
+            setNavigationBarColor(this, getWindow().getDecorView(), themeStore.getPrimaryColor(),
+                    300);
+        else
+            setNavigationBarColor(this, getWindow().getDecorView(), Color.WHITE, 300);
         if (toolbar != null) {
             toolbar.setBackgroundColor(themeStore.getPrimaryColor());
             toolbar.setToolbarIconColor(themeStore.getPrimaryColor());
@@ -351,8 +415,12 @@ public class Utils extends AppCompatActivity {
             setStatusBarColor(themeStore.getPrimaryDarkColor());
             toolbar.setBackgroundColor(themeStore.getPrimaryColor());
             toolbar.setToolbarIconColor(themeStore.getPrimaryColor());
-            setNavigationBarColor(this, getWindow().getDecorView(), themeStore.getPrimaryColor(),
-                    300);
+            if (Build.VERSION.SDK_INT < 28)
+                setNavigationBarColor(this, getWindow().getDecorView(),
+                        themeStore.getPrimaryColor(),
+                        300);
+            else
+                setNavigationBarColor(this, getWindow().getDecorView(), Color.WHITE, 300);
         }
     }
 

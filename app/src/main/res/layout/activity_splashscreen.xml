@@ -38,5 +38,4 @@
         android:textAlignment="center"
         android:textColor="@color/DarkBg"
         android:textSize="12sp" />
-
 </LinearLayout>

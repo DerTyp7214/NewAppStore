@@ -6,7 +6,6 @@
 package com.dertyp7214.appstore.fragments;
 
 import android.content.Context;
-import android.support.v4.app.Fragment;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -18,6 +17,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.URL;
+
+import androidx.fragment.app.Fragment;
 
 public class TabFragment extends Fragment {
 

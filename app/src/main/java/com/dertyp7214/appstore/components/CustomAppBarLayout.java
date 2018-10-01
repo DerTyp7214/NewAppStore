@@ -6,9 +6,11 @@
 package com.dertyp7214.appstore.components;
 
 import android.content.Context;
-import android.support.annotation.ColorInt;
-import android.support.design.widget.AppBarLayout;
 import android.util.AttributeSet;
+
+import com.google.android.material.appbar.AppBarLayout;
+
+import androidx.annotation.ColorInt;
 
 
 public class CustomAppBarLayout extends AppBarLayout {
