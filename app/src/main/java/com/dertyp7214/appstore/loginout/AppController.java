@@ -17,6 +17,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.dertyp7214.appstore.receivers.PackageUpdateReceiver;
+import com.gw.swipeback.tools.WxSwipeBackActivityManager;
 
 public class AppController extends Application {
 
@@ -29,6 +30,7 @@ public class AppController extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        WxSwipeBackActivityManager.getInstance().init(this);
         mInstance = this;
 
         registerActivityLifecycleCallbacks(new ActivityLifecycleAdapter() {

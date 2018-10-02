@@ -88,7 +88,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_app_screen);
+        setContentView(R.layout.activity_app_screen, false);
         CustomToolbar toolbar = findViewById(R.id.toolbar);
         collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
         setSupportActionBar(toolbar);

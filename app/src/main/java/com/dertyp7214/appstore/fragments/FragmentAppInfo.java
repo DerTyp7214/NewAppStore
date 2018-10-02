@@ -57,5 +57,4 @@ public class FragmentAppInfo extends Fragment {
         for (int i=0;i<textView.length;i++)
             textView[i].setText(text[i]);
     }
-
 }

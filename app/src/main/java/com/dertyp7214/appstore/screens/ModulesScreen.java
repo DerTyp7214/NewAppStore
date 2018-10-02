@@ -14,7 +14,6 @@ import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
 import com.dertyp7214.appstore.adapter.ModuleAdapter;
 import com.dertyp7214.appstore.items.ModuleItem;
-import com.r0adkll.slidr.Slidr;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +41,6 @@ public class ModulesScreen extends Utils {
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         applyTheme();
-        Slidr.attach(this, slidrConfig);
 
         adapter = new ModuleAdapter(modules);
         recyclerView = findViewById(R.id.rv);

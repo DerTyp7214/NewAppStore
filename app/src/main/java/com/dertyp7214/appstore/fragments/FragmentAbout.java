@@ -25,6 +25,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.danielstone.materialaboutlibrary.MaterialAboutFragment;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutActionItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutItem;
 import com.danielstone.materialaboutlibrary.items.MaterialAboutTitleItem;
@@ -60,7 +61,6 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import de.psdev.licensesdialog.LicensesDialog;
 import de.psdev.licensesdialog.licenses.ApacheSoftwareLicense20;
 import de.psdev.licensesdialog.licenses.BSD2ClauseLicense;
@@ -78,7 +78,7 @@ import static com.dertyp7214.appstore.Utils.tintWidget;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
 @SuppressLint("ValidFragment")
-public class FragmentAbout extends Fragment {
+public class FragmentAbout extends MaterialAboutFragment {
 
     public static HashMap<String, HashMap<String, Object>> users = new HashMap<>();
     public BottomSheetBehavior bottomSheetBehavior;
@@ -129,7 +129,7 @@ public class FragmentAbout extends Fragment {
         backGround.setOnClickListener(v -> bottomSheetBehavior.setState(STATE_HIDDEN));
     }
 
-    //@Override
+    @Override
     protected MaterialAboutList getMaterialAboutList(Context context) {
         final Notices notices = new Notices();
         notices.addNotice(

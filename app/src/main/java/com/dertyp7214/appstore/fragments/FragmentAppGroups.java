@@ -45,11 +45,6 @@ import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Utils.getSettings;
 import static com.dertyp7214.appstore.Utils.getWebContent;
 
-/**
- * Created by Anu on 22/04/17.
- */
-
-
 @SuppressLint("ValidFragment")
 public class FragmentAppGroups extends TabFragment {
 

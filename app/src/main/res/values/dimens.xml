@@ -9,4 +9,13 @@
     <dimen name="text_margin">16dp</dimen>
     <dimen name="list_item_spacing">16dp</dimen>
     <dimen name="list_item_spacing_half">8dp</dimen>
+
+    <dimen name="mal_baseline">16dp</dimen>
+    <dimen name="mal_baseline_half">8dp</dimen>
+    <dimen name="mal_baseline_quarter">4dp</dimen>
+    <dimen name="mal_action_item_image_width">24dp</dimen>
+    <dimen name="mal_action_action_item_image_height">32dp</dimen>
+    <dimen name="mal_title_item_image_size">40dp</dimen>
+    <dimen name="mal_card_radius">2dp</dimen>
+    <dimen name="mal_card_elevation">2dp</dimen>
 </resources>

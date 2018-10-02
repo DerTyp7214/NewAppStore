@@ -122,4 +122,11 @@
     <string name="text_error_data">Fehler beim Laden der Daten!</string>
     <string name="text_changes">"Änderungen "</string>
     <string name="text_project_github">Projekt auf GitHub</string>
+
+    <string name="mal_title_about">Über</string>
+    <string name="mal_title_licenses">Lizenzen</string>
+    <string name="mal_close">Schließen</string>
+    <string name="mal_send_email">E-Mail senden</string>
+    <string name="mal_activity_exception">Keine Apps um Aktion durchzuführen</string>
+    <string name="pay_with_paypal">Bezahle Josua mit PayPal</string>
 </resources>

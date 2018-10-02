@@ -30,7 +30,6 @@ import com.dertyp7214.appstore.settings.SettingsSlider;
 import com.dertyp7214.appstore.settings.SettingsSwitch;
 import com.nbsp.materialfilepicker.MaterialFilePicker;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
-import com.r0adkll.slidr.Slidr;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import org.json.JSONException;
@@ -80,7 +79,6 @@ public class SettingsScreen extends Utils {
         }
 
         setColors();
-        Slidr.attach(this, slidrConfig);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);

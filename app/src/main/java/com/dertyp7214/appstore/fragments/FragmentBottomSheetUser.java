@@ -26,7 +26,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class FragmentBottomSheetUser extends BottomSheetDialogFragment {
 
-
     private static final String ARG_ITEM_COUNT = "item_count";
     private Listener mListener;
 

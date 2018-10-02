@@ -191,4 +191,11 @@
     <string name="text_error_data">"¡Error al cargar datos! "</string>
     <string name="text_changes">"Cambios "</string>
     <string name="text_project_github">"Proyecto en GitHub "</string>
+
+    <string name="mal_title_about">Acerca de</string>
+    <string name="mal_title_licenses">Licencias</string>
+    <string name="mal_close">Cerrar</string>
+    <string name="mal_send_email">Enviar email</string>  
+    <string name="mal_activity_exception">No hay apps para ejecutar esta acción</string>
+    <string name="pay_with_paypal">Pagar a Josua con PayPal</string>
 </resources>

@@ -50,6 +50,8 @@ import com.dertyp7214.appstore.items.SearchItem;
 import com.dertyp7214.appstore.receivers.PackageUpdateReceiver;
 import com.dertyp7214.appstore.screens.MainActivity;
 import com.dertyp7214.appstore.settings.Settings;
+import com.gw.swipeback.SwipeBackLayout;
+import com.gw.swipeback.WxSwipeBackLayout;
 import com.r0adkll.slidr.model.SlidrConfig;
 import com.r0adkll.slidr.model.SlidrListener;
 
@@ -114,6 +116,20 @@ public class Utils extends AppCompatActivity {
     public static HashMap<String, Drawable> userImageHashMap = new HashMap<>();
 
     protected SlidrConfig slidrConfig;
+
+    public void setContentView(int layoutResID, boolean swipe) {
+        super.setContentView(layoutResID);
+        if (swipe) {
+            WxSwipeBackLayout wxSwipeBackLayout = new WxSwipeBackLayout(this);
+            wxSwipeBackLayout.setDirectionMode(SwipeBackLayout.FROM_LEFT);
+            wxSwipeBackLayout.attachToActivity(this);
+        }
+    }
+
+    @Override
+    public void setContentView(int layoutResID) {
+        setContentView(layoutResID, true);
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {

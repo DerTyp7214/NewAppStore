@@ -9,7 +9,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
-        versionName "4.1"
+        versionName "4.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -43,8 +43,10 @@ def ver = '1.0.0'
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation(name: 'colorlib', ext: 'aar')
-    implementation(name: 'GitHubSource', ext: 'aar')
+    implementation(name: 'github-source', ext: 'aar')
     implementation(name: 'stylelib-release', ext: 'aar')
+    //implementation(name: 'materialAbout', ext: 'aar')
+    //implementation 'com.github.daniel-stoneuk:material-about-library:2.3.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
@@ -57,9 +59,9 @@ dependencies {
     implementation "androidx.mediarouter:mediarouter:$ver"
     implementation "androidx.palette:palette:$ver"
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'com.gongwen:swipeback:1.0.2'
     implementation 'com.scottyab:rootbeer-lib:0.0.7'
     implementation 'com.makeramen:roundedimageview:2.3.0'
-    implementation 'com.github.daniel-stoneuk:material-about-library:2.3.0'
     implementation 'com.readystatesoftware.systembartint:systembartint:1.0.4'
     implementation 'com.paypal.sdk:paypal-android-sdk:2.16.0'
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
