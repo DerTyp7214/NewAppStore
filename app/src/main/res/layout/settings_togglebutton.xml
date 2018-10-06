@@ -14,7 +14,7 @@
     android:paddingRight="20dp"
     android:paddingBottom="7dp">
 
-    <Switch
+    <com.dertyp7214.themeablecomponents.components.ThemeableSwitch
         android:id="@+id/text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

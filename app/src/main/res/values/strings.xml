@@ -8,7 +8,7 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_subtitle" translatable="false">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
     <string name="search">Search</string>
@@ -21,7 +21,7 @@
     <string name="title_dashboard">Settings</string>
     <string name="title_notifications">Notifications</string>
     <string name="text_version">Version</string>
-    <string name="text_search_at_start">Show Googleapps on start</string>
+    <string name="text_search_at_start">Show Google Apps on start</string>
     <string name="text_colored_navbar">Colored Navigationbar</string>
     <string name="text_swipe_snackbar">removed from notifications!</string>
     <string name="text_blur_dialog">blur Dialog</string>
@@ -33,7 +33,7 @@
     <string name="text_not_set">Not set</string>
     <string name="text_github">DerTyp7214 on GitHub</string>
     <string name="text_googleplus">Josua Lengwenath on Google+</string>
-    <string name="text_sourcecode">App Scourcecode on GitHub</string>
+    <string name="text_sourcecode">App Source Code on GitHub</string>
     <string name="text_appdetails">App Details</string>
     <string name="text_social">Social</string>
     <string name="text_prefs">Preferences</string>
@@ -80,7 +80,7 @@
     </string>
 
     <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
+    <string name="pref_default_display_name" translatable="false">John Smith</string>
 
     <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
     <string-array name="pref_example_list_titles">
@@ -140,26 +140,26 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
-    <string name="askForUninstallOldAppstore">Dont ask me to remove the old AppStore</string>
+    <string name="askForUninstallOldAppstore">Don\'t ask me to remove the old AppStore</string>
     <string name="text_pay">Pay</string>
     <string name="text_amount">Amount</string>
     <string name="payment_lang">USD</string>
     <string name="text_pay_amount">Donate %s</string>
-    <string name="text_pay_content">Do you want do Donate?</string>
+    <string name="text_pay_content">Do you want to Donate?</string>
     <string name="currency">$</string>
     <string name="text_build_type">Build Type</string>
     <string name="text_loading">Loading</string>
     <string name="text_can_not_check">Can not check for Update</string>
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
-    <string name="hint_name">Fullname</string>
+    <string name="hint_name">Full Name</string>
     <string name="btn_login">LOGIN</string>
     <string name="btn_register">REGISTER</string>
     <string name="btn_link_to_register">Not a member? Sign up now.</string>
-    <string name="btn_link_to_login">Already registred! Login Me.</string>
+    <string name="btn_link_to_login">Already registered! Log me in.</string>
     <string name="welcome">Welcome</string>
     <string name="btn_logout">LOGOUT</string>
-    <string name="name">Fullname</string>
+    <string name="name">Full Name</string>
     <string name="bye">Bye</string>
     <string name="pref_name">Account Details</string>
     <string name="key_pref_name">pref_name</string>
@@ -169,7 +169,7 @@
     <string name="text_logout">Logout</string>
     <string name="text_settings">Settings</string>
     <string name="text_modules">Modules</string>
-    <string name="text_change_profile_pic">Change Profilepicture</string>
+    <string name="text_change_profile_pic">Change Profile Picture</string>
     <string name="text_user_preferences">Usersettings</string>
     <string name="splash_checkLogin">checking if user is logged in</string>
     <string name="splash_getUserData">get userdata</string>
@@ -178,20 +178,20 @@
     <string name="splash_writePreferences">writing preferences (%s)</string>
     <string name="splash_finished">finished</string>
     <string name="splash_applying">applying changes</string>
-    <string name="text_hide_icon">Hide Appicon</string>
+    <string name="text_hide_icon">Hide App Icon</string>
     <string name="text_debug">Debug</string>
-    <string name="search_bar_radius">SearchBar Radius</string>
+    <string name="search_bar_radius">Search Bar Radius</string>
     <string name="language_model">en-US</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="text_profile_of">Profile of: %s</string>
     <string name="text_libraries">Libraries</string>
-    <string name="text_main_author">Main Author</string>
+    <string name="text_main_author">Lead developer</string>
     <string name="text_licenses">Licenses</string>
     <string name="text_josua_lengwenath" translatable="false">Josua Lengwenath</string>
     <string name="text_dertyp7214" translatable="false">DerTyp7214</string>
-    <string name="text_authors">Authors</string>
+    <string name="text_authors">developer</string>
     <string name="text_translators">Translators</string>
     <string name="text_spainish">Spanish</string>
     <string name="text_enol_simon" translatable="false">enoler</string>
@@ -202,7 +202,7 @@
     <string name="text_changes">Changes</string>
     <string name="text_project_github">Project on GitHub</string>
     <string name="url_github_project" translatable="false">https://github.com/DerTyp7214/NewAppStore</string>
-    <string name="text_change_bg_pic">Change Backgroundimage</string>
+    <string name="text_change_bg_pic">Change wallpaper</string>
 
     <string name="mal_title_about">About</string>
     <string name="mal_title_licenses">Licenses</string>
@@ -294,4 +294,11 @@
     "either expressed or implied, of the FreeBSD Project.\n"
     </string>
     <string name="pay_with_paypal">Pay to Josua with PayPal</string>
+    <string name="text_rainbow_mode">Rainbow Mode</string>
+    <string name="text_disable_easter_egg">Disable Easter Egg</string>
+    <string name="text_steps_to_easter_egg">steps to enable the Easter Egg</string>
+    <string name="text_easteregg_enabled">Easter Egg enabled</string>
+    <string name="text_czech">Czech</string>
+    <string name="text_ukrainian">Ukrainian</string>
+    <string name="text_turkish">Turkish</string>
 </resources>

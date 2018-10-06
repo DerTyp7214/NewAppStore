@@ -45,6 +45,7 @@ import com.paypal.android.sdk.payments.PayPalPayment;
 import com.paypal.android.sdk.payments.PayPalService;
 import com.paypal.android.sdk.payments.PaymentActivity;
 import com.paypal.android.sdk.payments.PaymentConfirmation;
+import com.shashank.sony.fancytoastlib.FancyToast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -74,23 +75,22 @@ import static com.dertyp7214.appstore.Utils.addAlpha;
 import static com.dertyp7214.appstore.Utils.getSettings;
 import static com.dertyp7214.appstore.Utils.manipulateColor;
 import static com.dertyp7214.appstore.Utils.setCursorColor;
+import static com.dertyp7214.appstore.Utils.sleep;
 import static com.dertyp7214.appstore.Utils.tintWidget;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
 @SuppressLint("ValidFragment")
 public class FragmentAbout extends MaterialAboutFragment {
 
-    public static HashMap<String, HashMap<String, Object>> users = new HashMap<>();
-    public BottomSheetBehavior bottomSheetBehavior;
-    private boolean setUp = false;
-
-    private Activity activity;
-
     private static final String CONFIG_ENVIRONMENT =
             BuildConfig.DEBUG ? PayPalConfiguration.ENVIRONMENT_SANDBOX
                     : PayPalConfiguration.ENVIRONMENT_PRODUCTION;
-
     private static final int REQUEST_CODE_PAYMENT = 1;
+    public static HashMap<String, HashMap<String, Object>> users = new HashMap<>();
+    public BottomSheetBehavior bottomSheetBehavior;
+    private boolean setUp = false;
+    private int counter = 0;
+    private Activity activity;
 
     public FragmentAbout(Activity activity) {
         this.activity = activity;
@@ -239,7 +239,9 @@ public class FragmentAbout extends MaterialAboutFragment {
         MaterialAboutCard translators = new MaterialAboutCard.Builder()
                 .title(R.string.text_translators)
                 .addItem(translator(
-                        getString(R.string.text_english) + ", " + getString(R.string.text_german),
+                        getString(R.string.text_english) + ", " + getString(R.string.text_german)
+                                + ", " + getString(R.string.text_ukrainian) + ", " + getString(
+                                R.string.text_czech) + ", " + getString(R.string.text_turkish),
                         getString(R.string.text_dertyp7214),
                         context))
                 .addItem(translator(getString(R.string.text_spainish),
@@ -256,6 +258,29 @@ public class FragmentAbout extends MaterialAboutFragment {
                         .icon(R.drawable.ic_info_outline_black)
                         .text(R.string.text_version)
                         .subText(BuildConfig.VERSION_NAME)
+                        .setOnClickAction(() -> {
+                            if (! getSettings(activity).getBoolean("easter_egg", false)) {
+                                new Thread(() -> {
+                                    sleep(5000);
+                                    counter = 0;
+                                }).start();
+                                counter++;
+                                if (counter >= 5 && counter < 8)
+                                    FancyToast.makeText(context,
+                                            8 - counter + " " + getString(
+                                                    R.string.text_steps_to_easter_egg),
+                                            FancyToast.LENGTH_LONG, FancyToast.INFO, false)
+                                            .show();
+                                if (counter == 8) {
+                                    getSettings(activity).edit().putBoolean("easter_egg", true)
+                                            .apply();
+                                    FancyToast.makeText(context,
+                                            getString(R.string.text_easteregg_enabled),
+                                            FancyToast.LENGTH_LONG, FancyToast.INFO, false)
+                                            .show();
+                                }
+                            }
+                        })
                         .build())
                 .addItem(new MaterialAboutActionItem.Builder()
                         .icon(R.drawable.ic_build_black_24dp)

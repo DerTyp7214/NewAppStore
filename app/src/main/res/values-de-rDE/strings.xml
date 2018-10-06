@@ -11,7 +11,6 @@
     <string name="navigation_drawer_open">Navigationsleiste öffnen</string>
     <string name="navigation_drawer_close">Navigationsleiste schließen</string>
     <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigationsheader</string>
     <string name="action_settings">Einstellungen</string>
     <string name="search">Suchen</string>
@@ -36,7 +35,7 @@
     <string name="text_not_set">Nicht gesetzt</string>
     <string name="text_github">DerTyp7214 auf GitHub</string>
     <string name="text_googleplus">Josua Lengwenath auf Google+</string>
-    <string name="text_sourcecode">App Scourcecode auf GitHub</string>
+    <string name="text_sourcecode">App-Quellcode auf GitHub</string>
     <string name="text_appdetails">App Details</string>
     <string name="text_social">Social</string>
     <string name="text_prefs">Einstellungen</string>
@@ -109,7 +108,7 @@
     <string name="splash_applying">übernehme änderungen</string>
     <string name="text_hide_icon">Verstecke Appicon</string>
     <string name="text_debug">Debug</string>
-    <string name="search_bar_radius">SearchBar Radius</string>
+    <string name="search_bar_radius">Suchbalkenradius</string>
     <string name="text_profile_of">Profil con: %s</string>
     <string name="text_libraries">Bibliotheken</string>
     <string name="text_main_author">Hauptentwickler</string>
@@ -129,4 +128,25 @@
     <string name="mal_send_email">E-Mail senden</string>
     <string name="mal_activity_exception">Keine Apps um Aktion durchzuführen</string>
     <string name="pay_with_paypal">Bezahle Josua mit PayPal</string>
+    <string name="text_rainbow_mode">Regenbogen Modus</string>
+    <string name="text_disable_easter_egg">Easter Egg deaktivieren</string>
+    <string name="text_steps_to_easter_egg">stufen um das Easter Egg zu aktivieren</string>
+    <string name="text_easteregg_enabled">Easter Egg aktiviert</string>
+    <string name="text_change_bg_pic">Ändern Sie das Hintergrundbild</string>
+    <string name="text_pay">Zahlen</string>
+    <string name="askForUninstallOldAppstore">Frag mich nicht, den alten AppStore zu entfernen</string>
+    <string name="pref_title_vibrate">Vibrate</string>
+    <string name="pref_ringtone_silent">Leise</string>
+    <string name="pref_title_ringtone">Klingelton</string>
+    <string name="pref_title_new_message_notifications">Neue Nachrichtenbenachrichtigungen</string>
+    <string name="pref_title_system_sync_settings">System-Synchronisierungseinstellungen</string>
+    <string name="pref_title_sync_frequency">Synchronisierungsfrequenz</string>
+    <string name="pref_header_data_sync">Daten &amp; synchronisieren</string>
+    <string name="pref_title_add_friends_to_messages">Fügen Sie Freunden Nachrichten hinzu</string>
+    <string name="pref_description_social_recommendations">Empfehlungen für Kontaktpersonen          basierend auf Ihrem Nachrichtenverlauf</string>
+    <string name="pref_title_social_recommendations">Aktiviere soziale Empfehlungen</string>
+    <string name="pref_title_display_name">Anzeigename</string>
+    <string name="text_czech">Tschechisch</string>
+    <string name="text_ukrainian">ukrainisch</string>
+    <string name="text_turkish">Türkisch</string>
 </resources>

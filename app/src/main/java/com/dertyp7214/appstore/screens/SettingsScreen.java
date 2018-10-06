@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
@@ -28,6 +29,7 @@ import com.dertyp7214.appstore.settings.SettingsColor;
 import com.dertyp7214.appstore.settings.SettingsPlaceholder;
 import com.dertyp7214.appstore.settings.SettingsSlider;
 import com.dertyp7214.appstore.settings.SettingsSwitch;
+import com.dertyp7214.themeablecomponents.utils.ThemeManager;
 import com.nbsp.materialfilepicker.MaterialFilePicker;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -78,6 +80,8 @@ public class SettingsScreen extends Utils {
             Config.root = true;
         }
 
+        setSwipeBackCallback(this::syncPreferencesToServer);
+
         setColors();
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
@@ -94,6 +98,8 @@ public class SettingsScreen extends Utils {
                 settingList.getContext(), layoutManager.getOrientation());
         settingList.addItemDecoration(dividerItemDecoration);
 
+        ThemeManager.attach(this,
+                (themeManager) -> themeManager.changeTheme(themeStore.getAccentColor()));
     }
 
     @Override
@@ -237,19 +243,41 @@ public class SettingsScreen extends Utils {
             ).addSettingsOnClick((name, Color, settingsColor) -> {
                 settingsColor.saveSetting();
                 setColors();
+                themeManager.changeTheme(themeStore.getAccentColor());
             }));
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            settingsList.add(new SettingsSwitch(
+                    "colored_nav_bar", getString(R.string.text_colored_navbar), this,
+                    getSettings(this).getBoolean("colored_nav_bar", false)
+            ).setCheckedChangeListener(value -> {
+                getSettings(SettingsScreen.this).edit().putBoolean("colored_nav_bar", value)
+                        .apply();
+                setNavigationBarColor(
+                        this, getWindow().getDecorView(),
+                        ThemeStore.getInstance(this).getPrimaryColor(), 300
+                );
+            }));
+        }
+        if (getSettings(this).getBoolean("easter_egg", false)) {
+            settingsList.addAll(Arrays.asList(
+                    new SettingsSwitch(
+                            "rainbow_mode", getString(R.string.text_rainbow_mode), this,
+                            getSettings(this).getBoolean("rainbow_mode", false)
+                    ).setCheckedChangeListener(value -> {
+                        getSettings(SettingsScreen.this).edit().putBoolean("rainbow_mode", value)
+                                .apply();
+                        toggleRainBow(value, this);
+                    }),
+                    new Settings("disable_easter_egg",
+                            getString(R.string.text_disable_easter_egg), this)
+                            .addSettingsOnClick(
+                                    (name, setting, subTitle, imageRight) -> getSettings(this)
+                                            .edit().putBoolean("easter_egg", false)
+                                            .putBoolean("rainbow_mode", false).apply())
+                    )
+            );
+        }
         settingsList.addAll(new ArrayList<>(Arrays.asList(
-                new SettingsSwitch(
-                        "colored_nav_bar", getString(R.string.text_colored_navbar), this,
-                        getSettings(this).getBoolean("colored_nav_bar", false)
-                ).setCheckedChangeListener(value -> {
-                    getSettings(SettingsScreen.this).edit().putBoolean("colored_nav_bar", value)
-                            .apply();
-                    setNavigationBarColor(
-                            this, getWindow().getDecorView(),
-                            ThemeStore.getInstance(this).getPrimaryColor(), 300
-                    );
-                }),
                 new SettingsSlider("search_bar_radius", getString(R.string.search_bar_radius),
                         this),
                 new SettingsPlaceholder(

@@ -50,10 +50,10 @@ import com.dertyp7214.appstore.items.SearchItem;
 import com.dertyp7214.appstore.receivers.PackageUpdateReceiver;
 import com.dertyp7214.appstore.screens.MainActivity;
 import com.dertyp7214.appstore.settings.Settings;
+import com.dertyp7214.themeablecomponents.utils.ThemeManager;
 import com.gw.swipeback.SwipeBackLayout;
 import com.gw.swipeback.WxSwipeBackLayout;
-import com.r0adkll.slidr.model.SlidrConfig;
-import com.r0adkll.slidr.model.SlidrListener;
+import com.gw.swipeback.tools.Util;
 
 import org.json.JSONObject;
 
@@ -104,67 +104,24 @@ import static com.dertyp7214.appstore.Config.UID;
 @SuppressLint("Registered")
 public class Utils extends AppCompatActivity {
 
+    public final static String COLORED_NAVIGATIONBAR = "colored_nav_bar";
     protected static final String PACKAGE_NAME = "com.dertyp7214.appstore";
+    public static HashMap<String, Drawable> userImageHashMap = new HashMap<>();
+    public static HashMap<String, SearchItem> appsList = new HashMap<>();
+    public static SearchItem currentApp;
+    private static HashMap<String, Drawable> icons = new HashMap<>();
+    private static Thread rainbow;
+    public Logs logs;
+    public CustomToolbar toolbar;
     protected int PERMISSIONS = 10;
     protected String oldAppPackageName = "com.hacker.appstore";
-    private static HashMap<String, Drawable> icons = new HashMap<>();
     protected ThemeStore themeStore;
-    public Logs logs;
+    protected ThemeManager themeManager;
+    private int statusColor = - 1;
+    private Callback callback;
 
-    public CustomToolbar toolbar;
-
-    public static HashMap<String, Drawable> userImageHashMap = new HashMap<>();
-
-    protected SlidrConfig slidrConfig;
-
-    public void setContentView(int layoutResID, boolean swipe) {
-        super.setContentView(layoutResID);
-        if (swipe) {
-            WxSwipeBackLayout wxSwipeBackLayout = new WxSwipeBackLayout(this);
-            wxSwipeBackLayout.setDirectionMode(SwipeBackLayout.FROM_LEFT);
-            wxSwipeBackLayout.attachToActivity(this);
-        }
-    }
-
-    @Override
-    public void setContentView(int layoutResID) {
-        setContentView(layoutResID, true);
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        themeStore = ThemeStore.getInstance(this);
-        slidrConfig = new SlidrConfig.Builder()
-                .listener(new SlidrListener() {
-                    @Override
-                    public void onSlideStateChanged(int state) {
-
-                    }
-
-                    @Override
-                    public void onSlideChange(float percent) {
-                        if (Build.VERSION.SDK_INT < 28)
-                            getWindow().setNavigationBarColor(
-                                    calculateColor(themeStore.getPrimaryColor(), MainActivity.color,
-                                            100, (int) (percent * 100)));
-                    }
-
-                    @Override
-                    public void onSlideOpened() {
-
-                    }
-
-                    @Override
-                    public void onSlideClosed() {
-
-                    }
-                })
-                .primaryColor(MainActivity.color)
-                .secondaryColor(themeStore.getPrimaryDarkColor())
-                .build();
-        if (PackageUpdateReceiver.activity == null)
-            PackageUpdateReceiver.activity = this;
+    public static String colorToString(@ColorInt int intColor) {
+        return String.format("#%06X", (0xFFFFFF & intColor));
     }
 
     public static String addAlpha(String originalColor, double alpha) {
@@ -208,6 +165,472 @@ public class Utils extends AppCompatActivity {
             field.set(editor, drawables);
         } catch (Exception ignored) {
         }
+    }
+
+    public static void removeMyApp(String packageName, Context context) {
+        getWebContent(Config.API_URL + "/apps/myapps.php?uid=" + Config
+                .UID(context) + "&remove=" + packageName);
+    }
+
+    public static List<ApplicationInfo> getInstalledApps(@NonNull Context context) {
+        final PackageManager pm = context.getPackageManager();
+        return pm.getInstalledApplications(PackageManager.GET_META_DATA);
+    }
+
+    public static ApplicationInfo getApplicationInfo(Context context, String packageName) {
+        ApplicationInfo info = null;
+        try {
+            info = context.getPackageManager().getApplicationInfo(packageName, 0);
+        } catch (Exception ignored) {
+        }
+        return info;
+    }
+
+    public static String encodeToBase64(Drawable drawable) {
+        Bitmap image = drawableToBitmap(drawable);
+        ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOS);
+        return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
+    }
+
+    public static Drawable decodeBase64(Context context, String input) {
+        byte[] decodedBytes = Base64.decode(input, 0);
+        return new BitmapDrawable(
+                context.getResources(), BitmapFactory
+                .decodeByteArray(decodedBytes, 0, decodedBytes.length));
+    }
+
+    public static SharedPreferences getSettings(@NonNull Context context) {
+        return context.getSharedPreferences("settings_" + Config.UID(context), MODE_PRIVATE);
+    }
+
+    public static void setSettings(@NonNull Context context, @NonNull SharedPreferences settings) {
+        Map<String, ?> objectMap = settings.getAll();
+        SharedPreferences.Editor prefs = getSettings(context).edit();
+        for (String key : objectMap.keySet()) {
+            Object obj = objectMap.get(key);
+            if (obj instanceof Float)
+                prefs.putFloat(key, (float) obj);
+            else if (obj instanceof String)
+                prefs.putString(key, (String) obj);
+            else if (obj instanceof Boolean)
+                prefs.putBoolean(key, (boolean) obj);
+            else if (obj instanceof Integer)
+                prefs.putInt(key, (int) obj);
+            else if (obj instanceof Long)
+                prefs.putLong(key, (long) obj);
+            else if (obj instanceof Set)
+                prefs.putStringSet(key, (Set<String>) obj);
+        }
+        prefs.apply();
+    }
+
+    public static void setNavigationBarColor(Activity activity, View view, @ColorInt int color, int duration) {
+        if ((getSettings(activity).getBoolean(COLORED_NAVIGATIONBAR,
+                false
+        ) || Build.VERSION.SDK_INT < Build.VERSION_CODES.P)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && view != null) {
+            Window window = activity.getWindow();
+            ValueAnimator animator = ValueAnimator
+                    .ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), color);
+            animator.setDuration(duration);
+            animator.addUpdateListener(animation -> {
+                int c = (int) animation.getAnimatedValue();
+                if (isColorBright(c) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                else
+                    view.setSystemUiVisibility(View.VISIBLE);
+                window.setNavigationBarColor(c);
+            });
+            animator.start();
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && view != null) {
+            Window window = activity.getWindow();
+            ValueAnimator animator = ValueAnimator
+                    .ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), Color.BLACK);
+            animator.setDuration(duration);
+            animator.addUpdateListener(animation -> {
+                int c = (int) animation.getAnimatedValue();
+                if (isColorBright(c) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                else
+                    view.setSystemUiVisibility(View.VISIBLE);
+                window.setNavigationBarColor(c);
+            });
+            animator.start();
+        }
+    }
+
+    public static void setStatusBarColor(Activity activity, View view, @ColorInt int color, int duration) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Window window = activity.getWindow();
+            ValueAnimator animator = ValueAnimator
+                    .ofObject(new ArgbEvaluator(), window.getStatusBarColor(), color);
+            animator.setDuration(duration);
+            animator.addUpdateListener(animation -> {
+                int c = (int) animation.getAnimatedValue();
+                if (isColorBright(c))
+                    view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                else
+                    view.setSystemUiVisibility(View.VISIBLE);
+                window.setStatusBarColor(c);
+            });
+            animator.start();
+        }
+    }
+
+    public static boolean isColorBright(int color) {
+        double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color
+                .blue(color)) / 255;
+        return darkness < 0.5;
+    }
+
+    public static int getDominantColor(Drawable drawable) {
+        Bitmap newBitmap = Bitmap.createScaledBitmap(drawableToBitmap(drawable), 1, 1, true);
+        final int color = newBitmap.getPixel(0, 0);
+        newBitmap.recycle();
+        return color;
+    }
+
+    public static int manipulateColor(int color, float factor) {
+        int a = Color.alpha(color);
+        int r = Math.round(Color.red(color) * factor);
+        int g = Math.round(Color.green(color) * factor);
+        int b = Math.round(Color.blue(color) * factor);
+        return Color.argb(
+                a,
+                Math.min(r, 255),
+                Math.min(g, 255),
+                Math.min(b, 255)
+        );
+    }
+
+    public static Bitmap drawableToBitmap(Drawable drawable) {
+        Bitmap bitmap = null;
+
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            if (bitmapDrawable.getBitmap() != null) {
+                return bitmapDrawable.getBitmap();
+            }
+        }
+
+        if (drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1,
+                    Bitmap.Config.ARGB_8888
+            ); // Single color bitmap will be created of 1x1 pixel
+        } else {
+            bitmap = Bitmap
+                    .createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(),
+                            Bitmap.Config.ARGB_8888
+                    );
+        }
+
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
+    public static String getWebContent(String url) {
+        try {
+            URL web = new URL(url);
+            BufferedReader in = new BufferedReader(new InputStreamReader(web.openStream()));
+
+            String inputLine;
+            StringBuilder ret = new StringBuilder();
+
+            while ((inputLine = in.readLine()) != null)
+                ret.append(inputLine);
+
+            in.close();
+            return ret.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static File getWebContent(String url, File path, int id, Listener listener) {
+        try {
+            URL fileurl = new URL(url);
+            URLConnection urlConnection = fileurl.openConnection();
+            urlConnection.connect();
+
+            InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream(), 8192);
+
+            if (! path.exists())
+                path.mkdirs();
+
+            File downloadedFile = new File(path, "download_app_" + id + ".apk");
+
+            OutputStream outputStream = new FileOutputStream(downloadedFile);
+
+            byte[] buffer = new byte[8192];
+
+            int last = 0;
+            long fileSize = urlConnection.getContentLength();
+            long read;
+            long total = 0;
+
+            listener.run(0);
+
+            while ((read = inputStream.read(buffer)) != - 1) {
+                int tmp = (int) (total * 100 / fileSize);
+                total += read;
+                if (fileSize > 0 && tmp > last + 2) {
+                    last = tmp;
+                    listener.run(tmp);
+                }
+                outputStream.write(buffer, 0, (int) read);
+            }
+
+            listener.run(100);
+
+            outputStream.flush();
+            outputStream.close();
+            inputStream.close();
+            return downloadedFile;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void executeCommand(Activity activity, String cmds) {
+        Logs logs = new Logs(activity);
+        logs.info("COMMAND", cmds);
+        try {
+            Process process = Runtime.getRuntime().exec("su");
+            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+
+            os.writeBytes(cmds + "\n");
+
+            os.writeBytes("exit\n");
+            os.flush();
+            os.close();
+
+            process.waitFor();
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static boolean appInstalled(Activity context, String uri) {
+        return applicationInstalled(context, uri) && ! verifyInstallerId(context, uri);
+    }
+
+    public static boolean verifyInstallerId(Activity context, String packageName) {
+        try {
+            List<String> validInstallers = new ArrayList<>(
+                    Arrays.asList("com.android.vending", "com.google.android.feedback"));
+
+            final String installer =
+                    context.getPackageManager().getInstallerPackageName(packageName);
+
+            return installer != null && validInstallers.contains(installer);
+        } catch (Exception e) {
+            Logs.getInstance(context).error("verifyInstallerId", e.toString());
+            return false;
+        }
+    }
+
+    public static boolean applicationInstalled(Context context, String uri) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            pm.getPackageInfo(uri, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+
+        return false;
+    }
+
+    public static Drawable drawableFromUrl(Context context, String url) {
+        return drawableFromUrl(context, url, R.drawable.ic_person);
+    }
+
+    public static Drawable drawableFromUrl(Context context, String url, @DrawableRes int def) {
+        if (icons.containsKey(url))
+            return icons.get(url);
+        try {
+            Bitmap bmp;
+
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.connect();
+            InputStream input = connection.getInputStream();
+
+            bmp = BitmapFactory.decodeStream(input);
+            Drawable drawable = new BitmapDrawable(context.getResources(), bmp);
+            icons.put(url, drawable);
+            return drawable;
+        } catch (Exception e) {
+            e.printStackTrace();
+            Bitmap bitmap = drawableToBitmap(context.getDrawable(def));
+            int color = ThemeStore.getInstance(context).getAccentColor();
+            return new BitmapDrawable(
+                    context.getResources(), overlay(createBitmap(bitmap, color), bitmap));
+        }
+    }
+
+    private static Bitmap createBitmap(Bitmap copy, @ColorInt int color) {
+        Bitmap bmp = Bitmap
+                .createBitmap(copy.getWidth(), copy.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
+        canvas.drawColor(color);
+        return bmp;
+    }
+
+    private static Bitmap overlay(Bitmap bmp1, Bitmap bmp2) {
+        Bitmap bmOverlay = Bitmap.createBitmap(bmp1.getWidth(), bmp1.getHeight(), bmp1.getConfig());
+        Canvas canvas = new Canvas(bmOverlay);
+        canvas.drawBitmap(bmp1, new Matrix(), null);
+        canvas.drawBitmap(bmp2, new Matrix(), null);
+        return bmOverlay;
+    }
+
+    public static void install_apk(Context context, File file) {
+        try {
+            if (file.exists()) {
+                String[] fileNameArray = file.getName().split(Pattern.quote("."));
+                if (fileNameArray[fileNameArray.length - 1].equals("apk")) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        Uri downloaded_apk = getFileUri(context, file);
+                        Intent intent = new Intent(Intent.ACTION_VIEW).setDataAndType(
+                                downloaded_apk,
+                                "application/vnd.android.package-archive"
+                        );
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        context.startActivity(intent);
+                    } else {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setDataAndType(
+                                Uri.fromFile(file),
+                                "application/vnd.android.package-archive"
+                        );
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(intent);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static Uri getFileUri(Context context, File file) {
+        return FileProvider.getUriForFile(context,
+                context.getApplicationContext()
+                        .getPackageName() + ".GenericFileProvider", file
+        );
+    }
+
+    public static void n(Object o) {
+
+    }
+
+    public static void sleep(int duration) {
+        try {
+            Thread.sleep(duration);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void rainbow(Activity context) {
+        rainbow = getRainbow(context);
+        if (getSettings(context).getBoolean("rainbow_mode", false)) rainbow.start();
+    }
+
+    private static Thread getRainbow(Activity context) {
+        return new Thread(() -> {
+            Looper.prepare();
+            while (rainbow != null) {
+                for (ThemeManager.Component component : ThemeManager.getInstance(context)
+                        .getComponents()) {
+                    sleep(500);
+                    context.runOnUiThread(() -> {
+                        ValueAnimator animator = ValueAnimator.ofInt(0, 360);
+                        animator.setDuration(3000);
+                        animator.addUpdateListener(animation -> {
+                            int color = (Integer) animation.getAnimatedValue();
+                            component.changeColor(
+                                    changeHue(ThemeStore.getInstance(context).getAccentColor(),
+                                            color));
+                        });
+                        animator.start();
+                    });
+                }
+                sleep(3000 + 500);
+            }
+        });
+    }
+
+    @ColorInt
+    public static int changeHue(@ColorInt int color, int degree) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        hsv[0] += degree;
+        while (hsv[0] > 360) hsv[0] -= 360;
+        return Color.HSVToColor(hsv);
+    }
+
+    public static void toggleRainBow(boolean enabled, Activity context) {
+        if (enabled && rainbow == null) {
+            rainbow = getRainbow(context);
+            rainbow.start();
+        } else {
+            rainbow = null;
+        }
+    }
+
+    public void setContentView(int layoutResID, boolean swipe) {
+        super.setContentView(layoutResID);
+        if (swipe) {
+            WxSwipeBackLayout wxSwipeBackLayout = new WxSwipeBackLayout(this);
+            wxSwipeBackLayout.setDirectionMode(SwipeBackLayout.FROM_LEFT);
+            wxSwipeBackLayout.attachToActivity(this);
+            wxSwipeBackLayout.setSwipeBackListener(new SwipeBackLayout.OnSwipeBackListener() {
+                @Override
+                public void onViewPositionChanged(View mView, float swipeBackFraction, float swipeBackFactor) {
+                    wxSwipeBackLayout.invalidate();
+                    Util.onPanelSlide(swipeBackFraction);
+                    if (statusColor == - 1) statusColor = getStatusBarColor();
+                    try {
+                        setStatusBarColor(calculateColor(MainActivity.color, statusColor, 100,
+                                (int) (swipeBackFraction * 100)));
+                    } catch (Exception ignored) {
+                    }
+                }
+
+                @Override
+                public void onViewSwipeFinished(View mView, boolean isEnd) {
+                    if (isEnd) {
+                        if (callback != null) callback.run();
+                        setStatusBarColor(Color.TRANSPARENT);
+                        wxSwipeBackLayout.finish();
+                    }
+                    Util.onPanelReset();
+                }
+            });
+        }
+    }
+
+    protected void setSwipeBackCallback(Callback callback) {
+        this.callback = callback;
+    }
+
+    @Override
+    public void setContentView(int layoutResID) {
+        setContentView(layoutResID, true);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        themeStore = ThemeStore.getInstance(this);
+        themeManager = ThemeManager.getInstance(this);
+        rainbow(this);
+        if (PackageUpdateReceiver.activity == null)
+            PackageUpdateReceiver.activity = this;
     }
 
     protected void applyTheme() {
@@ -308,41 +731,6 @@ public class Utils extends AppCompatActivity {
         startActivity(new Intent(context, aClass), options);
     }
 
-    public class startActivityAsync {
-
-        private Activity activity;
-        private Class aClass;
-        private Bundle options;
-        private long time = 0;
-
-        public startActivityAsync(Activity activity, Class aClass) {
-            this(activity, aClass, null);
-        }
-
-        public startActivityAsync(Activity activity, Class aClass, Bundle options) {
-            this.activity = activity;
-            this.aClass = aClass;
-            this.options = options;
-        }
-
-        public startActivityAsync setTime(long time) {
-            this.time = time;
-            return this;
-        }
-
-        public void start(Async async) {
-            new Thread(() -> {
-                sleep(time);
-                async.run(activity, aClass, options);
-            }).start();
-        }
-    }
-
-    public interface Async {
-
-        void run(Activity activity, Class aClass, Bundle options);
-    }
-
     public int getStatusBarHeight() {
         int result = 0;
         int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
@@ -369,11 +757,6 @@ public class Utils extends AppCompatActivity {
         }
     }
 
-    public static void removeMyApp(String packageName, Context context) {
-        getWebContent(Config.API_URL + "/apps/myapps.php?uid=" + Config
-                .UID(context) + "&remove=" + packageName);
-    }
-
     public String cutString(String string, int cutAt) {
         if (string.length() < cutAt)
             return string;
@@ -384,44 +767,11 @@ public class Utils extends AppCompatActivity {
         return ret.toString();
     }
 
-    public final static String COLORED_NAVIGATIONBAR = "colored_nav_bar";
-
-    public static HashMap<String, SearchItem> appsList = new HashMap<>();
-    public static SearchItem currentApp;
-
     public Bundle checkExtra(Bundle extra) {
         if (extra == null) finish();
         assert extra != null;
         if (extra.size() > 1) finish();
         return extra;
-    }
-
-    public static List<ApplicationInfo> getInstalledApps(@NonNull Context context) {
-        final PackageManager pm = context.getPackageManager();
-        return pm.getInstalledApplications(PackageManager.GET_META_DATA);
-    }
-
-    public static ApplicationInfo getApplicationInfo(Context context, String packageName) {
-        ApplicationInfo info = null;
-        try {
-            info = context.getPackageManager().getApplicationInfo(packageName, 0);
-        } catch (Exception ignored) {
-        }
-        return info;
-    }
-
-    public static String encodeToBase64(Drawable drawable) {
-        Bitmap image = drawableToBitmap(drawable);
-        ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOS);
-        return Base64.encodeToString(byteArrayOS.toByteArray(), Base64.DEFAULT);
-    }
-
-    public static Drawable decodeBase64(Context context, String input) {
-        byte[] decodedBytes = Base64.decode(input, 0);
-        return new BitmapDrawable(
-                context.getResources(), BitmapFactory
-                .decodeByteArray(decodedBytes, 0, decodedBytes.length));
     }
 
     protected void setColors() {
@@ -476,10 +826,6 @@ public class Utils extends AppCompatActivity {
         return findViewById(R.id.app_bar);
     }
 
-    public static SharedPreferences getSettings(@NonNull Context context) {
-        return context.getSharedPreferences("settings_" + Config.UID(context), MODE_PRIVATE);
-    }
-
     public <V extends View> Collection<V> findChildrenByClass(Class<V> clazz, ViewGroup... viewGroups) {
         Collection<V> collection = new ArrayList<>();
         for (ViewGroup viewGroup : viewGroups)
@@ -525,27 +871,6 @@ public class Utils extends AppCompatActivity {
     public String exportSettings() {
         Map<String, ?> settings = getSettings(this).getAll();
         return new JSONObject(settings).toString();
-    }
-
-    public static void setSettings(@NonNull Context context, @NonNull SharedPreferences settings) {
-        Map<String, ?> objectMap = settings.getAll();
-        SharedPreferences.Editor prefs = getSettings(context).edit();
-        for (String key : objectMap.keySet()) {
-            Object obj = objectMap.get(key);
-            if (obj instanceof Float)
-                prefs.putFloat(key, (float) obj);
-            else if (obj instanceof String)
-                prefs.putString(key, (String) obj);
-            else if (obj instanceof Boolean)
-                prefs.putBoolean(key, (boolean) obj);
-            else if (obj instanceof Integer)
-                prefs.putInt(key, (int) obj);
-            else if (obj instanceof Long)
-                prefs.putLong(key, (long) obj);
-            else if (obj instanceof Set)
-                prefs.putStringSet(key, (Set<String>) obj);
-        }
-        prefs.apply();
     }
 
     public boolean serverOnline() {
@@ -612,195 +937,20 @@ public class Utils extends AppCompatActivity {
 
     }
 
-    public static void setNavigationBarColor(Activity activity, View view, @ColorInt int color, int duration) {
-        if (getSettings(activity).getBoolean(COLORED_NAVIGATIONBAR,
-                false
-        ) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && view != null) {
-            Window window = activity.getWindow();
-            ValueAnimator animator = ValueAnimator
-                    .ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), color);
-            animator.setDuration(duration);
-            animator.addUpdateListener(animation -> {
-                int c = (int) animation.getAnimatedValue();
-                if (isColorBright(c) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-                else
-                    view.setSystemUiVisibility(View.VISIBLE);
-                window.setNavigationBarColor(c);
-            });
-            animator.start();
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && view != null) {
-            Window window = activity.getWindow();
-            ValueAnimator animator = ValueAnimator
-                    .ofObject(new ArgbEvaluator(), window.getNavigationBarColor(), Color.BLACK);
-            animator.setDuration(duration);
-            animator.addUpdateListener(animation -> {
-                int c = (int) animation.getAnimatedValue();
-                if (isColorBright(c) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
-                else
-                    view.setSystemUiVisibility(View.VISIBLE);
-                window.setNavigationBarColor(c);
-            });
-            animator.start();
-        }
-    }
-
-    public static void setStatusBarColor(Activity activity, View view, @ColorInt int color, int duration) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Window window = activity.getWindow();
-            ValueAnimator animator = ValueAnimator
-                    .ofObject(new ArgbEvaluator(), window.getStatusBarColor(), color);
-            animator.setDuration(duration);
-            animator.addUpdateListener(animation -> {
-                int c = (int) animation.getAnimatedValue();
-                if (isColorBright(c))
-                    view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-                else
-                    view.setSystemUiVisibility(View.VISIBLE);
-                window.setStatusBarColor(c);
-            });
-            animator.start();
-        }
+    public int getNavigationBarColor() {
+        return getWindow().getNavigationBarColor();
     }
 
     public void setNavigationBarColor(@ColorInt int color) {
         getWindow().setNavigationBarColor(color);
     }
 
-    public void setStatusBarColor(@ColorInt int color) {
-        getWindow().setStatusBarColor(color);
-    }
-
-    public int getNavigationBarColor() {
-        return getWindow().getNavigationBarColor();
-    }
-
     public int getStatusBarColor() {
         return getWindow().getStatusBarColor();
     }
 
-    public static boolean isColorBright(int color) {
-        double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color
-                .blue(color)) / 255;
-        return darkness < 0.5;
-    }
-
-    public static int getDominantColor(Drawable drawable) {
-        Bitmap newBitmap = Bitmap.createScaledBitmap(drawableToBitmap(drawable), 1, 1, true);
-        final int color = newBitmap.getPixel(0, 0);
-        newBitmap.recycle();
-        return color;
-    }
-
-    public static int manipulateColor(int color, float factor) {
-        int a = Color.alpha(color);
-        int r = Math.round(Color.red(color) * factor);
-        int g = Math.round(Color.green(color) * factor);
-        int b = Math.round(Color.blue(color) * factor);
-        return Color.argb(
-                a,
-                Math.min(r, 255),
-                Math.min(g, 255),
-                Math.min(b, 255)
-        );
-    }
-
-    public static Bitmap drawableToBitmap(Drawable drawable) {
-        Bitmap bitmap = null;
-
-        if (drawable instanceof BitmapDrawable) {
-            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
-            if (bitmapDrawable.getBitmap() != null) {
-                return bitmapDrawable.getBitmap();
-            }
-        }
-
-        if (drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
-            bitmap = Bitmap.createBitmap(1, 1,
-                    Bitmap.Config.ARGB_8888
-            ); // Single color bitmap will be created of 1x1 pixel
-        } else {
-            bitmap = Bitmap
-                    .createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(),
-                            Bitmap.Config.ARGB_8888
-                    );
-        }
-
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-        return bitmap;
-    }
-
-    public static String getWebContent(String url) {
-        try {
-            URL web = new URL(url);
-            BufferedReader in = new BufferedReader(new InputStreamReader(web.openStream()));
-
-            String inputLine;
-            StringBuilder ret = new StringBuilder();
-
-            while ((inputLine = in.readLine()) != null)
-                ret.append(inputLine);
-
-            in.close();
-            return ret.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public interface Listener {
-
-        void run(int progress);
-    }
-
-    public static File getWebContent(String url, File path, int id, Listener listener) {
-        try {
-            URL fileurl = new URL(url);
-            URLConnection urlConnection = fileurl.openConnection();
-            urlConnection.connect();
-
-            InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream(), 8192);
-
-            if (! path.exists())
-                path.mkdirs();
-
-            File downloadedFile = new File(path, "download_app_" + id + ".apk");
-
-            OutputStream outputStream = new FileOutputStream(downloadedFile);
-
-            byte[] buffer = new byte[8192];
-
-            int last = 0;
-            long fileSize = urlConnection.getContentLength();
-            long read;
-            long total = 0;
-
-            listener.run(0);
-
-            while ((read = inputStream.read(buffer)) != - 1) {
-                int tmp = (int) (total * 100 / fileSize);
-                total += read;
-                if (fileSize > 0 && tmp > last + 2) {
-                    last = tmp;
-                    listener.run(tmp);
-                }
-                outputStream.write(buffer, 0, (int) read);
-            }
-
-            listener.run(100);
-
-            outputStream.flush();
-            outputStream.close();
-            inputStream.close();
-            return downloadedFile;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public void setStatusBarColor(@ColorInt int color) {
+        getWindow().setStatusBarColor(color);
     }
 
     public boolean checkAppDir() {
@@ -878,24 +1028,6 @@ public class Utils extends AppCompatActivity {
         return executedSuccesfully;
     }
 
-    public static void executeCommand(Activity activity, String cmds) {
-        Logs logs = new Logs(activity);
-        logs.info("COMMAND", cmds);
-        try {
-            Process process = Runtime.getRuntime().exec("su");
-            DataOutputStream os = new DataOutputStream(process.getOutputStream());
-
-            os.writeBytes(cmds + "\n");
-
-            os.writeBytes("exit\n");
-            os.flush();
-            os.close();
-
-            process.waitFor();
-        } catch (Exception ignored) {
-        }
-    }
-
     public void checkPermissions() {
         ActivityCompat.requestPermissions(
                 this,
@@ -913,11 +1045,6 @@ public class Utils extends AppCompatActivity {
                 runOnUiThread(callback::run);
             }
         }).start();
-    }
-
-    public interface Callback {
-
-        void run();
     }
 
     private List<String> permissons() {
@@ -938,63 +1065,6 @@ public class Utils extends AppCompatActivity {
                     finish();
                 }
             }
-        }
-    }
-
-    public static boolean appInstalled(Activity context, String uri) {
-        return applicationInstalled(context, uri) && ! verifyInstallerId(context, uri);
-    }
-
-    public static boolean verifyInstallerId(Activity context, String packageName) {
-        try {
-            List<String> validInstallers = new ArrayList<>(
-                    Arrays.asList("com.android.vending", "com.google.android.feedback"));
-
-            final String installer =
-                    context.getPackageManager().getInstallerPackageName(packageName);
-
-            return installer != null && validInstallers.contains(installer);
-        } catch (Exception e) {
-            Logs.getInstance(context).error("verifyInstallerId", e.toString());
-            return false;
-        }
-    }
-
-    public static boolean applicationInstalled(Context context, String uri) {
-        PackageManager pm = context.getPackageManager();
-        try {
-            pm.getPackageInfo(uri, PackageManager.GET_ACTIVITIES);
-            return true;
-        } catch (PackageManager.NameNotFoundException ignored) {
-        }
-
-        return false;
-    }
-
-    public static Drawable drawableFromUrl(Context context, String url) {
-        return drawableFromUrl(context, url, R.drawable.ic_person);
-    }
-
-    public static Drawable drawableFromUrl(Context context, String url, @DrawableRes int def) {
-        if (icons.containsKey(url))
-            return icons.get(url);
-        try {
-            Bitmap bmp;
-
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.connect();
-            InputStream input = connection.getInputStream();
-
-            bmp = BitmapFactory.decodeStream(input);
-            Drawable drawable = new BitmapDrawable(context.getResources(), bmp);
-            icons.put(url, drawable);
-            return drawable;
-        } catch (Exception e) {
-            e.printStackTrace();
-            Bitmap bitmap = drawableToBitmap(context.getDrawable(def));
-            int color = ThemeStore.getInstance(context).getAccentColor();
-            return new BitmapDrawable(
-                    context.getResources(), overlay(createBitmap(bitmap, color), bitmap));
         }
     }
 
@@ -1059,20 +1129,32 @@ public class Utils extends AppCompatActivity {
         }).start();
     }
 
-    private static Bitmap createBitmap(Bitmap copy, @ColorInt int color) {
-        Bitmap bmp = Bitmap
-                .createBitmap(copy.getWidth(), copy.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bmp);
-        canvas.drawColor(color);
-        return bmp;
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (toolbar != null)
+            toolbar.setToolbarIconColor(ThemeStore.getInstance(this).getPrimaryColor());
+        return super.onCreateOptionsMenu(menu);
     }
 
-    private static Bitmap overlay(Bitmap bmp1, Bitmap bmp2) {
-        Bitmap bmOverlay = Bitmap.createBitmap(bmp1.getWidth(), bmp1.getHeight(), bmp1.getConfig());
-        Canvas canvas = new Canvas(bmOverlay);
-        canvas.drawBitmap(bmp1, new Matrix(), null);
-        canvas.drawBitmap(bmp2, new Matrix(), null);
-        return bmOverlay;
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
+    public interface Async {
+
+        void run(Activity activity, Class aClass, Bundle options);
+    }
+
+    public interface Listener {
+
+        void run(int progress);
+    }
+
+    public interface Callback {
+
+        void run();
     }
 
     public static class ByteBuffer {
@@ -1094,56 +1176,33 @@ public class Utils extends AppCompatActivity {
         }
     }
 
-    public static void install_apk(Context context, File file) {
-        try {
-            if (file.exists()) {
-                String[] fileNameArray = file.getName().split(Pattern.quote("."));
-                if (fileNameArray[fileNameArray.length - 1].equals("apk")) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        Uri downloaded_apk = getFileUri(context, file);
-                        Intent intent = new Intent(Intent.ACTION_VIEW).setDataAndType(
-                                downloaded_apk,
-                                "application/vnd.android.package-archive"
-                        );
-                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        context.startActivity(intent);
-                    } else {
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setDataAndType(
-                                Uri.fromFile(file),
-                                "application/vnd.android.package-archive"
-                        );
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(intent);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    public class startActivityAsync {
+
+        private Activity activity;
+        private Class aClass;
+        private Bundle options;
+        private long time = 0;
+
+        public startActivityAsync(Activity activity, Class aClass) {
+            this(activity, aClass, null);
         }
-    }
 
-    private static Uri getFileUri(Context context, File file) {
-        return FileProvider.getUriForFile(context,
-                context.getApplicationContext()
-                        .getPackageName() + ".GenericFileProvider", file
-        );
-    }
+        public startActivityAsync(Activity activity, Class aClass, Bundle options) {
+            this.activity = activity;
+            this.aClass = aClass;
+            this.options = options;
+        }
 
-    public static void n(Object o) {
+        public startActivityAsync setTime(long time) {
+            this.time = time;
+            return this;
+        }
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        if (toolbar != null)
-            toolbar.setToolbarIconColor(ThemeStore.getInstance(this).getPrimaryColor());
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
+        public void start(Async async) {
+            new Thread(() -> {
+                sleep(time);
+                async.run(activity, aClass, options);
+            }).start();
+        }
     }
 }

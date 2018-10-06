@@ -16,7 +16,7 @@
     android:paddingBottom="7dp"
     tools:ignore="MissingDefaultResource">
 
-    <CheckBox
+    <com.dertyp7214.themeablecomponents.components.ThemeableCheckBox
         android:id="@+id/text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

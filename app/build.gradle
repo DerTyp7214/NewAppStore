@@ -9,7 +9,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
-        versionName "4.2"
+        versionName "4.5"
+        useLibrary 'org.apache.http.legacy'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -45,6 +46,7 @@ dependencies {
     implementation(name: 'colorlib', ext: 'aar')
     implementation(name: 'github-source', ext: 'aar')
     implementation(name: 'stylelib-release', ext: 'aar')
+    implementation(name: 'themeablecomponents-release', ext: 'aar')
     //implementation(name: 'materialAbout', ext: 'aar')
     //implementation 'com.github.daniel-stoneuk:material-about-library:2.3.0'
     testImplementation 'junit:junit:4.12'

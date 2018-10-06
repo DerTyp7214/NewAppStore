@@ -10,6 +10,7 @@ import android.app.Application;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -17,15 +18,23 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.dertyp7214.appstore.receivers.PackageUpdateReceiver;
+import com.dertyp7214.themeablecomponents.utils.ThemeManager;
 import com.gw.swipeback.tools.WxSwipeBackActivityManager;
+
+import androidx.annotation.ColorInt;
 
 public class AppController extends Application {
 
     public static final String TAG = AppController.class.getSimpleName();
-
-    private RequestQueue mRequestQueue;
-
     private static AppController mInstance;
+    private RequestQueue mRequestQueue;
+    private ThemeManager themeManager;
+
+    private Thread rainbow;
+
+    public static synchronized AppController getInstance() {
+        return mInstance;
+    }
 
     @Override
     public void onCreate() {
@@ -40,15 +49,13 @@ public class AppController extends Application {
             }
         });
 
+        themeManager = ThemeManager.getInstance(this);
+
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
         intentFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
         intentFilter.addDataScheme("package");
         registerReceiver(new PackageUpdateReceiver(), intentFilter);
-    }
-
-    public static synchronized AppController getInstance() {
-        return mInstance;
     }
 
     public RequestQueue getRequestQueue() {
@@ -75,7 +82,7 @@ public class AppController extends Application {
         }
     }
 
-    private static class ActivityLifecycleAdapter implements ActivityLifecycleCallbacks{
+    private static class ActivityLifecycleAdapter implements ActivityLifecycleCallbacks {
 
         @Override
         public void onActivityCreated(Activity activity, Bundle savedInstanceState) {

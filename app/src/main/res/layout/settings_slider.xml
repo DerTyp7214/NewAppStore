@@ -21,7 +21,7 @@
     android:padding="5dp"
     tools:ignore="MissingDefaultResource">
 
-    <SeekBar
+    <com.dertyp7214.themeablecomponents.components.ThemeableSeekBar
         android:id="@+id/seekBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

@@ -7,7 +7,6 @@
     <string name="navigation_drawer_open">Abrir navigation drawer</string>
     <string name="navigation_drawer_close">Cerrar navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Cabecera del menú</string>
     <string name="action_settings">Ajustes</string>
     <string name="search">Buscar</string>
@@ -177,13 +176,13 @@
     <string name="splash_applying">aplicando cambios</string>
     <string name="text_hide_icon">Ocultar icono de la aplicación</string>
     <string name="text_debug">Debug</string>
-    <string name="search_bar_radius">Radio del SearchBar</string>
+    <string name="search_bar_radius">Radio de la barra de búsqueda</string>
     <string name="language_model">es-ES</string>
     <string name="text_profile_of">Perfil de: %s</string>
     <string name="text_libraries">Librerías</string>
-    <string name="text_main_author">Autor</string>
+    <string name="text_main_author">desarrollador principal</string>
     <string name="text_licenses">Licencias</string>
-    <string name="text_authors">Autores</string>
+    <string name="text_authors">revelador</string>
     <string name="text_translators">Traductores</string>
     <string name="text_spainish">"Español "</string>
     <string name="text_english">"Inglés "</string>
@@ -198,4 +197,12 @@
     <string name="mal_send_email">Enviar email</string>  
     <string name="mal_activity_exception">No hay apps para ejecutar esta acción</string>
     <string name="pay_with_paypal">Pagar a Josua con PayPal</string>
+    <string name="text_rainbow_mode">Modo de arco iris</string>
+    <string name="text_disable_easter_egg">Desactivar huevo de pascua</string>
+    <string name="text_steps_to_easter_egg">para activar el huevo de pascua</string>
+    <string name="text_easteregg_enabled">Huevo de pascua activado</string>
+    <string name="text_change_bg_pic">Cambiar fondo de pantalla</string>
+    <string name="text_czech">checo</string>
+    <string name="text_ukrainian">ucranio</string>
+    <string name="text_turkish">turco</string>
 </resources>
