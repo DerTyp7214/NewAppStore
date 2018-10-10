@@ -13,6 +13,7 @@ import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -20,6 +21,7 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.view.View;
 import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -84,6 +86,16 @@ public class Splashscreen extends Utils {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splashscreen, false);
+
+        setStatusBarColor(Color.WHITE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            setNavigationBarColor(Color.WHITE);
+            findViewById(android.R.id.content)
+                    .setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+        }
 
         logs = new Logs(this);
 
@@ -175,8 +187,9 @@ public class Splashscreen extends Utils {
                                 .build();
 
                         assert shortcutManager != null;
-                       // shortcutManager.setDynamicShortcuts(Collections.singletonList(shortcut));
-                    } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
+                        // shortcutManager.setDynamicShortcuts(Collections.singletonList(shortcut));
+                    } else if (android.os.Build.VERSION.SDK_INT
+                            >= android.os.Build.VERSION_CODES.N_MR1) {
                         ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
 
                         assert shortcutManager != null;

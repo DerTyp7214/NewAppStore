@@ -129,7 +129,7 @@
     <string name="text_main_author">Hlavní autor</string>
     <string name="text_licenses">Licence</string>
     <string name="text_authors">Autoři</string>
-    <string name="text_translators">Překladatelé</string>
+    <string name="text_translations">Překlady</string>
     <string name="text_spainish">španělština</string>
     <string name="text_english">Angličtina</string>
     <string name="text_german">Němec</string>
@@ -143,4 +143,5 @@
     <string name="text_czech">čeština</string>
     <string name="text_ukrainian">ukrajinština</string>
     <string name="text_turkish">turečtina</string>
+    <string name="home">Domov</string>
 </resources>

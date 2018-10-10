@@ -7,6 +7,8 @@ package com.dertyp7214.appstore.screens;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Intent;
@@ -80,6 +82,9 @@ public class MainActivity extends Utils
         implements NavigationView.OnNavigationItemSelectedListener,
         MaterialSearchBar.OnSearchActionListener {
 
+    public static int color = Color.BLACK;
+    public static boolean settingsChanged = false;
+
     private ViewPagerAdapter adapter;
     private SearchAdapter searchAdapter;
     private int id = 0;
@@ -92,9 +97,6 @@ public class MainActivity extends Utils
     private DrawerLayout drawer;
     private View app_bar;
     private FragmentAbout fragmentAbout;
-
-    public static int color = Color.BLACK;
-
     private List<SearchItem> appItems = new ArrayList<>();
 
     @Override
@@ -226,7 +228,25 @@ public class MainActivity extends Utils
 
     @Override
     protected void onResume() {
-        themeStore = ThemeStore.resetInstance(this);
+        if (settingsChanged) {
+            navView.setCheckedItem(R.id.nav_home);
+            scrollTo(0);
+            if (FragmentMyApps.hasInstance()) FragmentMyApps.getInstance().getMyApps();
+            ValueAnimator animator =
+                    ValueAnimator
+                            .ofObject(new ArgbEvaluator(), color, themeStore.getPrimaryColor());
+            animator.setDuration(300);
+            animator.addUpdateListener(animation -> {
+                int color = (int) animation.getAnimatedValue();
+                themeStore = ThemeStore.resetInstance(this);
+                app_bar.setBackgroundColor(color);
+                if (Build.VERSION.SDK_INT < 28)
+                    getWindow().setNavigationBarColor(color);
+            });
+            animator.start();
+            color = themeStore.getPrimaryColor();
+            settingsChanged = false;
+        }
         super.onResume();
     }
 
@@ -458,6 +478,8 @@ public class MainActivity extends Utils
             tabLayout.setVisibility(View.VISIBLE);
         } else if (fragmentAbout.bottomSheetBehavior.getState() == STATE_EXPANDED) {
             fragmentAbout.bottomSheetBehavior.setState(STATE_HIDDEN);
+        } else if (fragmentAbout.bottomSheetBehaviorTranslators.getState() == STATE_EXPANDED) {
+            fragmentAbout.bottomSheetBehaviorTranslators.setState(STATE_HIDDEN);
         } else {
             super.onBackPressed();
         }

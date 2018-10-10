@@ -52,6 +52,7 @@
                 android:focusable="true" />
 
             <include layout="@layout/paypal_bottom_sheet" />
+            <include layout="@layout/translators_bottom_sheet" />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </com.dertyp7214.stylelib.layouts.StyleBottomLineLayout>
 </FrameLayout>

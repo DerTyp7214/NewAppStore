@@ -99,7 +99,10 @@ public class SettingsScreen extends Utils {
         settingList.addItemDecoration(dividerItemDecoration);
 
         ThemeManager.attach(this,
-                (themeManager) -> themeManager.changeTheme(themeStore.getAccentColor()));
+                (themeManager) -> {
+                    themeManager.changeAccentColor(themeStore.getAccentColor());
+                    themeManager.changePrimaryColor(themeStore.getPrimaryColor());
+                });
     }
 
     @Override
@@ -242,8 +245,11 @@ public class SettingsScreen extends Utils {
                     themeStore.getPrimaryColor()
             ).addSettingsOnClick((name, Color, settingsColor) -> {
                 settingsColor.saveSetting();
-                setColors();
-                themeManager.changeTheme(themeStore.getAccentColor());
+                themeManager.changeAccentColor(themeStore.getAccentColor());
+                themeManager
+                        .changePrimaryColor(this, themeStore.getPrimaryColor(), true,
+                                Build.VERSION.SDK_INT < Build.VERSION_CODES.P, true);
+                MainActivity.settingsChanged = true;
             }));
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
             settingsList.add(new SettingsSwitch(

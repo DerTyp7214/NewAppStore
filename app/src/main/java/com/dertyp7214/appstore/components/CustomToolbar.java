@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.dertyp7214.appstore.Utils;
+import com.dertyp7214.themeablecomponents.components.ThemeableToolbar;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,9 +24,8 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 import androidx.annotation.ColorInt;
-import androidx.appcompat.widget.Toolbar;
 
-public class CustomToolbar extends Toolbar {
+public class CustomToolbar extends ThemeableToolbar {
 
     public CustomToolbar(Context context) {
         super(context);
@@ -55,7 +55,7 @@ public class CustomToolbar extends Toolbar {
     private <V extends View> Collection<V> findChildrenByClass(Class<V> clazz, ViewGroup... viewGroups) {
         Collection<V> collection = new ArrayList<>();
         for(ViewGroup viewGroup : viewGroups)
-            collection.addAll(gatherChildrenByClass(viewGroup, clazz, new ArrayList<V>()));
+            collection.addAll(gatherChildrenByClass(viewGroup, clazz, new ArrayList<>()));
         return collection;
     }
 

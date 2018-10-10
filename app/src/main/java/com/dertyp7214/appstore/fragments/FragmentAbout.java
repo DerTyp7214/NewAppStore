@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.danielstone.materialaboutlibrary.MaterialAboutFragment;
@@ -35,6 +36,7 @@ import com.dertyp7214.appstore.BuildConfig;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
 import com.dertyp7214.appstore.Utils;
+import com.dertyp7214.appstore.adapter.TranslatorAdapter;
 import com.dertyp7214.appstore.components.ChangelogDialog;
 import com.dertyp7214.githubsource.GitHubSource;
 import com.dertyp7214.githubsource.github.Repository;
@@ -57,11 +59,15 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import de.psdev.licensesdialog.LicensesDialog;
 import de.psdev.licensesdialog.licenses.ApacheSoftwareLicense20;
 import de.psdev.licensesdialog.licenses.BSD2ClauseLicense;
@@ -72,6 +78,7 @@ import de.psdev.licensesdialog.model.Notices;
 import static com.dertyp7214.appstore.SecretConfig.CONFIG_CLIENT_ID;
 import static com.dertyp7214.appstore.SecretConfig.CONFIG_CLIENT_ID_SANDBOX;
 import static com.dertyp7214.appstore.Utils.addAlpha;
+import static com.dertyp7214.appstore.Utils.getResId;
 import static com.dertyp7214.appstore.Utils.getSettings;
 import static com.dertyp7214.appstore.Utils.manipulateColor;
 import static com.dertyp7214.appstore.Utils.setCursorColor;
@@ -86,8 +93,9 @@ public class FragmentAbout extends MaterialAboutFragment {
             BuildConfig.DEBUG ? PayPalConfiguration.ENVIRONMENT_SANDBOX
                     : PayPalConfiguration.ENVIRONMENT_PRODUCTION;
     private static final int REQUEST_CODE_PAYMENT = 1;
+    private static HashMap<String, Drawable> languages = new HashMap<>();
     public static HashMap<String, HashMap<String, Object>> users = new HashMap<>();
-    public BottomSheetBehavior bottomSheetBehavior;
+    public BottomSheetBehavior bottomSheetBehavior, bottomSheetBehaviorTranslators;
     private boolean setUp = false;
     private int counter = 0;
     private Activity activity;
@@ -99,34 +107,45 @@ public class FragmentAbout extends MaterialAboutFragment {
             setUpBottomSheet();
 
         LinearLayout bottomSheet = activity.findViewById(R.id.bottom_sheet);
+        LinearLayout bottomSheetTranslators = activity.findViewById(R.id.bottom_sheet_translators);
         View backGround = activity.findViewById(R.id.bg);
 
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        bottomSheetBehaviorTranslators = BottomSheetBehavior.from(bottomSheetTranslators);
+
+        BottomSheetBehavior.BottomSheetCallback callback =
+                new BottomSheetBehavior.BottomSheetCallback() {
+                    @Override
+                    public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                        if (newState == STATE_HIDDEN)
+                            backGround.setVisibility(View.GONE);
+                        else
+                            backGround.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                        float offset = (1 - (- slideOffset)) / 1 * 0.7F;
+                        if (String.valueOf(offset).equals("NaN"))
+                            offset = 0.7F;
+                        try {
+                            int color = Color.parseColor(addAlpha("#000000", offset));
+                            backGround.setBackgroundColor(color);
+                        } catch (Exception ignored) {
+                        }
+                    }
+                };
 
         bottomSheetBehavior.setState(STATE_HIDDEN);
-        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                if (newState == STATE_HIDDEN)
-                    backGround.setVisibility(View.GONE);
-                else
-                    backGround.setVisibility(View.VISIBLE);
-            }
+        bottomSheetBehavior.setBottomSheetCallback(callback);
 
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                float offset = (1 - (- slideOffset)) / 1 * 0.7F;
-                if (String.valueOf(offset).equals("NaN"))
-                    offset = 0.7F;
-                try {
-                    int color = Color.parseColor(addAlpha("#000000", offset));
-                    backGround.setBackgroundColor(color);
-                } catch (Exception ignored) {
-                }
-            }
+        bottomSheetBehaviorTranslators.setState(STATE_HIDDEN);
+        bottomSheetBehaviorTranslators.setBottomSheetCallback(callback);
+
+        backGround.setOnClickListener(v -> {
+            bottomSheetBehavior.setState(STATE_HIDDEN);
+            bottomSheetBehaviorTranslators.setState(STATE_HIDDEN);
         });
-
-        backGround.setOnClickListener(v -> bottomSheetBehavior.setState(STATE_HIDDEN));
     }
 
     @Override
@@ -237,18 +256,31 @@ public class FragmentAbout extends MaterialAboutFragment {
                 .build();
 
         MaterialAboutCard translators = new MaterialAboutCard.Builder()
-                .title(R.string.text_translators)
-                .addItem(translator(
-                        getString(R.string.text_english) + ", " + getString(R.string.text_german)
-                                + ", " + getString(R.string.text_ukrainian) + ", " + getString(
-                                R.string.text_czech) + ", " + getString(R.string.text_turkish),
-                        getString(R.string.text_dertyp7214),
-                        context))
-                .addItem(translator(getString(R.string.text_spainish),
-                        getString(R.string.text_enol_simon),
-                        context))
+                .title(R.string.text_translations)
+                .addItem(language(context,
+                        getString(R.string.text_english),
+                        "us",
+                        getString(R.string.text_dertyp7214)))
+                .addItem(language(context,
+                        getString(R.string.text_german),
+                        "de",
+                        getString(R.string.text_dertyp7214)))
+                .addItem(language(context,
+                        getString(R.string.text_ukrainian),
+                        "ua",
+                        getString(R.string.text_dertyp7214)))
+                .addItem(language(context,
+                        getString(R.string.text_czech),
+                        "cz",
+                        getString(R.string.text_dertyp7214)))
+                .addItem(language(context,
+                        getString(R.string.text_turkish),
+                        "tr",
+                        getString(R.string.text_dertyp7214)))
+                .addItem(language(context, getString(R.string.text_spainish),
+                        "es",
+                        getString(R.string.text_enol_simon), getString(R.string.text_dertyp7214)))
                 .build();
-
         MaterialAboutCard about = new MaterialAboutCard.Builder()
                 .addItem(new MaterialAboutTitleItem.Builder()
                         .icon(R.mipmap.ic_launcher)
@@ -327,6 +359,16 @@ public class FragmentAbout extends MaterialAboutFragment {
                 .build();
     }
 
+    private void openGitHubProfile(String userName) {
+        openUrl("https://github.com/" + userName);
+    }
+
+    private void openUrl(String url) {
+        Intent gitIntent =
+                new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(gitIntent);
+    }
+
     private HashMap<String, Object> getUSerMap(String userName, Context context) {
         HashMap<String, Object> userMap = new HashMap<>();
         if (users.containsKey(userName))
@@ -376,15 +418,44 @@ public class FragmentAbout extends MaterialAboutFragment {
         }
     }
 
-    private MaterialAboutItem translator(String language, String userName, Context context) {
-        HashMap<String, Object> user = getUSerMap(userName, context);
-        if (user.containsKey("id") && user.containsKey("name")) {
+    private Drawable getLanguageFlag(String langCode) {
+        if (! languages.containsKey(langCode))
+            languages.put(langCode,
+                    getResources().getDrawable(getResId(langCode, R.drawable.class)));
+        return languages.get(langCode);
+    }
+
+    private MaterialAboutItem language(Context context, String language, String langCode, String... userNames) {
+        if (userNames.length > 0) {
             return new MaterialAboutActionItem.Builder()
                     .text(language)
-                    .subText((String) user.get("name"))
-                    .icon((Drawable) user.get("image"))
-                    .setIconGravity(MaterialAboutActionItem.GRAVITY_MIDDLE)
-                    .setOnClickAction(() -> openGitHubProfile(userName))
+                    .setOnClickAction(() -> {
+                        TextView title = activity.findViewById(R.id.title_translators);
+                        title.setText(language);
+
+                        List<TranslatorAdapter.Translator> translatorList = new ArrayList<>();
+
+                        for (String userName : userNames)
+                            translatorList.add(new TranslatorAdapter.Translator(userName,
+                                    (String) getUSerMap(userName, context).get("name"),
+                                    (Drawable) getUSerMap(userName, context).get("image")));
+
+                        TranslatorAdapter adapter = new TranslatorAdapter(context, translatorList);
+                        adapter.notifyDataSetChanged();
+
+                        RecyclerView recyclerView =
+                                activity.findViewById(R.id.recyclerview_translators);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+                        recyclerView.setAdapter(adapter);
+
+                        Button close = activity.findViewById(R.id.close_translations);
+                        close.setOnClickListener(
+                                v -> bottomSheetBehaviorTranslators
+                                        .setState(BottomSheetBehavior.STATE_HIDDEN));
+                        bottomSheetBehaviorTranslators
+                                .setState(BottomSheetBehavior.STATE_EXPANDED);
+                    })
+                    .icon(getLanguageFlag(langCode))
                     .build();
         } else {
             return new MaterialAboutActionItem.Builder()
@@ -394,16 +465,6 @@ public class FragmentAbout extends MaterialAboutFragment {
                     .setIconGravity(MaterialAboutActionItem.GRAVITY_MIDDLE)
                     .build();
         }
-    }
-
-    private void openGitHubProfile(String userName) {
-        openUrl("https://github.com/" + userName);
-    }
-
-    private void openUrl(String url) {
-        Intent gitIntent =
-                new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        startActivity(gitIntent);
     }
 
     private void openSourceCode(Context context) {

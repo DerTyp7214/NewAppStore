@@ -6,6 +6,7 @@
 package com.dertyp7214.appstore.adapter;
 
 import android.app.Activity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,9 +29,9 @@ public class AppGroupAdapter extends RecyclerView.Adapter<AppGroupAdapter.ViewHo
     private Activity context;
     private List<AppGroupItem> appGroupItemList;
 
-    public AppGroupAdapter(Activity context, List<AppGroupItem> appGroupItemList){
-        this.appGroupItemList=appGroupItemList;
-        this.context=context;
+    public AppGroupAdapter(Activity context, List<AppGroupItem> appGroupItemList) {
+        this.appGroupItemList = appGroupItemList;
+        this.context = context;
     }
 
     @NonNull
@@ -38,27 +39,45 @@ public class AppGroupAdapter extends RecyclerView.Adapter<AppGroupAdapter.ViewHo
     public ViewHolderNoConnection onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         switch (viewType) {
             case 0:
-                return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.app_group, parent, false));
+                return new ViewHolder(LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.app_group, parent, false));
             default:
-                return new ViewHolderNoConnection(LayoutInflater.from(parent.getContext()).inflate(R.layout.no_connection, parent, false));
+                return new ViewHolderNoConnection(LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.no_connection, parent, false));
         }
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolderNoConnection holder, int position) {
-        switch (holder.getItemViewType()) {
-            case 0:
-                ViewHolder viewHolder = (ViewHolder) holder;
-                AppGroupItem appGroupItem = appGroupItemList.get(position);
-                AppAdapter appAdapter = new AppAdapter(context, appGroupItem.getAppList());
-                viewHolder.recyclerView.setAdapter(appAdapter);
-                viewHolder.title.setText(appGroupItem.getTitle());
-                break;
-            case 1:
-                NoConnection item = (NoConnection) appGroupItemList.get(position);
-                holder.title.setText(item.getTitle());
-                break;
+        try {
+            switch (holder.getItemViewType()) {
+                case 0:
+                    ViewHolder viewHolder = (ViewHolder) holder;
+                    AppGroupItem appGroupItem = appGroupItemList.get(position);
+                    AppAdapter appAdapter = new AppAdapter(context, appGroupItem.getAppList());
+                    viewHolder.recyclerView.setAdapter(appAdapter);
+                    viewHolder.title.setText(appGroupItem.getTitle());
+                    break;
+                case 1:
+                    NoConnection item = (NoConnection) appGroupItemList.get(position);
+                    holder.title.setText(item.getTitle());
+                    break;
+            }
+        } catch (Exception e) {
+            Log.d("AppGroupAdapter", e.getMessage());
         }
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        // Just as an example, return 0 or 2 depending on position
+        // Note that unlike in ListView adapters, types don't have to be contiguous
+        return appGroupItemList.get(position) instanceof NoConnection ? 1 : 0;
+    }
+
+    @Override
+    public int getItemCount() {
+        return appGroupItemList.size();
     }
 
     class ViewHolder extends ViewHolderNoConnection {
@@ -91,17 +110,5 @@ public class AppGroupAdapter extends RecyclerView.Adapter<AppGroupAdapter.ViewHo
 
             title = itemView.findViewById(R.id.title);
         }
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        // Just as an example, return 0 or 2 depending on position
-        // Note that unlike in ListView adapters, types don't have to be contiguous
-        return appGroupItemList.get(position) instanceof NoConnection ? 1 : 0;
-    }
-
-    @Override
-    public int getItemCount() {
-        return appGroupItemList.size();
     }
 }

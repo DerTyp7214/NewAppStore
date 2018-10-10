@@ -582,6 +582,24 @@ public class Utils extends AppCompatActivity {
         }
     }
 
+    public static int getResId(String resName, Class<?> c) {
+        try {
+            Field idField = c.getDeclaredField(resName);
+            return idField.getInt(idField);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return - 1;
+        }
+    }
+
+    public static int getStatusBarColor(Activity activity) {
+        return activity.getWindow().getStatusBarColor();
+    }
+
+    public static void setStatusBarColor(Activity activity, @ColorInt int color) {
+        activity.getWindow().setStatusBarColor(color);
+    }
+
     public void setContentView(int layoutResID, boolean swipe) {
         super.setContentView(layoutResID);
         if (swipe) {
@@ -595,7 +613,8 @@ public class Utils extends AppCompatActivity {
                     Util.onPanelSlide(swipeBackFraction);
                     if (statusColor == - 1) statusColor = getStatusBarColor();
                     try {
-                        setStatusBarColor(calculateColor(MainActivity.color, statusColor, 100,
+                        setStatusBarColor(calculateColor(manipulateColor(MainActivity.color, 0.6F),
+                                statusColor, 100,
                                 (int) (swipeBackFraction * 100)));
                     } catch (Exception ignored) {
                     }
@@ -628,6 +647,9 @@ public class Utils extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         themeStore = ThemeStore.getInstance(this);
         themeManager = ThemeManager.getInstance(this);
+        themeManager.changeAccentColor(themeStore.getAccentColor());
+        themeManager.changePrimaryColor(this, themeStore.getPrimaryColor(), true,
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.P, false);
         rainbow(this);
         if (PackageUpdateReceiver.activity == null)
             PackageUpdateReceiver.activity = this;
