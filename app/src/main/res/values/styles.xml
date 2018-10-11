@@ -84,4 +84,13 @@
 
     <style name="Theme.Mal.Toolbar.Light" parent="ThemeOverlay.AppCompat.Light" />
     <style name="Theme.Mal.Toolbar.Dark" parent="ThemeOverlay.AppCompat.Dark" />
+
+    <style name="Base.Widget.AppCompat.Button.Transparent">
+        <item name="android:background">@color/transparent</item>
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Widget.Button.Colored</item>
+    </style>
+
+    <style name="Base.TextAppearance.AppCompat.Widget.Button.Transparent">
+        <item name="android:textColor">@android:color/black</item>
+    </style>
 </resources>

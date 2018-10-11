@@ -93,8 +93,8 @@ public class FragmentAbout extends MaterialAboutFragment {
             BuildConfig.DEBUG ? PayPalConfiguration.ENVIRONMENT_SANDBOX
                     : PayPalConfiguration.ENVIRONMENT_PRODUCTION;
     private static final int REQUEST_CODE_PAYMENT = 1;
-    private static HashMap<String, Drawable> languages = new HashMap<>();
     public static HashMap<String, HashMap<String, Object>> users = new HashMap<>();
+    private static HashMap<String, Drawable> languages = new HashMap<>();
     public BottomSheetBehavior bottomSheetBehavior, bottomSheetBehaviorTranslators;
     private boolean setUp = false;
     private int counter = 0;
@@ -449,6 +449,7 @@ public class FragmentAbout extends MaterialAboutFragment {
                         recyclerView.setAdapter(adapter);
 
                         Button close = activity.findViewById(R.id.close_translations);
+                        close.setTextColor(ThemeStore.getInstance(context).getAccentColor());
                         close.setOnClickListener(
                                 v -> bottomSheetBehaviorTranslators
                                         .setState(BottomSheetBehavior.STATE_HIDDEN));

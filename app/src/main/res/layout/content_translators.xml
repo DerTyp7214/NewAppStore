@@ -8,7 +8,8 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <androidx.recyclerview.widget.RecyclerView
@@ -25,13 +26,12 @@
 
         <Button
             android:id="@+id/close_translations"
-            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="5dp"
-            android:text="@string/close"
-            android:textAlignment="center" />
-    </RelativeLayout>
+            android:text="@string/close"/>
 
+    </RelativeLayout>
 </LinearLayout>

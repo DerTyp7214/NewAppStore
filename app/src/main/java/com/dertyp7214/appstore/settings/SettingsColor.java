@@ -15,7 +15,7 @@ import android.view.View;
 
 import com.dertyp7214.appstore.Config;
 import com.dertyp7214.appstore.R;
-import com.dertyp7214.module.colorpicker.ColorPicker;
+import com.dertyp7214.themeablecomponents.colorpicker.ColorPicker;
 
 public class SettingsColor extends Settings {
 
@@ -71,6 +71,11 @@ public class SettingsColor extends Settings {
                     colorPicker.cancel();
 
                     onClickListener.onClick(name, isString?Color.parseColor(colorString):colorInt, SettingsColor.this);
+
+                }
+
+                @Override
+                public void update(int i) {
 
                 }
 
