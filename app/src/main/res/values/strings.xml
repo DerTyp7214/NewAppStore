@@ -301,4 +301,10 @@
     <string name="text_czech">Czech</string>
     <string name="text_ukrainian">Ukrainian</string>
     <string name="text_turkish">Turkish</string>
+    <string name="popup_share_menu">Open Share-Menu</string>
+    <string name="popup_share_qr">Create QR-Code</string>
+    <string name="popup_share_content">Do you want to generate a QR-Code?</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="loading_generating_qr_code">Generating QR-Code</string>
 </resources>

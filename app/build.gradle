@@ -82,6 +82,7 @@ dependencies {
     implementation 'com.r0adkll:slidableactivity:2.0.6'
     implementation 'com.google.firebase:firebase-core:16.0.4'
     implementation 'com.google.firebase:firebase-messaging:17.3.3'
+    implementation 'com.google.zxing:core:3.2.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
 }
 apply plugin: 'com.google.gms.google-services'

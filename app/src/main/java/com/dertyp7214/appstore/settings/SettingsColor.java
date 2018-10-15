@@ -26,51 +26,54 @@ public class SettingsColor extends Settings {
 
     public SettingsColor(String name, String text, Context context, int color) {
         super(name, text, context);
-        this.colorInt=color;
-        this.isString=false;
+        this.colorInt = color;
+        this.isString = false;
         loadSetting();
     }
 
     public SettingsColor(String name, String text, Context context, String color) {
         super(name, text, context);
-        this.colorString=color;
-        this.isString=true;
+        this.colorString = color;
+        this.isString = true;
         loadSetting();
     }
 
-    public SettingsColor addSettingsOnClick(SettingsColor.settingsOnClickListener onClickListener){
-        this.onClickListener=onClickListener;
+    public SettingsColor addSettingsOnClick(SettingsColor.settingsOnClickListener onClickListener) {
+        this.onClickListener = onClickListener;
         return this;
     }
 
-    public String getColorString(){
-        return isString?colorString:String.format("#%06X", colorInt);
+    public String getColorString() {
+        return isString ? colorString : String.format("#%06X", colorInt);
     }
 
     public int getColorInt() {
-        return isString?Color.parseColor(colorString):colorInt;
+        return isString ? Color.parseColor(colorString) : colorInt;
     }
 
-    public void onClick(final View colorPlate){
-        if(onClickListener!=null) {
+    public void onClick(final View colorPlate) {
+        if (onClickListener != null) {
             final ColorPicker colorPicker = new ColorPicker(context);
             colorPicker.setMinMaxBrighness(0.45F, 1F);
             colorPicker.setListener(new ColorPicker.Listener() {
                 @Override
                 public void color(int i) {
 
-                    if(isString)
-                        colorString=String.format("#%06X", i);
+                    if (isString)
+                        colorString = String.format("#%06X", i);
                     else
                         colorInt = i;
 
                     LayerDrawable bgDrawable = (LayerDrawable) colorPlate.getBackground();
-                    final GradientDrawable shape = (GradientDrawable) bgDrawable.findDrawableByLayerId(R.id.plate_color);
-                    shape.setColor(isString?Color.parseColor(colorString):colorInt);
+                    final GradientDrawable shape =
+                            (GradientDrawable) bgDrawable.findDrawableByLayerId(R.id.plate_color);
+                    shape.setColor(isString ? Color.parseColor(colorString) : colorInt);
 
                     colorPicker.cancel();
 
-                    onClickListener.onClick(name, isString?Color.parseColor(colorString):colorInt, SettingsColor.this);
+                    onClickListener
+                            .onClick(name, isString ? Color.parseColor(colorString) : colorInt,
+                                    SettingsColor.this);
 
                 }
 
@@ -85,7 +88,7 @@ public class SettingsColor extends Settings {
                 }
             });
             colorPicker.setAnimationTime(300);
-            if(isString)
+            if (isString)
                 colorPicker.setColor(colorString);
             else
                 colorPicker.setColor(colorInt);
@@ -93,23 +96,26 @@ public class SettingsColor extends Settings {
         }
     }
 
-    public interface settingsOnClickListener{
-        void onClick(String name, int Color, SettingsColor settingsColor);
-    }
-
     @Override
-    public void saveSetting(){
-        SharedPreferences preferences = context.getSharedPreferences("colors_"+Config.UID(context), Context.MODE_PRIVATE);
+    public void saveSetting() {
+        SharedPreferences preferences =
+                context.getSharedPreferences("colors_" + Config.UID(context), Context.MODE_PRIVATE);
         @SuppressLint("CommitPrefEdits")
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt(name, getColorInt());
         editor.apply();
-
     }
 
     @Override
-    public void loadSetting(){
-        SharedPreferences preferences = context.getSharedPreferences("colors_"+Config.UID(context), Context.MODE_PRIVATE);
-        this.colorInt=isString?Color.parseColor(preferences.getString(name, colorString)):preferences.getInt(name, colorInt);
+    public void loadSetting() {
+        SharedPreferences preferences =
+                context.getSharedPreferences("colors_" + Config.UID(context), Context.MODE_PRIVATE);
+        this.colorInt =
+                isString ? Color.parseColor(preferences.getString(name, colorString)) : preferences
+                        .getInt(name, colorInt);
+    }
+
+    public interface settingsOnClickListener {
+        void onClick(String name, int Color, SettingsColor settingsColor);
     }
 }

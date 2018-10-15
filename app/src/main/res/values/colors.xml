@@ -28,4 +28,7 @@
     <color name="mal_text_secondary_dark">#b4ffffff</color>
     <color name="mal_color_icon_light_theme">#616161</color>
     <color name="mal_color_icon_dark_theme">#E0E0E0</color>
+
+    <color name="QRCodeWhiteColor">#ffffff</color>
+    <color name="QRCodeBlackColor">#000000</color>
 </resources>

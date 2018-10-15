@@ -7,9 +7,13 @@ package com.dertyp7214.appstore.screens;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -18,14 +22,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.dertyp7214.appstore.Config;
 import com.dertyp7214.appstore.R;
 import com.dertyp7214.appstore.ThemeStore;
@@ -42,6 +49,7 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Objects;
@@ -53,9 +61,17 @@ import androidx.palette.graphics.Palette;
 
 import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Config.APP_URL;
+import static com.dertyp7214.appstore.helpers.QRCodeHelper.generateQRCode;
 
 public class AppScreen extends Utils implements View.OnClickListener, MyInterface {
 
+    private static final int MENU_UNINSTALL = Menu.FIRST + 2;
+    @SuppressLint("UseSparseArrays")
+    public static HashMap<Integer, Download> downloadHashMap = new HashMap<>();
+    @SuppressLint("StaticFieldLeak")
+    private static AppScreen instance;
+    @SuppressLint("UseSparseArrays")
+    private static HashMap<Integer, Thread> threadHashMap = new HashMap<>();
     @ColorInt
     private int dominantColor, oldColor;
     private FloatingActionButton fab;
@@ -67,102 +83,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private FragmentChangeLogs changeLogs;
     private MenuItem shareMenu;
-
-    private static final int MENU_UNINSTALL = Menu.FIRST + 2;
-
-    @SuppressLint("StaticFieldLeak")
-    private static AppScreen instance;
-
-    @SuppressLint("UseSparseArrays")
-    private static HashMap<Integer, Thread> threadHashMap = new HashMap<>();
-
-    @SuppressLint("UseSparseArrays")
-    public static HashMap<Integer, Download> downloadHashMap = new HashMap<>();
-
-    public void onPostExecute() {
-        Bundle extra = getIntent().getExtras();
-        if (searchItem == null)
-            searchItem = Utils.appsList.get(checkExtra(extra).getString("id"));
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_app_screen, false);
-        CustomToolbar toolbar = findViewById(R.id.toolbar);
-        collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
-        setSupportActionBar(toolbar);
-
-        new MyTask(this).execute();
-        themeStore = ThemeStore.getInstance(AppScreen.this);
-
-        uninstall = findViewById(R.id.btn_uninstall);
-        open = findViewById(R.id.btn_open);
-
-        dominantColor = Palette.from(Utils.drawableToBitmap(searchItem.getAppIcon()))
-                .generate()
-                .getDominantColor(ThemeStore.getInstance(this).getPrimaryColor());
-
-        CustomAppBarLayout appBarLayout = getAppBar();
-
-        setTitle(searchItem.getAppTitle());
-        appBarLayout.setAppBarBackgroundColor(dominantColor);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        ((ImageView) findViewById(R.id.app_icon)).setImageDrawable(searchItem.getAppIcon());
-        collapsingToolbarLayout.setCollapsedTitleTextColor(themeStore.getPrimaryTextColor());
-        collapsingToolbarLayout.setExpandedTitleColor(
-                Utils.isColorBright(dominantColor) ? Color.BLACK : Color.WHITE);
-        collapsingToolbarLayout.setContentScrimColor(themeStore.getPrimaryColor());
-        collapsingToolbarLayout.setStatusBarScrimColor(themeStore.getPrimaryDarkColor());
-        setButtonColor(themeStore.getAccentColor(), open, uninstall);
-
-        appBarLayout.addOnOffsetChangedListener((appBarLayout1, verticalOffset) -> {
-            int totalScroll = appBarLayout1.getTotalScrollRange();
-            int currentScroll = totalScroll + verticalOffset;
-
-            int colorDark = calculateColor(Utils.manipulateColor(dominantColor, 0.6F),
-                    themeStore.getPrimaryDarkColor(), totalScroll, currentScroll);
-            int color = calculateColor(dominantColor, themeStore.getPrimaryColor(), totalScroll,
-                    currentScroll);
-
-            getWindow().setNavigationBarColor(colorDark);
-            getWindow().setStatusBarColor(colorDark);
-
-            setColors(toolbar, appBarLayout1, color);
-            collapsingToolbarLayout.setStatusBarScrimColor(colorDark);
-            collapsingToolbarLayout.setContentScrimColor(color);
-        });
-
-        setUpButtons();
-
-        fab = findViewById(R.id.fab);
-        fab.setColorFilter(
-                Utils.isColorBright(themeStore.getAccentColor()) ? Color.BLACK : Color.WHITE);
-        fab.setBackgroundTintList(ColorStateList.valueOf(themeStore.getAccentColor()));
-        fab.setVisibility(View.GONE);
-        fab.setOnClickListener(this::share);
-
-        instance = this;
-    }
-
-    public void setUpButtons() {
-        if (applicationInstalled(this, searchItem.getId())) {
-            installed = true;
-            open.setText(getString(R.string.text_open));
-            uninstall.setText(getString(R.string.text_uninstall));
-            uninstall.setVisibility(View.VISIBLE);
-            uninstall.setOnClickListener(this);
-            open.setOnClickListener(this);
-            if (! Utils.verifyInstallerId(this, searchItem.getId()))
-                checkUpdates();
-        } else {
-            installed = false;
-            open.setText(getString(R.string.text_install));
-            uninstall.setVisibility(View.INVISIBLE);
-            open.setOnClickListener(this);
-        }
-    }
+    private ProgressDialog progressDialog;
 
     public static boolean hasInstance() {
         return instance != null;
@@ -170,46 +91,6 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
 
     public static AppScreen getInstance() {
         return instance;
-    }
-
-    private void checkUpdates() {
-        new Thread(() -> {
-            String serverVersion = getServerVersion();
-            String localVersion = getLocalVersion();
-            Log.d("VERSIONS", "Server: " + serverVersion + "\nLocal: " + localVersion);
-            if (! serverVersion.equals(localVersion) && ! serverVersion.equals("0")) {
-                runOnUiThread(() -> {
-                    uninstall.setText(getString(R.string.text_update));
-                    uninstall.setOnClickListener(
-                            v -> downloadApp(this, searchItem.getAppTitle(), searchItem.getId(),
-                                    v));
-                });
-            }
-        }).start();
-    }
-
-    private String getServerVersion() {
-        if (version == null)
-            version = getWebContent(API_URL + "/apps/list.php?version=" + searchItem.getId());
-        return version;
-    }
-
-    private String getLocalVersion() {
-        try {
-            PackageInfo pinfo = getPackageManager().getPackageInfo(searchItem.getId(), 0);
-            return pinfo.versionName;
-        } catch (Exception e) {
-            return getServerVersion();
-        }
-    }
-
-    private void share(View view) {
-        String url = APP_URL(searchItem.getId());
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.setType("text/plain");
-        sendIntent.putExtra(Intent.EXTRA_TEXT, url);
-        startActivity(Intent.createChooser(sendIntent, getString(R.string.app_name)));
     }
 
     public static void downloadApp(Activity activity, String title, String id, View view) {
@@ -240,69 +121,6 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
 
             }
         });
-    }
-
-    private void setButtonColor(@ColorInt int color, Button button, Button button2) {
-        GradientDrawable bg =
-                (GradientDrawable) getResources().getDrawable(R.drawable.button_border);
-        bg.setStroke(3, color);
-        button2.setBackgroundDrawable(bg);
-        button2.setTextColor(color);
-        button.setTextColor(Utils.isColorBright(color) ? Color.BLACK : Color.WHITE);
-        button.getBackground().setTint(color);
-    }
-
-    private void setColors(CustomToolbar customToolbar, AppBarLayout customAppBarLayout, @ColorInt int color) {
-        customAppBarLayout.setBackgroundColor(color);
-        customToolbar.setToolbarIconColor(color);
-        changeLogs.setColor(color);
-        if (shareMenu != null)
-            shareMenu.getIcon().setTint(Utils.isColorBright(color) ? Color.BLACK : Color.WHITE);
-    }
-
-    private void navigationBarColor(Activity activity, AppBarLayout appBarLayout, @ColorInt int color, int duration) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setNavigationBarColor(activity, appBarLayout, color, duration);
-        }
-    }
-
-    private void statusBarColor(Activity activity, AppBarLayout appBarLayout, @ColorInt int color, int duration) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setStatusBarColor(activity, appBarLayout, color, duration);
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_open:
-                if (installed)
-                    openApp();
-                else
-                    downloadApp(this, searchItem.getAppTitle(), searchItem.getId(), v);
-                break;
-            case R.id.btn_uninstall:
-                removeApp();
-        }
-    }
-
-    private void openApp() {
-        Intent intent = getPackageManager().getLaunchIntentForPackage(searchItem.getId());
-        startActivity(intent);
-    }
-
-    private void removeApp() {
-        Intent intent = new Intent(Intent.ACTION_DELETE);
-        intent.setData(Uri.parse("package:" + searchItem.getId()));
-        startActivity(intent);
-    }
-
-    private interface DownloadListener {
-        void started();
-
-        void finished(File file);
-
-        void error(String errorMessage);
     }
 
     private static void downloadApp(Activity activity, String title, String id, DownloadListener downloadListener) {
@@ -371,6 +189,234 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         return notifications;
     }
 
+    public void onPostExecute() {
+        Bundle extra = getIntent().getExtras();
+        if (searchItem == null)
+            searchItem = Utils.appsList.get(checkExtra(extra).getString("id"));
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_app_screen, false);
+        CustomToolbar toolbar = findViewById(R.id.toolbar);
+        collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
+        setSupportActionBar(toolbar);
+
+        new MyTask(this).execute();
+        themeStore = ThemeStore.getInstance(AppScreen.this);
+
+        uninstall = findViewById(R.id.btn_uninstall);
+        open = findViewById(R.id.btn_open);
+
+        dominantColor = Palette.from(Utils.drawableToBitmap(searchItem.getAppIcon()))
+                .generate()
+                .getDominantColor(ThemeStore.getInstance(this).getPrimaryColor());
+
+        CustomAppBarLayout appBarLayout = getAppBar();
+
+        setTitle(searchItem.getAppTitle());
+        appBarLayout.setAppBarBackgroundColor(dominantColor);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        ((ImageView) findViewById(R.id.app_icon)).setImageDrawable(searchItem.getAppIcon());
+        collapsingToolbarLayout.setCollapsedTitleTextColor(themeStore.getPrimaryTextColor());
+        collapsingToolbarLayout.setExpandedTitleColor(
+                Utils.isColorBright(dominantColor) ? Color.BLACK : Color.WHITE);
+        collapsingToolbarLayout.setContentScrimColor(themeStore.getPrimaryColor());
+        collapsingToolbarLayout.setStatusBarScrimColor(themeStore.getPrimaryDarkColor());
+        setButtonColor(themeStore.getAccentColor(), open, uninstall);
+
+        appBarLayout.addOnOffsetChangedListener((appBarLayout1, verticalOffset) -> {
+            int totalScroll = appBarLayout1.getTotalScrollRange();
+            int currentScroll = totalScroll + verticalOffset;
+
+            int colorDark = calculateColor(Utils.manipulateColor(dominantColor, 0.6F),
+                    themeStore.getPrimaryDarkColor(), totalScroll, currentScroll);
+            int color = calculateColor(dominantColor, themeStore.getPrimaryColor(), totalScroll,
+                    currentScroll);
+
+            getWindow().setNavigationBarColor(colorDark);
+            getWindow().setStatusBarColor(colorDark);
+
+            setColors(toolbar, appBarLayout1, color);
+            collapsingToolbarLayout.setStatusBarScrimColor(colorDark);
+            collapsingToolbarLayout.setContentScrimColor(color);
+        });
+
+        setUpButtons();
+
+        fab = findViewById(R.id.fab);
+        fab.setColorFilter(
+                Utils.isColorBright(themeStore.getAccentColor()) ? Color.BLACK : Color.WHITE);
+        fab.setBackgroundTintList(ColorStateList.valueOf(themeStore.getAccentColor()));
+        fab.setVisibility(View.GONE);
+        fab.setOnClickListener(v -> share());
+
+        instance = this;
+    }
+
+    public void setUpButtons() {
+        if (applicationInstalled(this, searchItem.getId())) {
+            installed = true;
+            open.setText(getString(R.string.text_open));
+            uninstall.setText(getString(R.string.text_uninstall));
+            uninstall.setVisibility(View.VISIBLE);
+            uninstall.setOnClickListener(this);
+            open.setOnClickListener(this);
+            if (! Utils.verifyInstallerId(this, searchItem.getId()))
+                checkUpdates();
+        } else {
+            installed = false;
+            open.setText(getString(R.string.text_install));
+            uninstall.setVisibility(View.INVISIBLE);
+            open.setOnClickListener(this);
+        }
+    }
+
+    private void checkUpdates() {
+        new Thread(() -> {
+            String serverVersion = getServerVersion();
+            String localVersion = getLocalVersion();
+            Log.d("VERSIONS", "Server: " + serverVersion + "\nLocal: " + localVersion);
+            if (! serverVersion.equals(localVersion) && ! serverVersion.equals("0")) {
+                runOnUiThread(() -> {
+                    uninstall.setText(getString(R.string.text_update));
+                    uninstall.setOnClickListener(
+                            v -> downloadApp(this, searchItem.getAppTitle(), searchItem.getId(),
+                                    v));
+                });
+            }
+        }).start();
+    }
+
+    private String getServerVersion() {
+        if (version == null)
+            version = getWebContent(API_URL + "/apps/list.php?version=" + searchItem.getId());
+        return version;
+    }
+
+    private String getLocalVersion() {
+        try {
+            PackageInfo pinfo = getPackageManager().getPackageInfo(searchItem.getId(), 0);
+            return pinfo.versionName;
+        } catch (Exception e) {
+            return getServerVersion();
+        }
+    }
+
+    private void share() {
+        String url = APP_URL(searchItem.getId());
+
+        new MaterialDialog.Builder(this)
+                .title(R.string.share)
+                .content(R.string.popup_share_content)
+                .positiveColor(themeStore.getAccentColor())
+                .negativeColor(themeStore.getAccentColor())
+                .positiveText(R.string.yes)
+                .negativeText(R.string.no)
+                .onPositive((dialog, which) -> new Thread(() -> {
+                    Looper.prepare();
+                    runOnUiThread(() -> progressDialog = ProgressDialog
+                            .show(this, "", getString(R.string.loading_generating_qr_code)));
+                    dialog.dismiss();
+                    ImageView imageView = new ImageView(this);
+                    imageView.setImageBitmap(generateQRCode(this, url));
+                    imageView.setLayoutParams(
+                            new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT));
+                    runOnUiThread(() -> {
+                        imageView.setOnClickListener(v -> {
+                            Intent sendIntent = new Intent();
+                            sendIntent.setAction(Intent.ACTION_SEND);
+                            sendIntent.setType("image/jpeg");
+                            Bitmap b = drawableToBitmap(imageView.getDrawable());
+                            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                            b.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+                            String path = MediaStore.Images.Media.insertImage(getContentResolver(),
+                                    b, "Title", null);
+                            Uri imageUri = Uri.parse(path);
+                            sendIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+                            startActivity(
+                                    Intent.createChooser(sendIntent, getString(R.string.app_name)));
+                        });
+                        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                                .create();
+                        alertDialog.setView(imageView);
+                        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE,
+                                getString(android.R.string.yes),
+                                (dialog1, which1) -> dialog1.dismiss());
+                        alertDialog.show();
+                        progressDialog.dismiss();
+                    });
+                }).start())
+                .onNegative((dialog, which) -> {
+                    Intent sendIntent = new Intent();
+                    sendIntent.setAction(Intent.ACTION_SEND);
+                    sendIntent.setType("text/plain");
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, url);
+                    startActivity(Intent.createChooser(sendIntent, getString(R.string.app_name)));
+                    dialog.dismiss();
+                })
+                .build()
+                .show();
+    }
+
+    private void setButtonColor(@ColorInt int color, Button button, Button button2) {
+        GradientDrawable bg =
+                (GradientDrawable) getResources().getDrawable(R.drawable.button_border);
+        bg.setStroke(3, color);
+        button2.setBackgroundDrawable(bg);
+        button2.setTextColor(color);
+        button.setTextColor(Utils.isColorBright(color) ? Color.BLACK : Color.WHITE);
+        button.getBackground().setTint(color);
+    }
+
+    private void setColors(CustomToolbar customToolbar, AppBarLayout customAppBarLayout, @ColorInt int color) {
+        customAppBarLayout.setBackgroundColor(color);
+        customToolbar.setToolbarIconColor(color);
+        changeLogs.setColor(color);
+        if (shareMenu != null)
+            shareMenu.getIcon().setTint(Utils.isColorBright(color) ? Color.BLACK : Color.WHITE);
+    }
+
+    private void navigationBarColor(Activity activity, AppBarLayout appBarLayout, @ColorInt int color, int duration) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            setNavigationBarColor(activity, appBarLayout, color, duration);
+        }
+    }
+
+    private void statusBarColor(Activity activity, AppBarLayout appBarLayout, @ColorInt int color, int duration) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            setStatusBarColor(activity, appBarLayout, color, duration);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_open:
+                if (installed)
+                    openApp();
+                else
+                    downloadApp(this, searchItem.getAppTitle(), searchItem.getId(), v);
+                break;
+            case R.id.btn_uninstall:
+                removeApp();
+        }
+    }
+
+    private void openApp() {
+        Intent intent = getPackageManager().getLaunchIntentForPackage(searchItem.getId());
+        startActivity(intent);
+    }
+
+    private void removeApp() {
+        Intent intent = new Intent(Intent.ACTION_DELETE);
+        intent.setData(Uri.parse("package:" + searchItem.getId()));
+        startActivity(intent);
+    }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -381,50 +427,6 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
-    }
-
-    public static class Download {
-        private String url;
-        private Thread thread;
-        private boolean finished = false;
-        private File content;
-        private int id;
-
-        Download(String url) {
-            this.url = url;
-        }
-
-        File startDownload(File path, int id, DownloadState downloadState) {
-            this.id = id;
-            thread = new Thread(() -> {
-                content = Utils.getWebContent(url, path, id, downloadState::state);
-                finished = true;
-            });
-            thread.start();
-            while (! finished) {
-                Log.d("WAITING", "...");
-                try {
-                    Thread.sleep(100);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            return content;
-        }
-
-        public void cancel() {
-            if (thread != null)
-                thread.interrupt();
-            try {
-                threadHashMap.get(id).interrupt();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        interface DownloadState {
-            void state(int percentage);
-        }
     }
 
     @Override
@@ -444,21 +446,6 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         } else if (fragment instanceof FragmentAppInfo) {
             FragmentAppInfo appInfo = ((FragmentAppInfo) fragment);
             appInfo.getAppInfo(searchItem);
-        }
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    private class MyTask extends AsyncTask<Void, Void, Void> {
-        MyInterface myinterface;
-
-        MyTask(MyInterface mi) {
-            myinterface = mi;
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            myinterface.onPostExecute();
-            return null;
         }
     }
 
@@ -510,7 +497,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
 
         switch (id) {
             case R.id.action_share:
-                share(null);
+                share();
                 break;
             case MENU_UNINSTALL:
                 removeApp();
@@ -518,5 +505,72 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private interface DownloadListener {
+        void started();
+
+        void finished(File file);
+
+        void error(String errorMessage);
+    }
+
+    public static class Download {
+        private String url;
+        private Thread thread;
+        private boolean finished = false;
+        private File content;
+        private int id;
+
+        Download(String url) {
+            this.url = url;
+        }
+
+        File startDownload(File path, int id, DownloadState downloadState) {
+            this.id = id;
+            thread = new Thread(() -> {
+                content = Utils.getWebContent(url, path, id, downloadState::state);
+                finished = true;
+            });
+            thread.start();
+            while (! finished) {
+                Log.d("WAITING", "...");
+                try {
+                    Thread.sleep(100);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            return content;
+        }
+
+        public void cancel() {
+            if (thread != null)
+                thread.interrupt();
+            try {
+                threadHashMap.get(id).interrupt();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        interface DownloadState {
+            void state(int percentage);
+        }
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    private class MyTask extends AsyncTask<Void, Void, Void> {
+        MyInterface myinterface;
+
+        MyTask(MyInterface mi) {
+            myinterface = mi;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            myinterface.onPostExecute();
+            return null;
+        }
     }
 }
