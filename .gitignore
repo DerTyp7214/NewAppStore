@@ -1,14 +1,12 @@
 *.iml
 .gradle
 /local.properties
-/.idea/caches/build_file_checksum.ser
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
 .DS_Store
 /build
 /captures
 .externalNativeBuild
 app/src/main/java/com/dertyp7214/appstore/SecretConfig.java
-app/build
+app/free
+app/paid
 assemble.cmd
+/.idea/
