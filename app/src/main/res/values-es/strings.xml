@@ -205,4 +205,9 @@
     <string name="text_czech">checo</string>
     <string name="text_ukrainian">ucranio</string>
     <string name="text_turkish">turco</string>
+    <string name="popup_share_menu">Abrir menú de acciones</string>
+    <string name="popup_share_qr">Crear código QR</string>
+    <string name="popup_share_content">¿Te gustaría generar un código QR?</string>
+    <string name="no">No</string>
+    <string name="yes">Sí</string>
 </resources>

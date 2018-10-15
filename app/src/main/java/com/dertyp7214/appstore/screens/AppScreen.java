@@ -7,13 +7,10 @@ package com.dertyp7214.appstore.screens;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -22,13 +19,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
-import android.provider.MediaStore;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -45,11 +40,11 @@ import com.dertyp7214.appstore.fragments.FragmentAppInfo;
 import com.dertyp7214.appstore.fragments.FragmentChangeLogs;
 import com.dertyp7214.appstore.interfaces.MyInterface;
 import com.dertyp7214.appstore.items.SearchItem;
+import com.dertyp7214.qrcodedialog.components.QRCodeDialog;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Objects;
@@ -61,7 +56,6 @@ import androidx.palette.graphics.Palette;
 
 import static com.dertyp7214.appstore.Config.API_URL;
 import static com.dertyp7214.appstore.Config.APP_URL;
-import static com.dertyp7214.appstore.helpers.QRCodeHelper.generateQRCode;
 
 public class AppScreen extends Utils implements View.OnClickListener, MyInterface {
 
@@ -315,41 +309,11 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
                 .negativeColor(themeStore.getAccentColor())
                 .positiveText(R.string.yes)
                 .negativeText(R.string.no)
-                .onPositive((dialog, which) -> new Thread(() -> {
-                    Looper.prepare();
-                    runOnUiThread(() -> progressDialog = ProgressDialog
-                            .show(this, "", getString(R.string.loading_generating_qr_code)));
-                    dialog.dismiss();
-                    ImageView imageView = new ImageView(this);
-                    imageView.setImageBitmap(generateQRCode(this, url));
-                    imageView.setLayoutParams(
-                            new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.MATCH_PARENT));
-                    runOnUiThread(() -> {
-                        imageView.setOnClickListener(v -> {
-                            Intent sendIntent = new Intent();
-                            sendIntent.setAction(Intent.ACTION_SEND);
-                            sendIntent.setType("image/jpeg");
-                            Bitmap b = drawableToBitmap(imageView.getDrawable());
-                            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                            b.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-                            String path = MediaStore.Images.Media.insertImage(getContentResolver(),
-                                    b, "Title", null);
-                            Uri imageUri = Uri.parse(path);
-                            sendIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-                            startActivity(
-                                    Intent.createChooser(sendIntent, getString(R.string.app_name)));
-                        });
-                        AlertDialog alertDialog = new AlertDialog.Builder(this)
-                                .create();
-                        alertDialog.setView(imageView);
-                        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE,
-                                getString(android.R.string.yes),
-                                (dialog1, which1) -> dialog1.dismiss());
-                        alertDialog.show();
-                        progressDialog.dismiss();
-                    });
-                }).start())
+                .onPositive((dialog, which) -> {
+                    QRCodeDialog qrCodeDialog = new QRCodeDialog(this);
+                    qrCodeDialog.customLogo(drawableToBitmap(searchItem.getAppIcon()));
+                    qrCodeDialog.show(url);
+                })
                 .onNegative((dialog, which) -> {
                     Intent sendIntent = new Intent();
                     sendIntent.setAction(Intent.ACTION_SEND);

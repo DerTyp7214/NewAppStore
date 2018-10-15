@@ -144,4 +144,9 @@
     <string name="text_ukrainian">ukrajinština</string>
     <string name="text_turkish">turečtina</string>
     <string name="home">Domov</string>
+    <string name="popup_share_menu">Otevřete nabídku Share</string>
+    <string name="popup_share_qr">Vytvořte QR-kód</string>
+    <string name="popup_share_content">Chcete generovat QR kód?</string>
+    <string name="no">Ne</string>
+    <string name="yes">Ano</string>
 </resources>

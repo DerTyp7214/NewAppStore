@@ -306,5 +306,4 @@
     <string name="popup_share_content">Do you want to generate a QR-Code?</string>
     <string name="no">No</string>
     <string name="yes">Yes</string>
-    <string name="loading_generating_qr_code">Generating QR-Code</string>
 </resources>

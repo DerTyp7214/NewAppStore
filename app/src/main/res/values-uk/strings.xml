@@ -144,4 +144,9 @@
     <string name="text_change_bg_pic">Змінити шпалери</string>
     <string name="text_ukrainian">Українська</string>
     <string name="text_turkish">Турецька мова</string>
+    <string name="yes">Так</string>
+    <string name="no">Ні</string>
+    <string name="popup_share_content">Ви хочете створити QR-код?</string>
+    <string name="popup_share_qr">Створіть QR-код</string>
+    <string name="popup_share_menu">Відкрити меню \"Частка\"</string>
 </resources>

@@ -150,4 +150,9 @@
     <string name="mal_title_about">hakkında</string>
     <string name="text_ukrainian">Ukrayna</string>
     <string name="text_turkish">Türk</string>
+    <string name="popup_share_menu">Açık Paylaşma Menüsü</string>
+    <string name="popup_share_qr">QR Kodu Oluştur</string>
+    <string name="popup_share_content">Bir QR Kodu oluşturmak ister misiniz?</string>
+    <string name="no">Yok hayır</string>
+    <string name="yes">Evet</string>
 </resources>
