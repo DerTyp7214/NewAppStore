@@ -241,6 +241,16 @@ public class FragmentAbout extends MaterialAboutFragment {
                         "https://github.com/ArthurHub/Android-Image-Cropper",
                         "Copyright 2016, Arthur Teplitzki 2013, Edmodo, Inc.",
                         new ApacheSoftwareLicense20()));
+        notices.addNotice(
+                new Notice("Firebase",
+                        "https://developer.android.com/studio/terms",
+                        "Copyright 2016, Google LLC.",
+                        new ApacheSoftwareLicense20()));
+        notices.addNotice(
+                new Notice("ZXing Core",
+                        "https://developer.android.com/studio/terms",
+                        "Copyright 2016, Google LLC.",
+                        new ApacheSoftwareLicense20()));
 
         MaterialAboutCard card = new MaterialAboutCard.Builder()
                 .title(R.string.text_authors)
