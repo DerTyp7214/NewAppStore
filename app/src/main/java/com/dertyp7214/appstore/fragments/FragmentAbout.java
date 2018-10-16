@@ -162,6 +162,16 @@ public class FragmentAbout extends MaterialAboutFragment {
                         "Copyright (c) 2018 Josua Lengwenath",
                         new MITLicense()));
         notices.addNotice(
+                new Notice("ThemeableComponents",
+                        "https://github.com/DerTyp7214/ThemeableComponents",
+                        "Copyright (c) 2018 Josua Lengwenath",
+                        new MITLicense()));
+        notices.addNotice(
+                new Notice("QrCodePopup",
+                        "https://github.com/DerTyp7214/QrCodePopup",
+                        "Copyright (c) 2018 Josua Lengwenath",
+                        new MITLicense()));
+        notices.addNotice(
                 new Notice("RootBeer",
                         "https://github.com/scottyab/rootbeer",
                         "Copyright (C) 2015, Scott Alexander-Bown, Mat Rollings",
@@ -246,16 +256,6 @@ public class FragmentAbout extends MaterialAboutFragment {
                         "https://developer.android.com/studio/terms",
                         "Copyright 2016, Google LLC.",
                         new ApacheSoftwareLicense20()));
-        notices.addNotice(
-                new Notice("ThemeableComponents",
-                        "https://github.com/DerTyp7214/ThemeableComponents",
-                        "Copyright 2019, Josua Lengwenath",
-                        new MITLicense()));
-        notices.addNotice(
-                new Notice("QrCodePopup",
-                        "https://github.com/DerTyp7214/QrCodePopup",
-                        "Copyright 2018, Josua Lengwenath",
-                        new MITLicense()));
 
         MaterialAboutCard card = new MaterialAboutCard.Builder()
                 .title(R.string.text_authors)

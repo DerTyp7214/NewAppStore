@@ -311,7 +311,7 @@ public class AppScreen extends Utils implements View.OnClickListener, MyInterfac
                 .negativeText(R.string.no)
                 .onPositive((dialog, which) -> {
                     QRCodeDialog qrCodeDialog = new QRCodeDialog(this);
-                    qrCodeDialog.customLogo(drawableToBitmap(searchItem.getAppIcon()));
+                    qrCodeDialog.customImageTint(drawableToBitmap(searchItem.getAppIcon()));
                     qrCodeDialog.show(url);
                 })
                 .onNegative((dialog, which) -> {
