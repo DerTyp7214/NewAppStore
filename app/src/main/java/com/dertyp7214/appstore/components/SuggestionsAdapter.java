@@ -5,6 +5,13 @@
  *
  */
 
+/*
+ *
+ *  * Copyright (c) 2018.
+ *  * Created by Josua Lengwenath
+ *
+ */
+
 package com.dertyp7214.appstore.components;
 
 import android.view.LayoutInflater;
@@ -136,8 +143,8 @@ public abstract class SuggestionsAdapter<S, V extends RecyclerView.ViewHolder> e
     }
 
     public interface OnItemViewClickListener{
-        void OnItemClickListener(int position,View v);
-        void OnItemDeleteListener(int position,View v);
+        void OnItemClickListener(int position, View v);
+        void OnItemDeleteListener(int position, View v);
     }
 
 }

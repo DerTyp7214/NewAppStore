@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-android'
 
 android {
     signingConfigs {
@@ -49,10 +51,10 @@ dependencies {
     //implementation(name: 'materialAbout', ext: 'aar')
     //implementation 'com.github.daniel-stoneuk:material-about-library:2.3.0'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.0-beta01'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-beta01'
+    androidTestImplementation 'androidx.test:runner:1.1.0-beta02'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-beta02'
     implementation 'com.github.DerTyp7214:ThemeableComponents:1.2'
-    implementation 'com.github.DerTyp7214:QrCodePopup:v1.3'
+    implementation 'com.github.DerTyp7214:QrCodePopup:v1.4'
     implementation "com.google.android.material:material:$ver"
     implementation "androidx.appcompat:appcompat:$ver"
     implementation "androidx.cardview:cardview:$ver"
@@ -73,16 +75,22 @@ dependencies {
     implementation 'com.nbsp:library:1.09'
     implementation 'com.github.mancj:MaterialSearchBar:0.7.6'
     implementation 'com.mikhaellopez:circularimageview:3.2.0'
-    implementation 'de.psdev.licensesdialog:licensesdialog:1.8.3'
+    implementation 'de.psdev.licensesdialog:licensesdialog:1.9.0'
     implementation 'bg.devlabs.transitioner:transitioner:1.3'
     implementation 'com.mindorks.android:prdownloader:0.4.0'
     implementation 'com.github.florent37:expansionpanel:1.1.1'
     implementation 'com.github.Shashank02051997:FancyToast-Android:0.1.3'
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.0'
-    implementation 'com.jakewharton:butterknife:8.8.1'
+    implementation 'com.jakewharton:butterknife:9.0.0-rc1'
     implementation 'com.r0adkll:slidableactivity:2.0.6'
     implementation 'com.google.firebase:firebase-core:16.0.4'
     implementation 'com.google.firebase:firebase-messaging:17.3.3'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    implementation 'androidx.core:core-ktx:1.0.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0-rc1'
+}
+repositories {
+    maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
+    mavenCentral()
 }
 apply plugin: 'com.google.gms.google-services'
