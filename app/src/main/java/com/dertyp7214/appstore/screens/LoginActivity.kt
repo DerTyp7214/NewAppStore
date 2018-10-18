@@ -37,6 +37,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
+@Suppress("NAME_SHADOWING")
 class LoginActivity : Activity() {
     private var btnLogin: Button? = null
     private var btnLinkToRegister: Button? = null
@@ -90,8 +91,8 @@ class LoginActivity : Activity() {
         }
 
         btnLogin!!.setOnClickListener {
-            val email = inputEmail!!.text.toString().trim { it <= ' ' }
-            val password = inputPassword!!.text.toString().trim { it <= ' ' }
+            val email = inputEmail!!.text.toString()
+            val password = inputPassword!!.text.toString()
 
             if (!email.isEmpty() && !password.isEmpty()) {
                 checkLogin(email, password)
@@ -102,7 +103,7 @@ class LoginActivity : Activity() {
             }
         }
 
-        btnLinkToRegister!!.setOnClickListener { view ->
+        btnLinkToRegister!!.setOnClickListener {
             val i = Intent(applicationContext,
                     RegisterActivity::class.java).putExtra("appstore", true)
             startActivity(i)

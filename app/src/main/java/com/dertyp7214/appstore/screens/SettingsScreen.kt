@@ -214,9 +214,7 @@ class SettingsScreen : Utils() {
                         .getBoolean("hide_appicon", false))
                         .setCheckedChangeListener(object : SettingsSwitch.CheckedChangeListener {
                             override fun onChangeChecked(value: Boolean) {
-                                Utils.getSettings(this@SettingsScreen).edit {
-                                    value to "hide_appicon"
-                                }
+                                Utils.getSettings(this@SettingsScreen).edit().putBoolean("hide_appicon", value).apply()
                                 val p = packageManager
                                 val componentName = ComponentName(this@SettingsScreen, Launcher::class.java)
                                 return if (value)
@@ -244,6 +242,8 @@ class SettingsScreen : Utils() {
         themeStore = ThemeStore.getInstance(this)
         toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
+
+        wxSwipeBackLayout.isSwipeFromEdge = true
 
         if (!Utils.getSettings(this).getBoolean("root_install", false)) {
             Config.root = isRooted

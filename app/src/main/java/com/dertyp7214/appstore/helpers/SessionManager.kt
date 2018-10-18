@@ -25,9 +25,7 @@ class SessionManager(_context: Context) {
 
     fun setLogin(isLoggedIn: Boolean) {
 
-        pref.edit {
-            isLoggedIn to KEY_IS_LOGGED_IN
-        }
+        pref.edit().putBoolean(KEY_IS_LOGGED_IN, isLoggedIn).apply()
         Log.d(TAG, "User login session modified!")
     }
 

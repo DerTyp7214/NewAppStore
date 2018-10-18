@@ -97,10 +97,9 @@ class FragmentAppGroups : TabFragment() {
                             getSettings(context!!).edit().putString("last_refresh",
                                     DateFormat.format("yyyyMMdd", Date()).toString())
                                     .apply()
-                            LocalJSON.setJSON(context!!,
-                                    getWebContent(
-                                            Config.API_URL + "/apps/list.php?user=" + Config
-                                                    .UID(context!!))!!)
+                            LocalJSON.setJSON(context!!, getWebContent(
+                                    Config.API_URL + "/apps/list.php?user=" + Config
+                                            .UID(context!!))!!)
                         }
 
                         val jsonObject = JSONObject(LocalJSON.getJSON(context!!))

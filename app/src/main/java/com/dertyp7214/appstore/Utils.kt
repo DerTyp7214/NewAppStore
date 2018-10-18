@@ -69,6 +69,7 @@ abstract class Utils : AppCompatActivity() {
     protected var oldAppPackageName = "com.hacker.appstore"
     protected open var themeStore: ThemeStore? = null
     protected lateinit var themeManager: ThemeManager
+    protected lateinit var wxSwipeBackLayout: WxSwipeBackLayout
     private var statusColor = -1
     private var callback: Callback? = null
 
@@ -130,7 +131,7 @@ abstract class Utils : AppCompatActivity() {
     fun setContentView(layoutResID: Int, swipe: Boolean) {
         super.setContentView(layoutResID)
         if (swipe) {
-            val wxSwipeBackLayout = WxSwipeBackLayout(this)
+            wxSwipeBackLayout = WxSwipeBackLayout(this)
             wxSwipeBackLayout.directionMode = SwipeBackLayout.FROM_LEFT
             wxSwipeBackLayout.attachToActivity(this)
             wxSwipeBackLayout.setSwipeBackListener(object : SwipeBackLayout.OnSwipeBackListener {

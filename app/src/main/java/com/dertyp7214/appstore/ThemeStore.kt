@@ -12,8 +12,7 @@ import android.graphics.Color
 import android.util.Log
 import com.dertyp7214.appstore.Config.ACTIVE_OVERLAY
 import com.dertyp7214.appstore.Utils.Companion.manipulateColor
-
-import java.util.Arrays
+import java.util.*
 
 @Suppress("DEPRECATION")
 class ThemeStore private constructor(private val context: Context) {
@@ -56,7 +55,11 @@ class ThemeStore private constructor(private val context: Context) {
 
     init {
         instance = this
-        this.sharedPreferences = context.getSharedPreferences("colors_" + Config.UID(context)!!, Context.MODE_PRIVATE)
+        this.sharedPreferences = try {
+            context.getSharedPreferences("colors_" + Config.UID(context)!!, Context.MODE_PRIVATE)
+        } catch (e: Exception) {
+            context.getSharedPreferences("colors_splash", Context.MODE_PRIVATE)
+        }
     }
 
     fun getPrimaryHue(degree: Int): Int {

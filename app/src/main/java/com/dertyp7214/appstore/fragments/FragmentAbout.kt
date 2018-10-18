@@ -84,7 +84,6 @@ class FragmentAbout(private val activity: Activity) : MaterialAboutFragment() {
     private var counter = 0
 
     init {
-
         if (!setUp)
             setUpBottomSheet()
 

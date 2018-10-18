@@ -8,7 +8,6 @@
 package com.dertyp7214.appstore
 
 import android.content.Context
-import androidx.core.content.edit
 
 object LocalJSON {
 
@@ -17,8 +16,6 @@ object LocalJSON {
     }
 
     fun setJSON(context: Context, json: String) {
-        context.getSharedPreferences("json", Context.MODE_PRIVATE).edit {
-            json to "json"
-        }
+        context.getSharedPreferences("json", Context.MODE_PRIVATE).edit().putString("json", json).apply()
     }
 }
