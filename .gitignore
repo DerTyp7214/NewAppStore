@@ -5,7 +5,7 @@
 /build
 /captures
 .externalNativeBuild
-app/src/main/java/com/dertyp7214/appstore/SecretConfig.java
+app/src/main/java/com/dertyp7214/appstore/SecretConfig.kt
 app/free
 app/paid
 assemble.cmd

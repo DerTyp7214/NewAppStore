@@ -5,6 +5,13 @@
  *
  */
 
+/*
+ *
+ *  * Copyright (c) 2018.
+ *  * Created by Josua Lengwenath
+ *
+ */
+
 package com.dertyp7214.appstore.components;
 
 import android.view.LayoutInflater;
@@ -35,13 +42,13 @@ public class DefaultSuggestionsAdapter extends
     }
 
     @Override
-    public DefaultSuggestionsAdapter.SuggestionHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public SuggestionHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = getLayoutInflater().inflate(R.layout.item_last_request, parent, false);
-        return new DefaultSuggestionsAdapter.SuggestionHolder(view);
+        return new SuggestionHolder(view);
     }
 
     @Override
-    public void onBindSuggestionHolder(String suggestion, DefaultSuggestionsAdapter.SuggestionHolder holder, int position) {
+    public void onBindSuggestionHolder(String suggestion, SuggestionHolder holder, int position) {
         holder.text.setText(getSuggestions().get(position));
     }
 
@@ -70,7 +77,7 @@ public class DefaultSuggestionsAdapter extends
     }
 
     public interface OnItemViewClickListener{
-        void OnItemClickListener(int position,View v);
-        void OnItemDeleteListener(int position,View v);
+        void OnItemClickListener(int position, View v);
+        void OnItemDeleteListener(int position, View v);
     }
 }

@@ -1,3 +1,10 @@
+/*
+ *
+ *  * Copyright (c) 2018.
+ *  * Created by Josua Lengwenath
+ *
+ */
+
 package com.dertyp7214.appstore.components;
 
 import android.animation.ValueAnimator;
@@ -293,7 +300,7 @@ public class MaterialSearchBar extends RelativeLayout implements View.OnClickLis
                 menuIconRes = iconResId;
                 menuIcon.setImageResource(menuIconRes);
             }
-            RelativeLayout.LayoutParams params = (LayoutParams) searchIcon.getLayoutParams();
+            LayoutParams params = (LayoutParams) searchIcon.getLayoutParams();
             params.rightMargin = (int) (48 * destiny);
             searchIcon.setLayoutParams(params);
             menuIcon.setVisibility(VISIBLE);
