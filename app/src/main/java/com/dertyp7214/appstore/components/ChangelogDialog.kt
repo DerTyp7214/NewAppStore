@@ -9,14 +9,13 @@ package com.dertyp7214.appstore.components
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.view.InflateException
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.webkit.WebView
-
 import com.afollestad.materialdialogs.MaterialDialog
 import com.dertyp7214.appstore.R
-
+import com.dertyp7214.appstore.loginout.AppController.Companion.TAG
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -27,8 +26,9 @@ constructor(context: Context) {
     init {
         val customView: View = try {
             LayoutInflater.from(context).inflate(R.layout.dialog_web_view, null)
-        } catch (e: InflateException) {
+        } catch (e: Exception) {
             e.printStackTrace()
+            Log.d(TAG, e.localizedMessage)
             MaterialDialog.Builder(context)
                     .title(android.R.string.dialog_alert_title)
                     .content(
@@ -55,10 +55,9 @@ constructor(context: Context) {
             }
 
             val reader = BufferedReader(InputStreamReader(json, "UTF-8"))
+            var line: String? = null
 
-            reader.readLine().forEach { str ->
-                buf.append(str)
-            }
+            while ({ line = reader.readLine(); line }() != null) buf.append(line)
 
             reader.close()
             webView.loadData(buf.toString(), "text/html", "UTF-8")

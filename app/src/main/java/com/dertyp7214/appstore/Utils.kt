@@ -799,10 +799,10 @@ abstract class Utils : AppCompatActivity() {
                 val reader = BufferedReader(InputStreamReader(web.openStream()))
 
                 val ret = StringBuilder()
+                var line: String? = null
 
-                reader.readLine().forEach { inputLine ->
-                    ret.append(inputLine)
-                }
+                while ({line = reader.readLine(); line}() != null)
+                    ret.append(line!!)
 
                 reader.close()
                 ret.toString()

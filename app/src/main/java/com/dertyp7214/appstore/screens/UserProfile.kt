@@ -93,7 +93,6 @@ class UserProfile : Utils() {
                     logs.error("setUser", e.toString())
                     userImage = resources.getDrawable(R.mipmap.ic_launcher, null)
                 }
-
             } else
                 user = userHashMap[uid]
             runOnUiThread {

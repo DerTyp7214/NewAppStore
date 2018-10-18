@@ -326,10 +326,10 @@ class Splashscreen : Utils() {
                 BufferedReader(InputStreamReader(connection.inputStream))
 
             val ret = StringBuilder()
+            var line: String? = null
 
-            bufferedReader.readLine().forEach { inputLine ->
-                ret.append(inputLine)
-            }
+            while ({line = bufferedReader.readLine(); line}() != null)
+                ret.append(line!!)
 
             bufferedReader.close()
             ret.toString()
