@@ -7,14 +7,12 @@ package com.dertyp7214.appstore.screens
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.AsyncTask
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.text.Spanned
@@ -40,23 +38,26 @@ import com.dertyp7214.appstore.Utils
 import com.dertyp7214.appstore.components.CustomSnackbar
 import com.dertyp7214.appstore.components.CustomToolbar
 import com.dertyp7214.appstore.components.Notifications
+import com.dertyp7214.appstore.dev.Logs
 import com.dertyp7214.appstore.fragments.FragmentAppInfo
 import com.dertyp7214.appstore.fragments.FragmentChangeLogs
 import com.dertyp7214.appstore.interfaces.MyInterface
 import com.dertyp7214.appstore.items.SearchItem
 import com.dertyp7214.qrcodedialog.components.QRCodeDialog
+import com.downloader.Error
+import com.downloader.OnDownloadListener
+import com.downloader.PRDownloader
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.io.File
 import java.util.*
 
-@Suppress("DEPRECATION", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS", "UNREACHABLE_CODE")
+@Suppress("DEPRECATION", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS", "UNREACHABLE_CODE", "NAME_SHADOWING", "IMPLICIT_CAST_TO_ANY")
 class AppScreen : Utils(), View.OnClickListener, MyInterface {
     @ColorInt
     private var dominantColor: Int = 0
     @ColorInt
-    private val oldColor: Int = 0
     private var fab: FloatingActionButton? = null
     private var searchItem: SearchItem? = null
     override var themeStore: ThemeStore? = null
@@ -67,12 +68,11 @@ class AppScreen : Utils(), View.OnClickListener, MyInterface {
     private var collapsingToolbarLayout: CollapsingToolbarLayout? = null
     private var changeLogs: FragmentChangeLogs? = null
     private var shareMenu: MenuItem? = null
-    private val progressDialog: ProgressDialog? = null
 
     private val serverVersion: String
         get() {
             if (version == null)
-                version = Utils.Companion.getWebContent(API_URL + "/apps/list.php?version=" + searchItem!!.id)
+                version = Utils.getWebContent(API_URL + "/apps/list.php?version=" + searchItem!!.id)
             return version!!
         }
 
@@ -231,18 +231,6 @@ class AppScreen : Utils(), View.OnClickListener, MyInterface {
             shareMenu!!.icon.setTint(if (Utils.isColorBright(color)) Color.BLACK else Color.WHITE)
     }
 
-    private fun navigationBarColor(activity: Activity, appBarLayout: AppBarLayout, @ColorInt color: Int, duration: Int) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Utils.setNavigationBarColor(activity, appBarLayout, color, duration)
-        }
-    }
-
-    private fun statusBarColor(activity: Activity, appBarLayout: AppBarLayout, @ColorInt color: Int, duration: Int) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Utils.setStatusBarColor(activity, appBarLayout, color, duration)
-        }
-    }
-
     override fun onClick(v: View) {
         when (v.id) {
             R.id.btn_open -> if (installed)
@@ -349,59 +337,6 @@ class AppScreen : Utils(), View.OnClickListener, MyInterface {
         return super.onOptionsItemSelected(item)
     }
 
-    private interface DownloadListener {
-        fun started()
-
-        fun finished(file: File)
-
-        fun error(errorMessage: String)
-    }
-
-    class Download internal constructor(private val url: String) {
-        private var thread: Thread? = null
-        private var finished = false
-        private var content: File? = null
-        private var id: Int = 0
-
-        internal fun startDownload(path: File, id: Int, downloadState: DownloadState): File? {
-            this.id = id
-            thread = Thread {
-                content = Utils.getWebContent(url, path, id, object : Listener {
-                    override fun run(progress: Int) {
-                        return downloadState.state(progress)
-                    }
-                })
-                finished = true
-            }
-            thread!!.start()
-            while (!finished) {
-                Log.d("WAITING", "...")
-                try {
-                    Thread.sleep(100)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-
-            }
-            return content
-        }
-
-        fun cancel() {
-            if (thread != null)
-                thread!!.interrupt()
-            try {
-                threadHashMap[id]!!.interrupt()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-
-        }
-
-        internal interface DownloadState {
-            fun state(percentage: Int)
-        }
-    }
-
     @SuppressLint("StaticFieldLeak")
     private inner class MyTask internal constructor(internal var myInterface: MyInterface) : AsyncTask<Void, Void, Void>() {
 
@@ -412,106 +347,101 @@ class AppScreen : Utils(), View.OnClickListener, MyInterface {
     }
 
     companion object {
-
         private const val MENU_UNINSTALL = Menu.FIRST + 2
-        @SuppressLint("UseSparseArrays")
-        var downloadHashMap = HashMap<Int, Download>()
         @SuppressLint("StaticFieldLeak")
         var instance: AppScreen? = null
             private set
-        @SuppressLint("UseSparseArrays")
-        private val threadHashMap = HashMap<Int, Thread>()
 
         fun hasInstance(): Boolean {
             return instance != null
         }
 
         fun downloadApp(activity: Activity, title: String, id: String, view: View) {
-            downloadApp(activity, title, id, object : DownloadListener {
-                override fun started() {
-                    val color = if (activity.window.navigationBarColor == Color.BLACK)
-                        activity.window.statusBarColor
-                    else
-                        activity.window
-                                .navigationBarColor
-                    CustomSnackbar(activity, color)
-                            .make(view, "Download started", CustomSnackbar.LENGTH_LONG)
-                            .show()
-                }
-
-                override fun finished(file: File) {
-                    if (Utils.getSettings(activity).getBoolean("root_install", false)) {
-                        Utils.executeCommand(activity, "rm -rf /data/local/tmp/app.apk")
-                        Utils.executeCommand(activity,
-                                "mv " + file.absolutePath + " /data/local/tmp/app.apk")
-                        Utils.executeCommand(activity, "pm install -r /data/local/tmp/app.apk\n")
-                    } else
-                        Utils.installApk(activity, file)
-                }
-
-                override fun error(errorMessage: String) {
-                }
-            })
-        }
-
-        private fun downloadApp(activity: Activity, title: String, id: String, downloadListener: DownloadListener) {
+            val file = File(Environment.getExternalStorageDirectory(), ".appStore")
+            val url = API_URL + Config.APK_PATH
+                    .replace("{id}", id)
+                    .replace("{uid}", Config.UID(activity)!!)
+            val path = file.absolutePath
+            var notifications: Notifications? = null
             val random = Random()
             val notiId = random.nextInt(65536)
             val finishedNotiId = random.nextInt(65536)
-            val thread = Thread {
-                val notifications = Notifications(
-                        activity,
-                        notiId,
-                        activity.getString(R.string.app_name) + " - " + title,
-                        activity.getString(R.string.app_name) + " - " + title,
-                        "",
-                        null,
-                        true)
-                activity.runOnUiThread { notifications.showNotification() }
-                downloadListener.started()
-                val download = Download(API_URL + Config.APK_PATH
-                        .replace("{id}", id)
-                        .replace("{uid}", Config.UID(activity)!!))
-                downloadHashMap[notiId] = download
-                val file = File(Environment.getExternalStorageDirectory(), ".appStore")
-                val apk = download.startDownload(file, notiId, object : Download.DownloadState {
-                    override fun state(percentage: Int) {
-                        notifications.setProgress(percentage)
-                    }
-                })
-                if (apk != null && apk.exists()) {
-                    activity.runOnUiThread {
-                        notifications.removeNotification()
-                        finishedNotification(
+            val fileName = "download_$notiId.apk"
+            var lastMilli: Long = System.currentTimeMillis()
+            val downloadId: Int = PRDownloader.download(url, path, fileName)
+                    .build()
+                    .setOnStartOrResumeListener {
+                        val color = if (activity.window.navigationBarColor == Color.BLACK)
+                            activity.window.statusBarColor
+                        else
+                            activity.window
+                                    .navigationBarColor
+                        CustomSnackbar(activity, color)
+                                .make(view, "Download started", CustomSnackbar.LENGTH_LONG)
+                                .show()
+                        notifications = Notifications(
                                 activity,
-                                finishedNotiId,
+                                notiId,
                                 activity.getString(R.string.app_name) + " - " + title,
-                                false).showNotification()
-                    }
-                    downloadListener.finished(apk)
-                } else {
-                    activity.runOnUiThread {
-                        notifications.removeNotification()
-                        finishedNotification(
-                                activity,
-                                finishedNotiId,
                                 activity.getString(R.string.app_name) + " - " + title,
-                                true).showNotification()
+                                "",
+                                null,
+                                true)
                     }
-                    downloadListener.error("ERROR")
-                }
-            }
-            thread.start()
-            threadHashMap[notiId] = thread
+                    .setOnProgressListener {
+                        val percentage = ((it.currentBytes * 100L) / it.totalBytes).toInt()
+                        val current = System.currentTimeMillis()
+                        if (current - lastMilli >= 100) {
+                            notifications!!.setProgress(percentage, "${humanReadableByteCount(it.currentBytes, true)} / ${humanReadableByteCount(it.totalBytes, true)}")
+                            lastMilli = current
+                        }
+                    }
+                    .setOnCancelListener {
+                        notifications!!.removeNotification()
+                    }
+                    .start(object : OnDownloadListener {
+                        override fun onDownloadComplete() {
+                            notifications!!.removeNotification()
+                            val f = File(file, fileName)
+                            finishedNotification(
+                                    activity,
+                                    finishedNotiId,
+                                    activity.getString(R.string.app_name) + " - " + title,
+                                    false, "").showNotification()
+                            if (Utils.getSettings(activity).getBoolean("root_install", false)) {
+                                Utils.executeCommand(activity, "rm -rf /data/local/tmp/app.apk")
+                                Utils.executeCommand(activity,
+                                        "mv " + f.absolutePath + " /data/local/tmp/app.apk")
+                                Utils.executeCommand(activity, "pm install -r /data/local/tmp/app.apk\n")
+                            } else
+                                Utils.installApk(activity, f)
+                        }
+
+                        override fun onError(error: Error?) {
+                            notifications!!.removeNotification()
+                            val errorMessage = when {
+                                error == null -> ""
+                                error.isConnectionError -> activity.getString(R.string.notification_connection_error)
+                                error.isServerError -> activity.getString(R.string.notification_server_error)
+                                else -> ""
+                            }
+                            finishedNotification(
+                                    activity,
+                                    finishedNotiId,
+                                    activity.getString(R.string.app_name) + " - " + title,
+                                    true, errorMessage).showNotification()
+                        }
+                    })
+            Logs.getInstance(activity).info("DownloadId", downloadId)
         }
 
-        private fun finishedNotification(activity: Activity, id: Int, title: String, error: Boolean): Notifications {
+        private fun finishedNotification(activity: Activity, id: Int, title: String, error: Boolean, errorMessage: String): Notifications {
             val notifications = Notifications(
                     activity,
                     id,
                     title,
                     title,
-                    "",
+                    errorMessage,
                     null,
                     false)
             if (error)

@@ -155,4 +155,5 @@
     <string name="popup_share_content">Bir QR Kodu oluşturmak ister misiniz?</string>
     <string name="no">Yok hayır</string>
     <string name="yes">Evet</string>
+    <string name="notification_server_error">Server hatası</string>
 </resources>

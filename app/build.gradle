@@ -11,7 +11,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
-        versionName "5.1"
+        versionName "5.2"
         useLibrary 'org.apache.http.legacy'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -87,6 +87,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:17.3.3'
     implementation 'androidx.core:core-ktx:1.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.github.matthiasrobbers:shortbread:1.0.2'
+    annotationProcessor 'com.github.matthiasrobbers:shortbread-compiler:1.0.2'
     annotationProcessor 'com.jakewharton:butterknife-compiler:9.0.0-rc1'
 }
 repositories {

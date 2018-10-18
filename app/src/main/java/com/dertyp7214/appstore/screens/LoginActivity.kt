@@ -32,7 +32,7 @@ import com.dertyp7214.appstore.dev.Logs
 import com.dertyp7214.appstore.helpers.SQLiteHandler
 import com.dertyp7214.appstore.helpers.SessionManager
 import com.dertyp7214.appstore.loginout.AppConfig
-import com.dertyp7214.appstore.loginout.AppController
+import com.dertyp7214.appstore.AppController
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*

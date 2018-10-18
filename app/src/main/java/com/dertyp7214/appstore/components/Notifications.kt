@@ -10,15 +10,14 @@ import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import com.dertyp7214.appstore.BuildConfig
 import com.dertyp7214.appstore.R
 import com.dertyp7214.appstore.dev.Logs
-import com.dertyp7214.appstore.screens.AppScreen
 import java.util.*
 
 @Suppress("DEPRECATION")
@@ -39,25 +38,29 @@ class Notifications(private val context: Context, private val id: Int, title: St
         if (notificationManager == null)
             notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         builder = null
-        builder = NotificationCompat.Builder(context)
-                .setSmallIcon(android.R.drawable.stat_sys_download)
+        val groupId = context.getString(R.string.app_name) + "_id"
+        val groupName = context.getString(R.string.app_name)
+        builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            NotificationCompat.Builder(context)
+        else
+            NotificationCompat.Builder(context, groupId)
+        builder!!.setSmallIcon(android.R.drawable.stat_sys_download)
                 .setLargeIcon(icon)
                 .setContentTitle(title)
                 .setContentText(content)
                 .setPriority(
-                        if (progress) NotificationCompat.PRIORITY_MIN else NotificationCompat.PRIORITY_DEFAULT)
+                        if (progress) NotificationCompat.PRIORITY_MIN else NotificationCompat.PRIORITY_LOW)
                 .setSubText(subTitle)
         if (progress) {
             builder!!.setSubText("0%")
             builder!!.setOngoing(true)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val groupId = context.getString(R.string.app_name) + "_id"
-            val groupName = context.getString(R.string.app_name)
             val channel = NotificationChannel(groupId, groupName,
-                    if (progress) NotificationManager.IMPORTANCE_NONE else NotificationManager.IMPORTANCE_LOW)
+                    if (progress) NotificationManager.IMPORTANCE_MIN else NotificationManager.IMPORTANCE_LOW)
             notificationManager!!.createNotificationChannel(channel)
             builder!!.setChannelId(groupId)
+            if (progress) builder!!.setGroup("${BuildConfig.APPLICATION_ID}.apk_download")
         }
     }
 
@@ -94,14 +97,19 @@ class Notifications(private val context: Context, private val id: Int, title: St
                 PendingIntent.getBroadcast(context, 0, closeButton, 0))
     }
 
-    fun setProgress(progress: Int) {
+    fun setProgress(progress: Int, size: String) {
         if (this.progress) {
             builder!!.setSmallIcon(android.R.drawable.stat_sys_download)
-            builder!!.setSubText(progress.toString() + "%")
+            if (size.isEmpty()) builder!!.setSubText("$progress%")
+            else builder!!.setSubText("$size ($progress%)")
             builder!!.setProgress(this.max, progress, false)
             notificationManager!!.notify(id, builder!!.build())
             callAction()
         }
+    }
+
+    fun setProgress(progress: Int) {
+        setProgress(progress, "")
     }
 
     @SuppressLint("RestrictedApi")
@@ -144,20 +152,6 @@ class Notifications(private val context: Context, private val id: Int, title: St
 
     fun setClickEvent(notiUpdate: PendingIntent) {
         builder!!.setContentIntent(notiUpdate)
-    }
-
-    class DownloadCancelReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            try {
-                if (intent.extras != null) {
-                    AppScreen.downloadHashMap[intent.extras!!.getInt("id")]!!.cancel()
-                    notificationManager!!.cancel(intent.extras!!.getInt("id"))
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-
-        }
     }
 
     companion object {

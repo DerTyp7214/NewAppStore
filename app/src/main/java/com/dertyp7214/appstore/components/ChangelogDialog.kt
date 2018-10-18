@@ -15,7 +15,7 @@ import android.view.View
 import android.webkit.WebView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.dertyp7214.appstore.R
-import com.dertyp7214.appstore.loginout.AppController.Companion.TAG
+import com.dertyp7214.appstore.AppController.Companion.TAG
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader

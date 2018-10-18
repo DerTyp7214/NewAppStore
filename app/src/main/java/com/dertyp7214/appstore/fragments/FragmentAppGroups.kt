@@ -217,7 +217,6 @@ class FragmentAppGroups : TabFragment() {
     }
 
     companion object {
-
         @SuppressLint("StaticFieldLeak")
         var instance: FragmentAppGroups? = null
             private set

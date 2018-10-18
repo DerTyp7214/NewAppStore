@@ -55,6 +55,7 @@
     <string name="notification_download">Download</string>
     <string name="notification_max_downloads">Max Downloads</string>
     <string name="notification_connection_error">Connection Error</string>
+    <string name="notification_server_error">Server Error</string>
     <string name="notification_finished">Finished</string>
     <string name="popup_error">Not clickable link!</string>
     <string name="popup_close">Close</string>

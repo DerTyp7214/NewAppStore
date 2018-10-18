@@ -154,4 +154,5 @@
     <string name="popup_share_content">Möchten Sie einen QR-Code generieren?</string>
     <string name="popup_share_qr">Erstelle QR-Code</string>
     <string name="popup_share_menu">Öffnen Sie das Teilen-Menü</string>
+    <string name="notification_server_error">Serverfehler</string>
 </resources>

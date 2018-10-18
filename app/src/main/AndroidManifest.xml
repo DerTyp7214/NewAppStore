@@ -18,7 +18,7 @@
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
 
     <application
-        android:name=".loginout.AppController"
+        android:name=".AppController"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_descriptor"
         android:icon="@mipmap/ic_launcher"
@@ -137,14 +137,6 @@
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
-
-        <receiver
-            android:name=".components.Notifications$DownloadCancelReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="Download_Cancelled" />
-            </intent-filter>
-        </receiver>
 
         <service android:name=".service.MessagingService">
             <intent-filter>

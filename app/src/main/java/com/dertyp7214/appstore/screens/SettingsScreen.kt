@@ -21,7 +21,6 @@ import android.webkit.MimeTypeMap
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.ActionBar
-import androidx.core.content.edit
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -41,11 +40,13 @@ import com.theartofdev.edmodo.cropper.CropImage
 import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
+import shortbread.Shortcut
 import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.regex.Pattern
 
+@Shortcut(id = "settings", icon = R.drawable.ic_shortcut_settings, shortLabel = "Settings")
 class SettingsScreen : Utils() {
 
     private val prog: ProgressDialog? = null
