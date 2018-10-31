@@ -3,6 +3,8 @@
  * Created by Josua Lengwenath
  */
 
+@file:Suppress("DEPRECATION")
+
 package com.dertyp7214.appstore.adapter
 
 import android.app.ActivityOptions

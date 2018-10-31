@@ -16,6 +16,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.URL
 
+@Suppress("NAME_SHADOWING")
 open class TabFragment : Fragment() {
 
     val navigationBarHeight: Int
@@ -59,16 +60,12 @@ open class TabFragment : Fragment() {
     }
 
     fun setMargins(v: View, l: Int, t: Int, r: Int, b: Int) {
-        var l = l
-        var t = t
-        var r = r
-        var b = b
         if (v.layoutParams is ViewGroup.MarginLayoutParams) {
             val p = v.layoutParams as ViewGroup.MarginLayoutParams
-            if (l == -1) l = p.leftMargin
-            if (t == -1) t = p.topMargin
-            if (r == -1) r = p.rightMargin
-            if (b == -1) b = p.bottomMargin
+            val l = if (l == -1) p.leftMargin else l
+            val t = if (t == -1) p.topMargin else t
+            val r = if (r == -1) p.rightMargin else r
+            val b = if (b == -1) p.bottomMargin else b
             p.setMargins(l, t, r, b)
             v.requestLayout()
         }

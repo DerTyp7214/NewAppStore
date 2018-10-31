@@ -986,9 +986,6 @@ abstract class Utils : AppCompatActivity() {
             )
         }
 
-        fun n(o: Any) {
-        }
-
         fun sleep(duration: Long) {
             try {
                 Thread.sleep(duration)

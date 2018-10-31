@@ -43,6 +43,7 @@ import com.dertyp7214.appstore.fragments.FragmentAppInfo
 import com.dertyp7214.appstore.fragments.FragmentChangeLogs
 import com.dertyp7214.appstore.interfaces.MyInterface
 import com.dertyp7214.appstore.items.SearchItem
+import com.dertyp7214.appstore.service.DownloadService
 import com.dertyp7214.qrcodedialog.components.QRCodeDialog
 import com.downloader.Error
 import com.downloader.OnDownloadListener
@@ -368,6 +369,7 @@ class AppScreen : Utils(), View.OnClickListener, MyInterface {
             val finishedNotiId = random.nextInt(65536)
             val fileName = "download_$notiId.apk"
             var lastMilli: Long = System.currentTimeMillis()
+            val downloadService = Intent(activity, DownloadService::class.java)
             val downloadId: Int = PRDownloader.download(url, path, fileName)
                     .build()
                     .setOnStartOrResumeListener {
@@ -397,10 +399,12 @@ class AppScreen : Utils(), View.OnClickListener, MyInterface {
                         }
                     }
                     .setOnCancelListener {
+                        activity.stopService(downloadService)
                         notifications!!.removeNotification()
                     }
                     .start(object : OnDownloadListener {
                         override fun onDownloadComplete() {
+                            activity.startService(downloadService)
                             notifications!!.removeNotification()
                             val f = File(file, fileName)
                             finishedNotification(
@@ -418,6 +422,7 @@ class AppScreen : Utils(), View.OnClickListener, MyInterface {
                         }
 
                         override fun onError(error: Error?) {
+                            activity.stopService(downloadService)
                             notifications!!.removeNotification()
                             val errorMessage = when {
                                 error == null -> ""

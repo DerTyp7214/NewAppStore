@@ -37,7 +37,7 @@ class TranslatorAdapter(private val context: Context, private val translators: L
         holder.userName.text = item.name
         holder.userPicture.setImageDrawable(item.profilePicture)
 
-        holder.view.setOnClickListener { v -> openGitHubProfile(item.userName) }
+        holder.view.setOnClickListener { openGitHubProfile(item.userName) }
     }
 
     private fun openGitHubProfile(userName: String) {

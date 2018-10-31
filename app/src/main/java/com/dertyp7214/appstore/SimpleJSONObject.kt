@@ -12,14 +12,14 @@ import java.util.*
 
 class SimpleJSONObject : JSONObject {
 
-    private val keyValueMap: Map<String, Any>
+    private val keyValueMap: Map<*, *>
         @Throws(NoSuchFieldException::class, IllegalAccessException::class)
         get() {
 
-            val declaredField = JSONObject::class.java.getDeclaredField(FIELDNAME_NAME_VALUE_PAIRS)
+            val declaredField = JSONObject::class.java.getDeclaredField(FIELD_NAME_NAME_VALUE_PAIRS)
             declaredField.isAccessible = true
 
-            return declaredField.get(this) as Map<String, Any>
+            return declaredField.get(this) as Map<*, *>
         }
 
     @Throws(JSONException::class)
@@ -43,7 +43,6 @@ class SimpleJSONObject : JSONObject {
             val value = map[name]
             this.evaluateJSONArray(name, value)
         } catch (e: Exception) {
-            throw RuntimeException(e)
             null
         }
     }
@@ -70,6 +69,6 @@ class SimpleJSONObject : JSONObject {
     }
 
     companion object {
-        private const val FIELDNAME_NAME_VALUE_PAIRS = "nameValuePairs"
+        private const val FIELD_NAME_NAME_VALUE_PAIRS = "nameValuePairs"
     }
 }
