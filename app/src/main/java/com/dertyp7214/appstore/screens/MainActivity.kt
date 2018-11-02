@@ -91,6 +91,8 @@ class MainActivity : Utils(), NavigationView.OnNavigationItemSelectedListener, M
         themeStore = ThemeStore.resetInstance(this)
         logs = Logs(this)
 
+        Utils.getChangeLogs(this).showDialogOnVersionChange()
+
         checkAppDir()
         checkForOldAppStore()
         if (Build.VERSION.SDK_INT < 28)

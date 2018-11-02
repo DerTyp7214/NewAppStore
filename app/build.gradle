@@ -2,6 +2,11 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
 
+def versionMajor = 5
+def versionMinor = 4
+def versionPatch = 0
+def versionBuild = 0
+
 android {
     signingConfigs {
     }
@@ -10,8 +15,8 @@ android {
         applicationId "com.dertyp7214.appstore"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 1
-        versionName "5.3"
+        versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
+        versionName "${versionMajor}.${versionMinor}" + (versionPatch == 0 ? "" : ".${versionPatch}")
         useLibrary 'org.apache.http.legacy'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -54,7 +59,7 @@ dependencies {
     implementation 'com.github.daniel-stoneuk:material-about-library:2.4.2'
     implementation 'com.github.DerTyp7214:ThemeableComponents:1.2'
     implementation 'com.github.DerTyp7214:QrCodePopup:v1.4'
-    implementation 'com.github.DerTyp7214:ChangeLogLib:v1.1'
+    implementation 'com.github.DerTyp7214:ChangeLogLib:v1.4'
     implementation "com.google.android.material:material:$ver"
     implementation "androidx.appcompat:appcompat:$ver"
     implementation "androidx.cardview:cardview:$ver"
